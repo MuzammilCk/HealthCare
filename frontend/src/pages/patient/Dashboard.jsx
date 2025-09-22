@@ -65,28 +65,28 @@ export default function PatientDashboard() {
   })();
 
   return (
-    <div>
+    <div className="leading-body">
       {/* Greeting */}
-      <h1 className="text-2xl font-bold mb-1">{greet}, {user?.name?.split(' ')[0] || 'there'}.</h1>
-      <p className="text-gray-600 mb-6">Here’s what’s next and your latest activity.</p>
+      <h1 className="text-h1 font-bold mb-1">{greet}, {user?.name?.split(' ')[0] || 'there'}.</h1>
+      <p className="text-medium-gray mb-6">Here’s what’s next and your latest activity.</p>
 
       {/* Up Next */}
-      <div className="bg-white rounded shadow p-5 mb-6">
+      <div className="bg-white rounded-xl shadow-card p-5 mb-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="font-semibold text-gray-900 mb-1">Up Next</div>
+            <div className="font-semibold text-dark-charcoal mb-1">Up Next</div>
             {nextAppointment ? (
               <>
-                <div className="text-gray-800">Your next appointment is with <span className="font-semibold">{nextAppointment.doctorId?.name || 'Doctor'}</span>.</div>
-                <div className="text-gray-600 text-sm">{new Date(nextAppointment.date).toLocaleDateString()} {nextAppointment.timeSlot ? `at ${nextAppointment.timeSlot}` : ''}</div>
+                <div className="text-dark-charcoal">Your next appointment is with <span className="font-semibold">{nextAppointment.doctorId?.name || 'Doctor'}</span>.</div>
+                <div className="text-medium-gray text-sm">{new Date(nextAppointment.date).toLocaleDateString()} {nextAppointment.timeSlot ? `at ${nextAppointment.timeSlot}` : ''}</div>
               </>
             ) : (
-              <div className="text-gray-700">You’re all up to date! Have a great day.</div>
+              <div className="text-medium-gray">You’re all up to date! Have a great day.</div>
             )}
           </div>
           <div>
             {nextAppointment && (
-              <Link to="/patient/appointments" className="inline-block bg-blue-600 text-white px-4 py-2 rounded">View Details</Link>
+              <Link to="/patient/appointments" className="inline-block bg-primary text-white px-4 py-2 rounded-lg">View Details</Link>
             )}
           </div>
         </div>
@@ -94,25 +94,25 @@ export default function PatientDashboard() {
 
       {/* Quick Actions */}
       <div className="flex flex-wrap gap-3 mb-8">
-        <Link to="/patient/book-appointment" className="bg-blue-600 text-white px-4 py-2 rounded">+ Book New Appointment</Link>
-        <Link to="/patient/prescriptions" className="bg-white border px-4 py-2 rounded">↻ Request a Refill</Link>
-        <Link to="/patient/medical-history" className="bg-white border px-4 py-2 rounded">📄 View Medical History</Link>
+        <Link to="/patient/book-appointment" className="bg-primary text-white px-4 py-2 rounded-lg">+ Book New Appointment</Link>
+        <Link to="/patient/prescriptions" className="bg-white border px-4 py-2 rounded-lg">↻ Request a Refill</Link>
+        <Link to="/patient/medical-history" className="bg-white border px-4 py-2 rounded-lg">📄 View Medical History</Link>
       </div>
 
       {/* Recent Activity */}
       <div>
-        <h2 className="text-lg font-semibold mb-3">Recent Activity</h2>
+        <h2 className="text-h2 font-semibold mb-3">Recent Activity</h2>
         {recentActivity.length === 0 ? (
-          <div className="text-gray-600">No recent activity yet.</div>
+          <div className="text-medium-gray">No recent activity yet.</div>
         ) : (
           <ul className="space-y-2">
             {recentActivity.map((item, idx) => (
-              <li key={idx} className="bg-white rounded border p-3 flex items-start justify-between">
+              <li key={idx} className="bg-white rounded-lg border p-3 flex items-start justify-between">
                 <div>
                   <div className="font-medium">{item.title}</div>
-                  <div className="text-sm text-gray-600">{item.subtitle}</div>
+                  <div className="text-sm text-medium-gray">{item.subtitle}</div>
                 </div>
-                <div className="text-xs text-gray-500">{item.date.toLocaleDateString()}</div>
+                <div className="text-xs text-medium-gray">{item.date.toLocaleDateString()}</div>
               </li>
             ))}
           </ul>

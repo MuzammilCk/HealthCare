@@ -24,11 +24,11 @@ export default function DoctorDashboard() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Doctor Dashboard</h1>
+      <h1 className="text-h2 font-bold mb-4">Doctor Dashboard</h1>
       <div className="grid sm:grid-cols-3 gap-4">
-        <div className="bg-white p-4 rounded shadow"><div className="text-gray-500">Today</div><div className="text-3xl font-bold">{stats.today}</div></div>
-        <div className="bg-white p-4 rounded shadow"><div className="text-gray-500">Scheduled</div><div className="text-3xl font-bold">{stats.scheduled}</div></div>
-        <div className="bg-white p-4 rounded shadow"><div className="text-gray-500">Completed</div><div className="text-3xl font-bold">{stats.completed}</div></div>
+        <div className="bg-white p-4 rounded-xl shadow-card"><div className="text-medium-gray">Today</div><div className="text-3xl font-bold">{stats.today}</div></div>
+        <div className="bg-white p-4 rounded-xl shadow-card"><div className="text-medium-gray">Scheduled</div><div className="text-3xl font-bold">{stats.scheduled}</div></div>
+        <div className="bg-white p-4 rounded-xl shadow-card"><div className="text-medium-gray">Completed</div><div className="text-3xl font-bold">{stats.completed}</div></div>
       </div>
     </div>
   );

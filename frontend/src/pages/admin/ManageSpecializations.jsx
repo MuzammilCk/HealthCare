@@ -37,26 +37,26 @@ export default function ManageSpecializations() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Manage Specializations</h1>
+      <h1 className="text-h2 font-bold mb-4">Manage Specializations</h1>
 
-      <form onSubmit={onSubmit} className="bg-white p-4 rounded shadow max-w-xl space-y-3 mb-6">
+      <form onSubmit={onSubmit} className="bg-white p-4 rounded-xl shadow-card max-w-xl space-y-3 mb-6">
         <div>
           <label className="block text-sm mb-1">Name</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} className="w-full border rounded px-3 py-2" placeholder="Cardiology" />
+          <input value={name} onChange={(e) => setName(e.target.value)} className="w-full border rounded-lg px-3 py-2 h-12" placeholder="Cardiology" />
         </div>
         <div>
           <label className="block text-sm mb-1">Description</label>
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full border rounded px-3 py-2" placeholder="Heart and cardiovascular care" />
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full border rounded-lg px-3 py-2" placeholder="Heart and cardiovascular care" />
         </div>
-        <button disabled={saving} className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50">{saving ? 'Adding…' : 'Add Specialization'}</button>
+        <button disabled={saving} className="bg-primary text-white px-4 py-2 rounded-lg disabled:opacity-50">{saving ? 'Adding…' : 'Add Specialization'}</button>
       </form>
 
-      <div className="bg-white rounded shadow overflow-hidden">
+      <div className="bg-white rounded-xl shadow-card overflow-hidden">
         {loading ? (
           <div className="p-4">Loading…</div>
         ) : (
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead className="bg-light-gray">
               <tr>
                 <th className="text-left p-3">Name</th>
                 <th className="text-left p-3">Description</th>

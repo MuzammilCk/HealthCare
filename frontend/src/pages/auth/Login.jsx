@@ -27,15 +27,15 @@ export default function Login() {
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
         <label className="block text-sm mb-1">Email</label>
-        <input type="email" name="email" value={form.email} onChange={onChange} className="w-full border rounded px-3 py-2" />
+        <input type="email" name="email" value={form.email} onChange={onChange} className="w-full border rounded-lg px-3 py-2 h-12" placeholder="your@email.com" />
       </div>
       <div>
         <label className="block text-sm mb-1">Password</label>
-        <input type="password" name="password" value={form.password} onChange={onChange} className="w-full border rounded px-3 py-2" />
+        <input type="password" name="password" value={form.password} onChange={onChange} className="w-full border rounded-lg px-3 py-2 h-12" />
       </div>
-      <button disabled={loading} className="w-full bg-blue-600 text-white px-4 py-2 rounded">{loading ? 'Signing in…' : 'Sign In'}</button>
+      <button disabled={loading} className="w-full bg-primary text-white px-4 py-2 rounded-lg h-11">{loading ? 'Signing in…' : 'Sign In'}</button>
       <div className="text-sm text-center">
-        No account? <Link to="/auth/register" className="text-blue-600">Register</Link>
+        No account? <Link to="/auth/register" className="text-primary">Register</Link>
       </div>
     </form>
   );

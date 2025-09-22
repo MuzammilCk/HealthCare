@@ -19,12 +19,25 @@ export default function Appointments() {
 
   if (loading) return <div>Loading…</div>;
 
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'Scheduled':
+        return 'bg-info text-white';
+      case 'Completed':
+        return 'bg-secondary text-white';
+      case 'Cancelled':
+        return 'bg-medium-gray text-white';
+      default:
+        return 'bg-light-gray text-dark-charcoal';
+    }
+  };
+
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">My Appointments</h1>
-      <div className="bg-white rounded shadow overflow-hidden">
+      <h1 className="text-h2 font-bold mb-4">My Appointments</h1>
+      <div className="bg-white rounded-xl shadow-card overflow-hidden">
         <table className="min-w-full text-sm">
-          <thead className="bg-gray-50">
+          <thead className="bg-light-gray">
             <tr>
               <th className="text-left p-3">Date</th>
               <th className="text-left p-3">Time</th>
@@ -39,7 +52,7 @@ export default function Appointments() {
                 <td className="p-3">{new Date(a.date).toLocaleDateString()}</td>
                 <td className="p-3">{a.timeSlot}</td>
                 <td className="p-3">{a.doctorId?.name || '—'}</td>
-                <td className="p-3">{a.status}</td>
+                <td className="p-3"><span className={`px-2 py-1 rounded-full text-xs ${getStatusBadge(a.status)}`}>{a.status}</span></td>
                 <td className="p-3">{a.notes || '—'}</td>
               </tr>
             ))}
