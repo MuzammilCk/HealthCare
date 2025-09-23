@@ -3,4 +3,7 @@
 @tailwind utilities;
 
 html, body, #root { height: 100%; }
-body { @apply bg-light-gray text-dark-charcoal; }
+body { 
+  @apply bg-bg-page text-text-primary; 
+  font-family: 'Inter', sans-serif;
+}

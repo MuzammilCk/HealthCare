@@ -7,34 +7,31 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#0891B2',
-        secondary: '#22C55E',
-        accent: '#FB923C',
-        background: '#FFFFFF',
-        'light-gray': '#F9FAFB',
-        'dark-charcoal': '#1F2937',
-        'medium-gray': '#6B7280',
-        error: '#EF4444',
-        info: '#0EA5E9',
+        primary: {
+          DEFAULT: '#0D47A1', // Deep, trustworthy blue from BG
+          light: '#1976D2',
+        },
+        secondary: '#4DD0E1', // Vibrant teal accent from BG
+        text: {
+          primary: '#263238',   // Dark Slate
+          secondary: '#546E7A', // Lighter Slate
+        },
+        bg: {
+          page: '#ECEFF1',    // Light gray page background
+          card: '#FFFFFF',    // White for cards
+        },
+        success: '#4CAF50',
+        error: '#F44336',
+        info: '#29B6F6',
       },
       fontFamily: {
         sans: ['Inter', 'Plus Jakarta Sans', 'sans-serif'],
-      },
-      fontSize: {
-        'h1': '32px',
-        'h2': '24px',
-        'h3': '20px',
-        'body': '16px',
-        'small': '14px',
-      },
-      lineHeight: {
-        'body': '1.6',
       },
       borderRadius: {
         'xl': '12px',
       },
       boxShadow: {
-        'card': '0 1px 3px rgba(0,0,0,0.1)',
+        'card': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
       }
     },
   },
