@@ -13,19 +13,3 @@ body {
   font-family: 'Inter', sans-serif;
   position: relative;
 }
-
-/* Style for the new background video element */
-#bg-video {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  min-width: 100%;
-  min-height: 100%;
-  width: auto;
-  height: auto;
-  z-index: -1;
-  transform: translateX(-50%) translateY(-50%);
-  object-fit: cover; /* Ensures the video covers the screen without distortion */
-  /* filter: brightness(0.9); Optional: Dims the video slightly to make text more readable */
-
-}

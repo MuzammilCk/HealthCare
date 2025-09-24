@@ -4,8 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 export default function Home() {
   const { user } = useAuth();
   return (
-    // The background is now a solid, light gray to match the rest of the app
-    <div className="min-h-screen flex items-center justify-center bg-transparent relative z-10">
+    <div className="min-h-screen flex items-center justify-center bg-bg-page relative z-10">
       <div className="max-w-2xl text-center p-8">
         <h1 className="text-5xl font-extrabold mb-4 text-primary">HealthSync</h1>
         <p className="text-lg mb-8 text-text-secondary">

@@ -20,27 +20,25 @@ export default {
           secondary: '#64748b', // Lighter Slate for subtitles, placeholders
         },
         bg: {
-          page: 'rgba(241, 245, 249, 0.5)', // Semi-transparent light gray for page background
-          card: 'rgba(255, 255, 255, 0.6)',  // Semi-transparent white for "glass" cards
+          page: '#f1f5f9',    // A clean, light gray for the page background
+          card: '#ffffff',    // Solid white for cards
         },
         success: '#22c55e',
         error: '#ef4444',
         info: '#0ea5e9',
-        'dark-charcoal': '#1e293b',   // Mapping old custom colors to the new theme
+        'dark-charcoal': '#1e293b',
         'medium-gray': '#64748b',
-        'light-gray': 'rgba(241, 245, 249, 0.7)',
+        'light-gray': '#f1f5f9',
       },
       fontFamily: {
         sans: ['Inter', 'Plus Jakarta Sans', 'sans-serif'],
       },
       borderRadius: {
-        'xl': '1rem', // Softer, more modern corners
+        'xl': '1rem',
       },
       boxShadow: {
-        // A softer, more modern shadow for cards
         'card': '0 8px 32px 0 rgba(31, 38, 135, 0.08)',
       },
-      // Add backdrop blur for the "frosted glass" effect
       backdropBlur: {
         'xl': '16px',
       }
