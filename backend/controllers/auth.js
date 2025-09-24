@@ -13,51 +13,56 @@ exports.register = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { name, email, password, role, specializationId } = req.body;
+  // Destructure all required fields from the request body, including the new 'district'
+  const { name, email, password, role, specializationId, district } = req.body;
 
   try {
-    // Check if user already exists
+    // Check if a user with the given email already exists
     let existing = await User.findOne({ email });
     if (existing) {
       return res.status(400).json({ success: false, message: 'User already exists' });
     }
 
-    // Step 1: Create the new user
+    // Step 1: Create the new user with their district
     const user = await User.create({
       name,
       email,
       password,
       role: role || 'patient',
+      district, // Save the district to the user model
     });
 
     // Step 2: If the user is a doctor, create their professional Doctor profile
     if (user.role === 'doctor') {
-      // A specialization is required for a doctor profile
+      // Validate that specialization and district are provided for doctors
       if (!specializationId) {
-        // This is a server-side validation check. The frontend should also prevent this.
         return res.status(400).json({ success: false, message: 'Specialization is required for doctors.' });
       }
+      if (!district) {
+        return res.status(400).json({ success: false, message: 'District is required for doctors.' });
+      }
       
-      // Create the corresponding doctor document
+      // Create the corresponding doctor document with their district
       await Doctor.create({
         userId: user._id,
         specializationId: specializationId,
         availability: [], // Doctors can set their availability later
+        district: district, // Save the district to the doctor model
       });
     }
 
-    // Step 3: Return the token and user info
+    // Step 3: Return the authentication token and user info
     const token = user.getSignedJwtToken();
     res.status(201).json({ 
       success: true, 
       token, 
-      user: { id: user._id, name: user.name, email: user.email, role: user.role } 
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, district: user.district } 
     });
 
   } catch (e) {
     console.error(e);
-    // Important: If any part of the process fails, delete the user that might have been created
-    // This prevents having a user account without a corresponding doctor profile.
+    // If any part of the process fails, delete the user that might have been created
+    // This prevents having an orphaned user account.
     await User.findOneAndDelete({ email });
     res.status(500).json({ success: false, message: 'Server error during registration' });
   }
@@ -91,7 +96,7 @@ exports.login = async (req, res) => {
     res.json({ 
       success: true, 
       token, 
-      user: { id: user._id, name: user.name, email: user.email, role: user.role } 
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, district: user.district } 
     });
   } catch (e) {
     console.error(e);

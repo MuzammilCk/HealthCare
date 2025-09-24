@@ -34,7 +34,18 @@ exports.updateMedicalHistory = async (req, res) => {
 
 exports.getDoctors = async (req, res) => {
   try {
-    const doctors = await Doctor.find().populate('userId', 'name email').populate('specializationId', 'name description');
+    const { district } = req.query; // Get district from query params
+    let query = {};
+
+    // If a district is provided, add it to the database query
+    if (district) {
+      query.district = district;
+    }
+
+    const doctors = await Doctor.find(query)
+      .populate('userId', 'name email')
+      .populate('specializationId', 'name description');
+      
     res.json({ success: true, count: doctors.length, data: doctors });
   } catch (e) {
     res.status(500).json({ success: false, message: 'Server error' });

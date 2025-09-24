@@ -3,14 +3,17 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 
+// List of districts to be used in the dropdown
+const districtsOfKerala = ["Thiruvananthapuram", "Kollam", "Pathanamthitta", "Alappuzha", "Kottayam", "Idukki", "Ernakulam", "Thrissur", "Palakkad", "Malappuram", "Kozhikode", "Wayanad", "Kannur", "Kasaragod"];
+
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'patient', specializationId: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'patient', specializationId: '', district: '' });
   const [loading, setLoading] = useState(false);
   const [specializations, setSpecializations] = useState([]);
 
-  // Fetch specializations when the component mounts
+  // Fetch specializations for the doctor role dropdown
   useEffect(() => {
     (async () => {
       try {
@@ -28,6 +31,9 @@ export default function Register() {
     e.preventDefault();
     if (form.role === 'doctor' && !form.specializationId) {
       return alert('Please select a specialization.');
+    }
+    if (!form.district) {
+      return alert('Please select your district.');
     }
     setLoading(true);
     try {
@@ -62,7 +68,16 @@ export default function Register() {
         </select>
       </div>
       
-      {/* Conditionally render specialization dropdown */}
+      {/* New District Dropdown */}
+      <div>
+        <label className="block text-sm mb-1">District</label>
+        <select name="district" value={form.district} onChange={onChange} className="w-full border rounded-lg px-3 py-2 h-12">
+          <option value="">Select your district</option>
+          {districtsOfKerala.map(d => <option key={d} value={d}>{d}</option>)}
+        </select>
+      </div>
+
+      {/* Conditionally render specialization dropdown for doctors */}
       {form.role === 'doctor' && (
         <div>
           <label className="block text-sm mb-1">Specialization</label>

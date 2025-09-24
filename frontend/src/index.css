@@ -2,8 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body, #root { height: 100%; }
-body { 
-  @apply bg-bg-page text-text-primary; 
+html,
+body,
+#root {
+  height: 100%;
+}
+body {
+  @apply bg-hero-pattern bg-cover bg-center bg-no-repeat text-text-primary;
   font-family: 'Inter', sans-serif;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: white;
+  opacity: 0.1;
+  z-index: -1;
 }

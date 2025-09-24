@@ -1,20 +1,28 @@
 import { useEffect, useMemo, useState } from 'react';
 import api from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
+
+const districtsOfKerala = ["Thiruvananthapuram", "Kollam", "Pathanamthitta", "Alappuzha", "Kottayam", "Idukki", "Ernakulam", "Thrissur", "Palakkad", "Malappuram", "Kozhikode", "Wayanad", "Kannur", "Kasaragod"];
 
 export default function BookAppointment() {
+  const { user } = useAuth(); // Get authenticated user details
   const [specializations, setSpecializations] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [filterSpecId, setFilterSpecId] = useState('');
+  // Set the default district filter to the patient's district
+  const [filterDistrict, setFilterDistrict] = useState(user?.district || '');
   const [form, setForm] = useState({ doctorId: '', date: '', timeSlot: '' });
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
 
   useEffect(() => {
     (async () => {
+      setLoading(true);
       try {
+        // Pass the selected district to the API call
         const [specRes, docRes] = await Promise.all([
           api.get('/specializations'),
-          api.get('/patients/doctors'),
+          api.get(`/patients/doctors?district=${filterDistrict}`),
         ]);
         setSpecializations(specRes.data.data || []);
         setDoctors(docRes.data.data || []);
@@ -23,7 +31,7 @@ export default function BookAppointment() {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [filterDistrict]); // Re-run the effect when the district filter changes
 
   const filteredDoctors = useMemo(() => {
     if (!filterSpecId) return doctors;
@@ -57,10 +65,19 @@ export default function BookAppointment() {
 
   return (
     <div>
-      <h1 className="text-h2 font-bold mb-4">Book Appointment</h1>
+      <h1 className="text-2xl font-bold mb-4">Book Appointment</h1>
 
       <div className="grid md:grid-cols-3 gap-4">
         <div className="md:col-span-1 bg-white p-4 rounded-xl shadow-card">
+          {/* New District Filter */}
+          <div className="mb-3">
+            <label className="block text-sm mb-1">Filter by District</label>
+            <select value={filterDistrict} onChange={(e) => setFilterDistrict(e.target.value)} className="w-full border rounded-lg px-3 py-2 h-12">
+              <option value="">All Districts</option>
+              {districtsOfKerala.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </div>
+          
           <div className="mb-3">
             <label className="block text-sm mb-1">Filter by Specialization</label>
             <select value={filterSpecId} onChange={(e) => setFilterSpecId(e.target.value)} className="w-full border rounded-lg px-3 py-2 h-12">
@@ -73,15 +90,15 @@ export default function BookAppointment() {
           <div>
             <label className="block text-sm mb-1">Doctor</label>
             <div className="space-y-2">
-              {filteredDoctors.map((d) => (
+              {filteredDoctors.filter(d => d.userId).map((d) => (
                 <div key={d.userId._id}
                   onClick={() => setForm({ ...form, doctorId: d.userId._id })}
-                  className={`flex items-center p-2 rounded-lg cursor-pointer ${form.doctorId === d.userId._id ? 'bg-primary text-white' : 'hover:bg-light-gray'}`}
+                  className={`flex items-center p-2 rounded-lg cursor-pointer ${form.doctorId === d.userId._id ? 'bg-primary text-white' : 'hover:bg-bg-page'}`}
                 >
                   <img src={d.photoUrl || 'https://i.pravatar.cc/150'} alt={d.userId.name} className="w-10 h-10 rounded-full mr-3" />
                   <div>
                     <div className="font-semibold">{d.userId.name}</div>
-                    <div className="text-xs">{d.specializationId?.name}</div>
+                    <div className="text-xs text-text-secondary">{d.specializationId?.name}</div>
                   </div>
                 </div>
               ))}
@@ -108,12 +125,12 @@ export default function BookAppointment() {
                     </optgroup>
                   ))}
                 </select>
-                <p className="text-xs text-medium-gray mt-1">Slots shown are from the selected doctor's availability.</p>
+                <p className="text-xs text-text-secondary mt-1">Slots shown are from the selected doctor's availability.</p>
               </div>
-              <button disabled={booking} className="bg-accent text-white px-4 py-2 rounded-lg disabled:opacity-50 h-11">{booking ? 'Booking…' : 'Book Appointment'}</button>
+              <button disabled={booking} className="bg-secondary text-white px-4 py-2 rounded-lg disabled:opacity-50 h-11">{booking ? 'Booking…' : 'Book Appointment'}</button>
             </form>
           ) : (
-            <div className="text-center text-medium-gray py-10">
+            <div className="text-center text-text-secondary py-10">
               Please select a doctor to see their availability.
             </div>
           )}

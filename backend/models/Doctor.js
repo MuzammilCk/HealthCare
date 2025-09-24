@@ -19,6 +19,7 @@ const doctorSchema = new mongoose.Schema(
     experienceYears: { type: Number },
     location: { type: String },
     photoUrl: { type: String }, // Add this line
+    district: { type: String, trim: true },
   },
   { timestamps: true }
 );

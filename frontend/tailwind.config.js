@@ -6,6 +6,9 @@ export default {
   ],
   theme: {
     extend: {
+      backgroundImage: {
+        'hero-pattern': "url('/image.png')",
+      },
       colors: {
         primary: {
           DEFAULT: '#0D47A1', // Deep, trustworthy blue from BG
