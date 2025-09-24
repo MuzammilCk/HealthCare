@@ -8,7 +8,7 @@ body,
   height: 100%;
 }
 body {
-  @apply bg-hero-pattern bg-cover bg-center bg-no-repeat text-text-primary;
+  @apply bg-white text-text-primary; /* Set a bright white background */
   font-family: 'Inter', sans-serif;
   position: relative;
 }
@@ -20,7 +20,10 @@ body::before {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: white;
-  opacity: 0.1;
+  background-image: url('/seedream-4-2k_Resize_and_adapt_the.jpeg');
+  background-size: cover; /* <-- CHANGE 'cover' TO 'contain' HERE */
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.5; 
   z-index: -1;
 }
