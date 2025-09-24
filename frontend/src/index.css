@@ -9,26 +9,23 @@ body,
 }
 
 body {
-  /* Use a semi-transparent background color from the theme to tint the page */
   @apply bg-bg-page text-text-primary;
   font-family: 'Inter', sans-serif;
   position: relative;
 }
 
-/* This pseudo-element creates the fixed background image layer */
-body::before {
-  content: '';
-  position: fixed; /* Fixed, so it doesn't scroll */
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: url('/seedream-4-2k_Resize_and_adapt_the.jpeg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  /* Adjust opacity for desired blend */
-  opacity: 0.6; 
-  /* Place it behind all content */
+/* Style for the new background video element */
+#bg-video {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
   z-index: -1;
+  transform: translateX(-50%) translateY(-50%);
+  object-fit: cover; /* Ensures the video covers the screen without distortion */
+  /* filter: brightness(0.9); Optional: Dims the video slightly to make text more readable */
+
 }

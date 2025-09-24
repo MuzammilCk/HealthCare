@@ -3,10 +3,13 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 
+const districtsOfKerala = ["Thiruvananthapuram", "Kollam", "Pathanamthitta", "Alappuzha", "Kottayam", "Idukki", "Ernakulam", "Thrissur", "Palakkad", "Malappuram", "Kozhikode", "Wayanad", "Kannur", "Kasaragod"];
+
+
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'patient', specializationId: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'patient', specializationId: '', district: '' });
   const [loading, setLoading] = useState(false);
   const [specializations, setSpecializations] = useState([]);
 
@@ -28,6 +31,9 @@ export default function Register() {
     e.preventDefault();
     if (form.role === 'doctor' && !form.specializationId) {
       return alert('Please select a specialization.');
+    }
+    if (!form.district) {
+      return alert('Please select your district.');
     }
     setLoading(true);
     try {
@@ -67,6 +73,20 @@ export default function Register() {
         </span>
         <input type="password" name="password" value={form.password} onChange={onChange} className="w-full border rounded-lg px-3 py-2 h-12 pl-10" placeholder="Password"/>
       </div>
+
+      {/* District Dropdown */}
+      <div className="relative">
+        <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+             <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+          </svg>
+        </span>
+        <select name="district" value={form.district} onChange={onChange} className="w-full border rounded-lg px-3 py-2 h-12 pl-10 appearance-none">
+          <option value="">Select your district</option>
+          {districtsOfKerala.map(d => <option key={d} value={d}>{d}</option>)}
+        </select>
+      </div>
+
       <div className="relative">
         <span className="absolute inset-y-0 left-0 flex items-center pl-3">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
