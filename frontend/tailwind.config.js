@@ -6,35 +6,43 @@ export default {
   ],
   theme: {
     extend: {
-      backgroundImage: {
-        'hero-pattern': "url('/image.png')",
-      },
       colors: {
         primary: {
-          DEFAULT: '#0D47A1', // Deep, trustworthy blue from BG
-          light: '#1976D2',
+          DEFAULT: '#3b82f6', // A modern, friendly blue
+          light: '#60a5fa',   // A lighter shade for hovers
         },
-        secondary: '#4DD0E1', // Vibrant teal accent from BG
+        secondary: {
+          DEFAULT: '#14b8a6', // A calming teal
+          light: '#2dd4bf',
+        },
         text: {
-          primary: '#263238',   // Dark Slate
-          secondary: '#546E7A', // Lighter Slate
+          primary: '#1e293b',   // Dark Slate for main text
+          secondary: '#64748b', // Lighter Slate for subtitles, placeholders
         },
         bg: {
-          page: '#ECEFF1',    // Light gray page background
-          card: '#FFFFFF',    // White for cards
+          page: 'rgba(241, 245, 249, 0.5)', // Semi-transparent light gray for page background
+          card: 'rgba(255, 255, 255, 0.6)',  // Semi-transparent white for "glass" cards
         },
-        success: '#4CAF50',
-        error: '#F44336',
-        info: '#29B6F6',
+        success: '#22c55e',
+        error: '#ef4444',
+        info: '#0ea5e9',
+        'dark-charcoal': '#1e293b',   // Mapping old custom colors to the new theme
+        'medium-gray': '#64748b',
+        'light-gray': 'rgba(241, 245, 249, 0.7)',
       },
       fontFamily: {
         sans: ['Inter', 'Plus Jakarta Sans', 'sans-serif'],
       },
       borderRadius: {
-        'xl': '12px',
+        'xl': '1rem', // Softer, more modern corners
       },
       boxShadow: {
-        'card': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+        // A softer, more modern shadow for cards
+        'card': '0 8px 32px 0 rgba(31, 38, 135, 0.08)',
+      },
+      // Add backdrop blur for the "frosted glass" effect
+      backdropBlur: {
+        'xl': '16px',
       }
     },
   },

@@ -64,29 +64,33 @@ export default function PatientDashboard() {
     return 'Good evening';
   })();
 
+  const btnBase = "px-4 py-2 rounded-lg font-semibold transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-px";
+  const btnPrimary = `${btnBase} bg-primary text-white hover:bg-primary-light`;
+  const btnSecondary = `${btnBase} bg-white/80 border border-slate-300/70 hover:bg-white`;
+
   return (
     <div className="leading-body">
       {/* Greeting */}
-      <h1 className="text-h1 font-bold mb-1">{greet}, {user?.name?.split(' ')[0] || 'there'}.</h1>
-      <p className="text-medium-gray mb-6">Here’s what’s next and your latest activity.</p>
+      <h1 className="text-3xl font-bold mb-1 text-text-primary">{greet}, {user?.name?.split(' ')[0] || 'there'}.</h1>
+      <p className="text-text-secondary mb-6">Here’s what’s next and your latest activity.</p>
 
       {/* Up Next */}
-      <div className="bg-white rounded-xl shadow-card p-5 mb-6">
+      <div className="bg-primary/5 border border-primary/20 rounded-xl p-5 mb-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="font-semibold text-dark-charcoal mb-1">Up Next</div>
+            <div className="font-semibold text-text-primary mb-1">Up Next</div>
             {nextAppointment ? (
               <>
-                <div className="text-dark-charcoal">Your next appointment is with <span className="font-semibold">{nextAppointment.doctorId?.name || 'Doctor'}</span>.</div>
-                <div className="text-medium-gray text-sm">{new Date(nextAppointment.date).toLocaleDateString()} {nextAppointment.timeSlot ? `at ${nextAppointment.timeSlot}` : ''}</div>
+                <div className="text-text-primary">Your next appointment is with <span className="font-semibold">{nextAppointment.doctorId?.name || 'Doctor'}</span>.</div>
+                <div className="text-text-secondary text-sm">{new Date(nextAppointment.date).toLocaleDateString()} {nextAppointment.timeSlot ? `at ${nextAppointment.timeSlot}` : ''}</div>
               </>
             ) : (
-              <div className="text-medium-gray">You’re all up to date! Have a great day.</div>
+              <div className="text-text-secondary">You’re all up to date! Have a great day.</div>
             )}
           </div>
           <div>
             {nextAppointment && (
-              <Link to="/patient/appointments" className="inline-block bg-primary text-white px-4 py-2 rounded-lg">View Details</Link>
+              <Link to="/patient/appointments" className={`${btnBase} bg-primary text-white hover:bg-primary-light text-sm`}>View Details</Link>
             )}
           </div>
         </div>
@@ -94,25 +98,25 @@ export default function PatientDashboard() {
 
       {/* Quick Actions */}
       <div className="flex flex-wrap gap-3 mb-8">
-        <Link to="/patient/book-appointment" className="bg-primary text-white px-4 py-2 rounded-lg">+ Book New Appointment</Link>
-        <Link to="/patient/prescriptions" className="bg-white border px-4 py-2 rounded-lg">↻ Request a Refill</Link>
-        <Link to="/patient/medical-history" className="bg-white border px-4 py-2 rounded-lg">📄 View Medical History</Link>
+        <Link to="/patient/book-appointment" className={btnPrimary}>+ Book New Appointment</Link>
+        <Link to="/patient/prescriptions" className={btnSecondary}>↻ Request a Refill</Link>
+        <Link to="/patient/medical-history" className={btnSecondary}>📄 View Medical History</Link>
       </div>
 
       {/* Recent Activity */}
       <div>
-        <h2 className="text-h2 font-semibold mb-3">Recent Activity</h2>
+        <h2 className="text-2xl font-semibold mb-3 text-text-primary">Recent Activity</h2>
         {recentActivity.length === 0 ? (
-          <div className="text-medium-gray">No recent activity yet.</div>
+          <div className="text-text-secondary">No recent activity yet.</div>
         ) : (
           <ul className="space-y-2">
             {recentActivity.map((item, idx) => (
-              <li key={idx} className="bg-white rounded-lg border p-3 flex items-start justify-between">
+              <li key={idx} className="bg-white/60 rounded-lg border border-slate-300/50 p-3 flex items-start justify-between">
                 <div>
-                  <div className="font-medium">{item.title}</div>
-                  <div className="text-sm text-medium-gray">{item.subtitle}</div>
+                  <div className="font-medium text-text-primary">{item.title}</div>
+                  <div className="text-sm text-text-secondary">{item.subtitle}</div>
                 </div>
-                <div className="text-xs text-medium-gray">{item.date.toLocaleDateString()}</div>
+                <div className="text-xs text-text-secondary">{item.date.toLocaleDateString()}</div>
               </li>
             ))}
           </ul>

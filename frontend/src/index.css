@@ -7,23 +7,28 @@ body,
 #root {
   height: 100%;
 }
+
 body {
-  @apply bg-white text-text-primary; /* Set a bright white background */
+  /* Use a semi-transparent background color from the theme to tint the page */
+  @apply bg-bg-page text-text-primary;
   font-family: 'Inter', sans-serif;
   position: relative;
 }
 
+/* This pseudo-element creates the fixed background image layer */
 body::before {
   content: '';
-  position: absolute;
+  position: fixed; /* Fixed, so it doesn't scroll */
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background-image: url('/seedream-4-2k_Resize_and_adapt_the.jpeg');
-  background-size: cover; /* <-- CHANGE 'cover' TO 'contain' HERE */
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  opacity: 0.5; 
+  /* Adjust opacity for desired blend */
+  opacity: 0.6; 
+  /* Place it behind all content */
   z-index: -1;
 }
