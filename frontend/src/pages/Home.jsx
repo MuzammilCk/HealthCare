@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import VideoBackground from '../components/VideoBackground';
 
 export default function Home() {
   const { user } = useAuth();
   return (
     <div className="min-h-screen flex items-center justify-center bg-bg-page relative z-10">
+      <VideoBackground />
       <div className="max-w-2xl text-center p-8">
         <h1 className="text-5xl font-extrabold mb-4 text-primary">HealthSync</h1>
         <p className="text-lg mb-8 text-text-secondary">
