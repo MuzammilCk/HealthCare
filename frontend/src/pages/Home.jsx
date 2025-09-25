@@ -18,7 +18,7 @@ export default function Home() {
               <Link to="/auth/login" className="inline-block bg-primary hover:bg-primary-light text-white font-bold px-8 py-3 rounded-lg transition-transform transform hover:scale-105">
                 Sign In
               </Link>
-              <Link to="/auth/register" className="inline-block bg-bg-card text-text-primary font-bold px-8 py-3 rounded-lg transition-transform transform hover:scale-105">
+              <Link to="/auth/register" className="inline-block bg-bg-card text-text-primary font-bold px-8 py-3 rounded-lg border border-gray-300 transition-transform transform hover:scale-105">
                 Register
               </Link>
             </>
