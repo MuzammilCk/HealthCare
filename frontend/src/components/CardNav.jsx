@@ -14,12 +14,19 @@ const CardNav = () => {
 
   const items = [
     {
-      label: "Menu",
-      bgColor: "#0D0716",
-      textColor: "#fff",
+      label: "About",
+      bgColor: "#3b82f6", // Updated to your primary blue
+      textColor: "#ffffff",
       links: [
         { label: "About Us", href: "/about", ariaLabel: "About Us" },
-        { label: "Contact", href: "/contact", ariaLabel: "Contact" }
+      ]
+    },
+    {
+      label: "Contact",
+      bgColor: "#3b82f6", // Updated to your secondary teal
+      textColor: "#ffffff",
+      links: [
+        { label: "Contact Us", href: "/contact", ariaLabel: "Contact" }
       ]
     }
   ];
@@ -95,6 +102,7 @@ const CardNav = () => {
               ref={(el) => (cardsRef.current[idx] = el)}
               style={{ backgroundColor: item.bgColor, color: item.textColor }}
             >
+              <div className="nav-card-label">{item.label}</div>
               <div className="nav-card-links">
                 {item.links?.map((lnk) => (
                   <Link key={lnk.label} className="nav-card-link" to={lnk.href} aria-label={lnk.ariaLabel}>
