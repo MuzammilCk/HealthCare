@@ -1,4 +1,4 @@
-﻿import React from 'react'
+import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import './index.css'
@@ -20,10 +20,8 @@ import DoctorDashboard from './pages/doctor/Dashboard'
 import DoctorAppointments from './pages/doctor/Appointments'
 import DoctorAvailability from './pages/doctor/Availability'
 import CreatePrescription from './pages/doctor/CreatePrescription'
-import DoctorKyc from './pages/doctor/Kyc'
 import AdminDashboard from './pages/admin/Dashboard'
 import ManageSpecializations from './pages/admin/ManageSpecializations'
-import KycRequests from './pages/admin/KycRequests'
 import AboutUs from './pages/AboutUs';
 import Contact from './pages/Contact';
 
@@ -96,28 +94,6 @@ const router = createBrowserRouter([
       { path: 'about', element: <AboutUs /> },
       { path: 'contact', element: <Contact /> },
     ]
-  },
-  {
-    path: '/doctor/kyc',
-    element: (
-      <PrivateRoute allowedRoles={['doctor']}>
-        <MainLayout role="doctor" />
-      </PrivateRoute>
-    ),
-    children: [
-      { index: true, element: <DoctorKyc /> },
-    ],
-  },
-  {
-    path: '/admin/kyc-requests',
-    element: (
-      <PrivateRoute allowedRoles={['admin']}>
-        <MainLayout role="admin" />
-      </PrivateRoute>
-    ),
-    children: [
-      { index: true, element: <KycRequests /> },
-    ],
   },
   { path: '*', element: <PageNotFound /> },
 ]);

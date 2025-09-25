@@ -51,6 +51,39 @@ exports.updateAvailability = async (req, res) => {
   }
 };
 
+// Doctor submits KYC documents and moves status to Submitted
+exports.submitKyc = async (req, res) => {
+  try {
+    const { documents } = req.body; // Expect an array of file URLs/IDs from client-side upload
+    if (!Array.isArray(documents) || documents.length === 0) {
+      return res.status(400).json({ success: false, message: 'No documents provided' });
+    }
+
+    const doctor = await Doctor.findOne({ userId: req.user.id });
+    if (!doctor) return res.status(404).json({ success: false, message: 'Doctor profile not found' });
+
+    // Update KYC information
+    doctor.kyc = doctor.kyc || {};
+    doctor.kyc.documents = documents;
+    doctor.kyc.submittedAt = new Date();
+    // Reset review fields on resubmission
+    doctor.kyc.reviewerId = undefined;
+    doctor.kyc.reviewedAt = undefined;
+    doctor.kyc.rejectedReason = undefined;
+
+    // Only move to Submitted if Pending or Rejected
+    if (doctor.verificationStatus === 'Pending' || doctor.verificationStatus === 'Rejected') {
+      doctor.verificationStatus = 'Submitted';
+    }
+
+    await doctor.save();
+    res.status(200).json({ success: true, message: 'KYC submitted successfully', data: doctor });
+  } catch (e) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+// Create a prescription for a completed appointment
 exports.createPrescription = async (req, res) => {
   const { appointmentId, medication, dosage, instructions } = req.body;
   try {

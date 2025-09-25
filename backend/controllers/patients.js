@@ -35,7 +35,7 @@ exports.updateMedicalHistory = async (req, res) => {
 exports.getDoctors = async (req, res) => {
   try {
     const { district } = req.query; // Get district from query params
-    let query = {};
+    let query = { $or: [ { verificationStatus: 'Approved' }, { verificationStatus: { $exists: false } } ] };
 
     // If a district is provided, add it to the database query
     if (district) {
@@ -51,7 +51,6 @@ exports.getDoctors = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
-
 exports.bookAppointment = async (req, res) => {
   const { doctorId, date, timeSlot } = req.body;
   try {

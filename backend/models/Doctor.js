@@ -18,8 +18,22 @@ const doctorSchema = new mongoose.Schema(
     languages: [{ type: String }],
     experienceYears: { type: Number },
     location: { type: String },
-    photoUrl: { type: String }, // Add this line
+    photoUrl: { type: String },
     district: { type: String, trim: true },
+    // KYC / Verification
+    verificationStatus: {
+      type: String,
+      enum: ['Pending', 'Submitted', 'Approved', 'Rejected'],
+      default: 'Pending',
+      required: true,
+    },
+    kyc: {
+      documents: [{ type: String }], // store signed URLs / file IDs
+      submittedAt: { type: Date },
+      reviewedAt: { type: Date },
+      reviewerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      rejectedReason: { type: String },
+    },
   },
   { timestamps: true }
 );

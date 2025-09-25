@@ -30,6 +30,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/patients', require('./routes/patients'));
 app.use('/api/doctors', require('./routes/doctors'));
 app.use('/api/specializations', require('./routes/specializations'));
+app.use('/api/admin', require('./routes/admin'));
 
 // Error handler
 app.use((err, req, res, next) => {
