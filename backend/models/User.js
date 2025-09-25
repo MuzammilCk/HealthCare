@@ -16,10 +16,12 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true, minlength: 6, select: false },
     role: { type: String, enum: ['patient', 'doctor', 'admin'], default: 'patient' },
     district: { type: String, trim: true },
+    photoUrl: { type: String, default: '' }, // Add this line
   },
   { timestamps: true }
 );
 
+// ... rest of the file remains the same
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   const salt = await bcrypt.genSalt(10);
