@@ -34,8 +34,21 @@ const doctorSchema = new mongoose.Schema(
       reviewerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
       rejectedReason: { type: String },
     },
+    // Patient ratings (1-5)
+    ratings: [{ type: Number, min: 1, max: 5 }],
   },
   { timestamps: true }
 );
+
+// Expose virtuals in outputs
+doctorSchema.set('toJSON', { virtuals: true });
+doctorSchema.set('toObject', { virtuals: true });
+
+// Virtual: averageRating from ratings array
+doctorSchema.virtual('averageRating').get(function () {
+  if (!this.ratings || this.ratings.length === 0) return 0;
+  const sum = this.ratings.reduce((a, b) => a + b, 0);
+  return Number((sum / this.ratings.length).toFixed(1));
+});
 
 module.exports = mongoose.model('Doctor', doctorSchema);

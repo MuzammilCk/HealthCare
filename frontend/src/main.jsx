@@ -1,4 +1,4 @@
-﻿import React from 'react'
+import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import './index.css'
@@ -24,6 +24,7 @@ import DoctorKyc from './pages/doctor/Kyc'
 import AdminDashboard from './pages/admin/Dashboard'
 import ManageSpecializations from './pages/admin/ManageSpecializations'
 import KycRequests from './pages/admin/KycRequests'
+import ManageDoctors from './pages/admin/ManageDoctors'
 import AboutUs from './pages/AboutUs';
 import Contact from './pages/Contact';
 
@@ -83,6 +84,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <AdminDashboard /> },
       { path: 'specializations', element: <ManageSpecializations /> },
+      { path: 'doctors', element: <ManageDoctors /> },
     ],
   },
   // New parent route for generic pages

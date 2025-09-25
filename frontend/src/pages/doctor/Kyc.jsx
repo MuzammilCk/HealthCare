@@ -55,8 +55,9 @@ export default function DoctorKyc() {
         </div>
       )}
       {status === 'Approved' && (
-        <div className="mb-4 p-3 rounded-lg bg-green-50 border border-green-200 text-green-800">
-          Your profile is verified and visible to patients.
+        <div className="mb-4 p-4 rounded-lg bg-green-50 border border-green-200 text-green-800">
+          <h2 className="font-semibold">Verification Complete</h2>
+          <p>Your KYC has been successfully verified and your profile is now visible to patients.</p>
         </div>
       )}
       {status === 'Rejected' && (
@@ -65,6 +66,7 @@ export default function DoctorKyc() {
         </div>
       )}
 
+      {status !== 'Approved' && (
       <form onSubmit={onSubmit} className="space-y-4">
         <p className="text-sm text-gray-600">Provide secure links to your documents (e.g., medical license, ID). You can add multiple.</p>
         {documents.map((doc, idx) => (
@@ -89,6 +91,7 @@ export default function DoctorKyc() {
           </button>
         </div>
       </form>
+      )}
     </div>
   );
 }

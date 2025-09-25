@@ -8,6 +8,7 @@ const appointmentSchema = new mongoose.Schema(
     timeSlot: { type: String, required: true },
     status: { type: String, enum: ['Scheduled', 'Completed', 'Cancelled'], default: 'Scheduled' },
     notes: { type: String, default: '' },
+    isRated: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

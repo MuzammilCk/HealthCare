@@ -115,6 +115,7 @@ export default function BookAppointment() {
                     <p className="font-bold text-text-primary">{doc.userId.name}</p>
                     <p className="text-sm text-text-secondary">{doc.specializationId?.name}</p>
                     <p className="text-xs text-medium-gray">{doc.qualifications}</p>
+                    <p className="text-xs text-text-secondary">Rating: {typeof doc.averageRating === 'number' ? `${doc.averageRating}★` : '0★'}</p>
                   </div>
                 </div>
                 <button onClick={() => { setSelectedDoctor(doc); setStep(2); }}
@@ -143,6 +144,7 @@ export default function BookAppointment() {
         <div>
           <h2 className="text-xl font-bold text-text-primary">{selectedDoctor?.userId.name}</h2>
           <p className="text-text-secondary">{selectedDoctor?.specializationId?.name}</p>
+          <p className="text-sm text-text-secondary">Rating: {typeof selectedDoctor?.averageRating === 'number' ? `${selectedDoctor.averageRating}★` : '0★'}</p>
         </div>
       </div>
       <form onSubmit={onSubmit} className="space-y-4 md:w-1/2">

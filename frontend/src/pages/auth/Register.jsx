@@ -12,6 +12,7 @@ export default function Register() {
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'patient', specializationId: '', district: '' });
   const [loading, setLoading] = useState(false);
   const [specializations, setSpecializations] = useState([]);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Fetch specializations when the component mounts
   useEffect(() => {
@@ -71,7 +72,14 @@ export default function Register() {
             <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
           </svg>
         </span>
-        <input type="password" name="password" value={form.password} onChange={onChange} className="w-full border rounded-lg px-3 py-2 h-12 pl-10" placeholder="Password"/>
+        <input type={showPassword ? 'text' : 'password'} name="password" value={form.password} onChange={onChange} className="w-full border rounded-lg px-3 py-2 h-12 pl-10 pr-10" placeholder="Password"/>
+        <button type="button" aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword(v => !v)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700">
+          {showPassword ? (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-5 0-9.27-3.11-11-8 1.02-2.76 2.98-5.02 5.41-6.37"/><path d="M1 1l22 22"/><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.58 5.51A10.94 10.94 0 0 1 12 4c5 0 9.27 3.11 11 8a11.06 11.06 0 0 1-4.06 5.06"/></svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg>
+          )}
+        </button>
       </div>
 
       {/* District Dropdown */}

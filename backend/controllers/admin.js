@@ -1,4 +1,5 @@
 const Doctor = require('../models/Doctor');
+const User = require('../models/User');
 
 // GET /api/admin/kyc-requests
 // List doctors with verificationStatus = 'Submitted'
@@ -8,6 +9,40 @@ exports.getKycRequests = async (req, res) => {
       .populate('userId', 'name email')
       .populate('specializationId', 'name description');
     res.json({ success: true, count: doctors.length, data: doctors });
+  } catch (e) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+// GET /api/admin/doctors
+// List all doctors with populated user and specialization
+exports.getAllDoctors = async (req, res) => {
+  try {
+    const { sortBy } = req.query;
+    const doctors = await Doctor.find()
+      .populate('userId', 'name email district')
+      .populate('specializationId', 'name');
+
+    if (sortBy === 'rating_desc') {
+      doctors.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
+    } else if (sortBy === 'rating_asc') {
+      doctors.sort((a, b) => (a.averageRating || 0) - (b.averageRating || 0));
+    }
+
+    res.json({ success: true, count: doctors.length, data: doctors });
+  } catch (e) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+// DELETE /api/admin/doctors/:userId
+// Remove a doctor User and their Doctor profile
+exports.deleteDoctor = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    await Doctor.findOneAndDelete({ userId });
+    await User.findByIdAndDelete(userId);
+    res.json({ success: true, message: 'Doctor removed successfully' });
   } catch (e) {
     res.status(500).json({ success: false, message: 'Server error' });
   }
