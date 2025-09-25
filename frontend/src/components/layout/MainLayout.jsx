@@ -48,12 +48,13 @@ function NavigationLinks({ role, isSidebarOpen }) {
 export default function MainLayout({ role: roleProp }) {
   const { user } = useAuth();
   const role = roleProp || user?.role;
-  const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="min-h-screen flex bg-bg-page">
       <aside className={`hidden md:flex md:flex-col bg-bg-card/80 backdrop-blur-xl border-r border-white/20 p-4 transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
-        <div className="flex items-center justify-end mb-6 h-[60px]">
+        <div className="flex items-center justify-between mb-6 h-[60px]">
+          <span className={`font-bold text-lg ${!isSidebarOpen && 'hidden'}`}>Menu</span>
           <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="p-2">
             <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 transition-transform duration-300 ${isSidebarOpen ? '' : 'transform rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
