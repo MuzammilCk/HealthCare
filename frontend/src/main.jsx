@@ -1,7 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { createBrowserRouter, RouterProvider, redirect } from 'react-router-dom'
-import App from './App'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import './index.css'
 import { AuthProvider } from './contexts/AuthContext'
 import MainLayout from './components/layout/MainLayout'
@@ -23,6 +22,8 @@ import DoctorAvailability from './pages/doctor/Availability'
 import CreatePrescription from './pages/doctor/CreatePrescription'
 import AdminDashboard from './pages/admin/Dashboard'
 import ManageSpecializations from './pages/admin/ManageSpecializations'
+import AboutUs from './pages/AboutUs';
+import Contact from './pages/Contact';
 
 const router = createBrowserRouter([
   {
@@ -82,8 +83,20 @@ const router = createBrowserRouter([
       { path: 'specializations', element: <ManageSpecializations /> },
     ],
   },
+  // New parent route for generic pages
+  {
+    element: (
+      <PrivateRoute>
+        <MainLayout />
+      </PrivateRoute>
+    ),
+    children: [
+      { path: 'about', element: <AboutUs /> },
+      { path: 'contact', element: <Contact /> },
+    ]
+  },
   { path: '*', element: <PageNotFound /> },
-])
+]);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -97,4 +110,4 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       />
     </AuthProvider>
   </React.StrictMode>
-)
+);
