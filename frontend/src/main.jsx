@@ -4,7 +4,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import './index.css'
 import { AuthProvider } from './contexts/AuthContext'
 import MainLayout from './components/layout/MainLayout'
-import AuthLayout from './components/layout/AuthLayout'
+import ModernAuthLayout from './components/layout/ModernAuthLayout' // <-- Import the new layout
 import PrivateRoute from './components/routing/PrivateRoute'
 import PublicRoute from './components/routing/PublicRoute'
 import Home from './pages/Home'
@@ -37,7 +37,8 @@ const router = createBrowserRouter([
     path: '/auth',
     element: (
       <PublicRoute>
-        <AuthLayout />
+        {/* Use the new ModernAuthLayout here */}
+        <ModernAuthLayout />
       </PublicRoute>
     ),
     children: [
