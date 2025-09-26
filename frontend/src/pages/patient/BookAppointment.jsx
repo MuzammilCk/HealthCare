@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
-import { FiSearch, FiCalendar, FiClock, FiX } from 'react-icons/fi';
+import { FiSearch, FiCalendar, FiClock, FiX, FiMapPin } from 'react-icons/fi';
+import { AppSelect } from '../../components/ui';
 
 const districtsOfKerala = ["Thiruvananthapuram", "Kollam", "Pathanamthitta", "Alappuzha", "Kottayam", "Idukki", "Ernakulam", "Thrissur", "Palakkad", "Malappuram", "Kozhikode", "Wayanad", "Kannur", "Kasaragod"];
 
@@ -95,14 +96,16 @@ export default function BookAppointment() {
         {/* Filters */}
         <div className="md:col-span-1 bg-white p-4 rounded-xl shadow-card space-y-4 self-start">
           <h2 className="font-semibold text-text-primary border-b pb-2">Filters</h2>
-          <div>
-            <label htmlFor="district-filter" className="block text-sm font-medium text-text-secondary mb-1">District</label>
-            <select id="district-filter" value={filterDistrict} onChange={(e) => setFilterDistrict(e.target.value)}
-              className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 px-3 focus:outline-none focus:ring-2 focus:ring-primary/50">
-              <option value="">All Districts</option>
-              {districtsOfKerala.map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
-          </div>
+          <AppSelect
+            label="District"
+            placeholder="All Districts"
+            value={filterDistrict}
+            onChange={setFilterDistrict}
+            options={[{ value: '', label: 'All Districts' }, ...districtsOfKerala.map(d => ({ value: d, label: d }))]}
+            icon={FiMapPin}
+            searchable
+            searchPlaceholder="Search districts..."
+          />
           <div>
             <label className="block text-sm font-medium text-text-secondary mb-1">Specialization</label>
             <div className="space-y-1">
@@ -167,15 +170,17 @@ export default function BookAppointment() {
                 <input type="date" name="date" value={form.date} onChange={onChange} min={todayIsoDate} required
                   className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/50" />
               </div>
-              <div className="relative">
-                <FiClock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
-                <select name="timeSlot" value={form.timeSlot} onChange={onChange} required disabled={!form.date}
-                  className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none">
-                  <option value="">Select a time</option>
-                  {availableSlotsForSelectedDate.map((slot, i) => <option key={i} value={slot}>{slot}</option>)}
-                  {form.date && availableSlotsForSelectedDate.length === 0 && <option disabled>No slots available</option>}
-                </select>
-              </div>
+              <AppSelect
+                label="Time Slot"
+                placeholder="Select a time"
+                value={form.timeSlot}
+                onChange={(value) => setForm({ ...form, timeSlot: value })}
+                options={availableSlotsForSelectedDate.map(slot => ({ value: slot, label: slot }))}
+                icon={FiClock}
+                required
+                disabled={!form.date}
+                searchPlaceholder="Search time slots..."
+              />
               <button disabled={booking} className="w-full bg-primary text-white font-bold h-12 rounded-lg disabled:opacity-50 hover:bg-primary-light transition-all">
                 {booking ? 'Booking...' : 'Confirm Appointment'}
               </button>

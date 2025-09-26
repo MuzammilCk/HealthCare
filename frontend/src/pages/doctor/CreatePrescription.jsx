@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
-import { FiFileText, FiUser, FiPlus, FiTrash2 } from 'react-icons/fi';
+import { FiFileText, FiUser, FiPlus, FiTrash2, FiCalendar } from 'react-icons/fi';
+import { AppSelect } from '../../components/ui';
 
 export default function CreatePrescription() {
   const location = useLocation();
@@ -80,20 +81,20 @@ export default function CreatePrescription() {
       <h1 className="text-2xl font-bold text-text-primary mb-6">Create Prescription</h1>
       <div className="max-w-3xl mx-auto">
         <div className="bg-white p-6 rounded-xl shadow-card mb-6">
-          <label htmlFor="appointment" className="block text-sm font-medium text-text-secondary mb-1">Select Completed Appointment</label>
-          <select
-            id="appointment"
+          <AppSelect
+            label="Select Completed Appointment"
+            placeholder="-- Select --"
             value={selectedAppointment?._id || ''}
-            onChange={(e) => setSelectedAppointment(appointments.find(a => a._id === e.target.value))}
-            className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 px-3 focus:outline-none focus:ring-2 focus:ring-primary/50"
-          >
-            <option value="">-- Select --</option>
-            {appointments.map((a) => (
-              <option key={a._id} value={a._id}>
-                {`${new Date(a.date).toLocaleDateString()} - ${a.patientId?.name}`}
-              </option>
-            ))}
-          </select>
+            onChange={(value) => setSelectedAppointment(appointments.find(a => a._id === value))}
+            options={appointments.map(a => ({
+              value: a._id,
+              label: `${new Date(a.date).toLocaleDateString()} - ${a.patientId?.name}`
+            }))}
+            icon={FiCalendar}
+            searchable
+            searchPlaceholder="Search appointments..."
+            loading={loading}
+          />
         </div>
 
         {selectedAppointment && (

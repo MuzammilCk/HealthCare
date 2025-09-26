@@ -3,6 +3,7 @@ import { useNavigate, Link, useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiMapPin, FiBriefcase } from 'react-icons/fi';
+import { AppSelect } from '../../components/ui';
 
 const districtsOfKerala = ["Thiruvananthapuram", "Kollam", "Pathanamthitta", "Alappuzha", "Kottayam", "Idukki", "Ernakulam", "Thrissur", "Palakkad", "Malappuram", "Kozhikode", "Wayanad", "Kannur", "Kasaragod"];
 
@@ -96,24 +97,31 @@ export default function Register() {
           </button>
         </div>
         
-        <div className="relative">
-          <FiMapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
-          <select name="district" value={form.district} onChange={onChange} required className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 pl-9 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none">
-            <option value="">Select your district</option>
-            {districtsOfKerala.map(d => <option key={d} value={d}>{d}</option>)}
-          </select>
-        </div>
+        <AppSelect
+          label="District"
+          placeholder="Select your district"
+          value={form.district}
+          onChange={(value) => setForm({ ...form, district: value })}
+          options={districtsOfKerala.map(district => ({ value: district, label: district }))}
+          icon={FiMapPin}
+          required
+          searchable
+          searchPlaceholder="Search districts..."
+        />
 
         {role === 'doctor' && (
-          <div className="relative">
-            <FiBriefcase className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
-            <select name="specializationId" value={form.specializationId} onChange={onChange} required className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 pl-9 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none">
-              <option value="">Select your specialization</option>
-              {specializations.map(spec => (
-                <option key={spec._id} value={spec._id}>{spec.name}</option>
-              ))}
-            </select>
-          </div>
+          <AppSelect
+            label="Specialization"
+            placeholder="Select your specialization"
+            value={form.specializationId}
+            onChange={(value) => setForm({ ...form, specializationId: value })}
+            options={specializations.map(spec => ({ value: spec._id, label: spec.name }))}
+            icon={FiBriefcase}
+            required
+            searchable
+            searchPlaceholder="Search specializations..."
+            loading={specializations.length === 0}
+          />
         )}
 
         <button disabled={loading} className="w-full bg-primary text-white font-bold px-4 py-2 rounded-lg h-12 transition-all duration-300 ease-in-out hover:bg-primary-light hover:shadow-lg hover:-translate-y-px disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0">
