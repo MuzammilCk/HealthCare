@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import './index.css'
 import { AuthProvider } from './contexts/AuthContext'
+import { SocketProvider } from './contexts/SocketContext'
+import { NotificationProvider } from './contexts/NotificationContext'
 import MainLayout from './components/layout/MainLayout'
 import ModernAuthLayout from './components/layout/ModernAuthLayout' // <-- Import the new layout
 import PrivateRoute from './components/routing/PrivateRoute'
@@ -130,13 +132,17 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <AuthProvider>
-      <RouterProvider
-        router={router}
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      />
+      <SocketProvider>
+        <NotificationProvider>
+          <RouterProvider
+            router={router}
+            future={{
+              v7_startTransition: true,
+              v7_relativeSplatPath: true,
+            }}
+          />
+        </NotificationProvider>
+      </SocketProvider>
     </AuthProvider>
   </React.StrictMode>
 );

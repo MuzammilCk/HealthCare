@@ -1,6 +1,7 @@
 const Appointment = require('../models/Appointment');
 const Prescription = require('../models/Prescription');
 const Doctor = require('../models/Doctor');
+const { createNotification, createRoleBasedNotifications } = require('../utils/createNotification');
 
 exports.getDoctorProfile = async (req, res) => {
   try {
@@ -59,7 +60,8 @@ exports.submitKyc = async (req, res) => {
       return res.status(400).json({ success: false, message: 'No documents provided' });
     }
 
-    const doctor = await Doctor.findOne({ userId: req.user.id });
+    const doctor = await Doctor.findOne({ userId: req.user.id })
+      .populate('userId', 'name');
     if (!doctor) return res.status(404).json({ success: false, message: 'Doctor profile not found' });
 
     // Update KYC information
@@ -77,6 +79,16 @@ exports.submitKyc = async (req, res) => {
     }
 
     await doctor.save();
+
+    // Notify all admins about new KYC submission
+    await createRoleBasedNotifications(
+      'admin',
+      `Dr. ${doctor.userId.name} has submitted a new KYC verification request`,
+      '/admin/kyc-requests',
+      'kyc',
+      { doctorId: doctor._id, doctorName: doctor.userId.name }
+    );
+
     res.status(200).json({ success: true, message: 'KYC submitted successfully', data: doctor });
   } catch (e) {
     res.status(500).json({ success: false, message: 'Server error' });
@@ -87,9 +99,22 @@ exports.submitKyc = async (req, res) => {
 exports.createPrescription = async (req, res) => {
   const { appointmentId, medication, dosage, instructions } = req.body;
   try {
-    const appt = await Appointment.findOne({ _id: appointmentId, doctorId: req.user.id, status: { $in: ['Completed', 'Follow-up'] } });
+    const appt = await Appointment.findOne({ _id: appointmentId, doctorId: req.user.id, status: { $in: ['Completed', 'Follow-up'] } })
+      .populate('patientId', 'name')
+      .populate('doctorId', 'name');
     if (!appt) return res.status(400).json({ success: false, message: 'Eligible appointment not found' });
+    
     const pres = await Prescription.create({ appointmentId, patientId: appt.patientId, doctorId: req.user.id, medication, dosage, instructions });
+    
+    // Notify the patient about the new prescription
+    await createNotification(
+      appt.patientId._id || appt.patientId,
+      `Dr. ${appt.doctorId.name} has issued a new prescription for you`,
+      '/patient/prescriptions',
+      'prescription',
+      { prescriptionId: pres._id, doctorName: appt.doctorId.name, medication }
+    );
+    
     res.status(201).json({ success: true, data: pres });
   } catch (e) {
     res.status(500).json({ success: false, message: 'Server error' });

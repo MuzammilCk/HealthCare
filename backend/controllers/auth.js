@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Doctor = require('../models/Doctor'); // Import the Doctor model
 const { validationResult } = require('express-validator');
+const { createRoleBasedNotifications } = require('../utils/createNotification');
 
 /**
  * @desc    Register a new user (patient or doctor)
@@ -49,6 +50,15 @@ exports.register = async (req, res) => {
         availability: [], // Doctors can set their availability later
         district: district, // Save the district to the doctor model
       });
+
+      // Notify all admins about new doctor registration
+      await createRoleBasedNotifications(
+        'admin',
+        `A new doctor, ${user.name}, has registered`,
+        '/admin/manage-doctors',
+        'system',
+        { doctorId: user._id, doctorName: user.name, district }
+      );
     }
 
     // Step 3: Return the authentication token and user info

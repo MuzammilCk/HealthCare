@@ -2,6 +2,7 @@ const MedicalHistory = require('../models/MedicalHistory');
 const Doctor = require('../models/Doctor');
 const Appointment = require('../models/Appointment');
 const Prescription = require('../models/Prescription');
+const { createNotification } = require('../utils/createNotification');
 
 exports.getMedicalHistory = async (req, res) => {
   try {
@@ -65,7 +66,32 @@ exports.bookAppointment = async (req, res) => {
   try {
     const existing = await Appointment.findOne({ doctorId, date, timeSlot, status: 'Scheduled' });
     if (existing) return res.status(400).json({ success: false, message: 'Time slot not available' });
+    
     const appt = await Appointment.create({ patientId: req.user.id, doctorId, date, timeSlot });
+    
+    // Populate appointment data for notifications
+    const populatedAppt = await Appointment.findById(appt._id)
+      .populate('patientId', 'name')
+      .populate('doctorId', 'name');
+    
+    // Notify the doctor about the new appointment
+    await createNotification(
+      doctorId,
+      `You have a new appointment with ${populatedAppt.patientId.name} on ${new Date(date).toLocaleDateString()} at ${timeSlot}`,
+      '/doctor/appointments',
+      'appointment',
+      { appointmentId: appt._id, patientName: populatedAppt.patientId.name, date, timeSlot }
+    );
+    
+    // Notify the patient about successful booking
+    await createNotification(
+      req.user.id,
+      `Your appointment with Dr. ${populatedAppt.doctorId.name} for ${new Date(date).toLocaleDateString()} is confirmed`,
+      '/patient/appointments',
+      'appointment',
+      { appointmentId: appt._id, doctorName: populatedAppt.doctorId.name, date, timeSlot }
+    );
+    
     res.status(201).json({ success: true, data: appt });
   } catch (e) {
     if (e.code === 11000) return res.status(400).json({ success: false, message: 'Duplicate slot' });

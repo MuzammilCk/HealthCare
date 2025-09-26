@@ -4,6 +4,7 @@ import { GoArrowUpRight } from 'react-icons/go';
 import './CardNav.css';
 import { Link } from 'react-router-dom';
 import ProfileButton from './ProfileButton';
+import NotificationBell from './NotificationBell';
 
 const CardNav = () => {
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
@@ -90,7 +91,10 @@ const CardNav = () => {
           <span className="logo-text">HealthSync</span>
         </div>
 
-        <ProfileButton />
+        <div className="flex items-center space-x-3">
+          <NotificationBell />
+          <ProfileButton />
+        </div>
       </div>
 
       <div className="card-nav-content-container">

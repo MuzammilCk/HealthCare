@@ -1,5 +1,6 @@
 const Doctor = require('../models/Doctor');
 const User = require('../models/User');
+const { createNotification } = require('../utils/createNotification');
 
 // GET /api/admin/kyc-requests
 // List doctors with verificationStatus = 'Submitted'
@@ -59,7 +60,8 @@ exports.updateKycStatus = async (req, res) => {
       return res.status(400).json({ success: false, message: "Status must be 'Approved' or 'Rejected'" });
     }
 
-    const doctor = await Doctor.findById(doctorId);
+    const doctor = await Doctor.findById(doctorId)
+      .populate('userId', 'name');
     if (!doctor) return res.status(404).json({ success: false, message: 'Doctor not found' });
 
     doctor.verificationStatus = status;
@@ -73,6 +75,20 @@ exports.updateKycStatus = async (req, res) => {
     }
 
     await doctor.save();
+
+    // Notify the doctor about KYC status update
+    const message = status === 'Approved' 
+      ? 'Congratulations! Your KYC has been approved.'
+      : `Your KYC has been rejected. Reason: ${reason || 'Not specified'}`;
+
+    await createNotification(
+      doctor.userId._id,
+      message,
+      '/doctor/kyc',
+      'kyc',
+      { status, reason, doctorId: doctor._id }
+    );
+
     res.json({ success: true, message: `Doctor KYC ${status.toLowerCase()}`, data: doctor });
   } catch (e) {
     res.status(500).json({ success: false, message: 'Server error' });
