@@ -42,8 +42,12 @@ exports.updateMedicalHistory = async (req, res) => {
 exports.getDoctors = async (req, res) => {
   try {
     const { district } = req.query;
-    let query = { $or: [ { verificationStatus: 'Approved' }, { verificationStatus: { $exists: false } } ] };
-    if (district) query.district = district;
+    // --- THIS IS THE CHANGE ---
+    // Only find doctors that have been explicitly approved.
+    let query = { verificationStatus: 'Approved' };
+    if (district) {
+      query.district = district;
+    }
 
     const doctors = await Doctor.find(query)
       .populate('userId', 'name email')
