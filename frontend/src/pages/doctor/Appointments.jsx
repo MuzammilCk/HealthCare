@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
-import { FiEdit2, FiCheckCircle, FiXCircle, FiClock } from 'react-icons/fi';
+import { FiEdit2, FiCheckCircle, FiXCircle, FiClock, FiActivity } from 'react-icons/fi';
+import { AppSelect } from '../../components/ui';
 
 export default function DoctorAppointments() {
   const [list, setList] = useState([]);
@@ -65,23 +66,27 @@ export default function DoctorAppointments() {
                   <div className="text-text-secondary text-xs">{a.patientId?.email}</div>
                 </td>
                 <td className="p-4">
-                   <select
-                    disabled={updatingId === a._id}
+                  <AppSelect
                     value={a.status}
-                    onChange={(e) => updateAppt(a._id, { status: e.target.value })}
-                    className="w-full bg-bg-page border border-slate-300/70 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  >
-                    <option>Scheduled</option>
-                    <option>Completed</option>
-                    <option>Cancelled</option>
-                  </select>
+                    onChange={(value) => updateAppt(a._id, { status: value })}
+                    options={[
+                      { value: 'Scheduled', label: 'Scheduled' },
+                      { value: 'Completed', label: 'Completed' },
+                      { value: 'Cancelled', label: 'Cancelled' },
+                      { value: 'Follow-up', label: 'Follow-up' }
+                    ]}
+                    icon={FiActivity}
+                    disabled={updatingId === a._id}
+                    size="sm"
+                    className="min-w-[120px]"
+                  />
                 </td>
                 <td className="p-4" style={{minWidth: 220}}>
                   <textarea
                     rows={2}
                     defaultValue={a.notes || ''}
                     onBlur={(e) => e.target.value !== a.notes && updateAppt(a._id, { notes: e.target.value })}
-                    className="w-full bg-bg-page border border-slate-300/70 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-150 ease-in-out resize-none"
                     placeholder="Add notes…"
                     disabled={updatingId === a._id}
                   />
