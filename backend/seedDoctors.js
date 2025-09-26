@@ -64,11 +64,19 @@ const seedDoctors = async () => {
               experienceYears: doc.experienceYears ? parseInt(doc.experienceYears, 10) : 0,
               location: doc.location,
               photoUrl: doc.photoUrl || '',
-              availability: doc.availability ? [{ day: "Monday-Friday", slots: [doc.availability] }] : [] 
+              availability: doc.availability ? [{ day: "Monday-Friday", slots: [doc.availability] }] : [],
+              // --- THIS IS THE CHANGE ---
+              // Read the verification status from the CSV, default to 'Pending' if not present
+              verificationStatus: doc.verificationStatus || 'Pending',
             });
             console.log(`Doctor profile created for ${doc.name}`);
           } else {
-            console.log(`Doctor profile for ${doc.name} already exists.`);
+            // --- OPTIONAL: Update existing doctors' verification status ---
+            await Doctor.updateOne(
+              { userId: user._id },
+              { $set: { verificationStatus: doc.verificationStatus || 'Pending' } }
+            );
+            console.log(`Doctor profile for ${doc.name} already exists. Updated verification status.`);
           }
         }
         console.log('--- Doctor data seeding complete! ---');
