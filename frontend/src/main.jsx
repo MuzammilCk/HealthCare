@@ -20,6 +20,7 @@ import DoctorDashboard from './pages/doctor/Dashboard'
 import DoctorAppointments from './pages/doctor/Appointments'
 import DoctorAvailability from './pages/doctor/Availability'
 import CreatePrescription from './pages/doctor/CreatePrescription'
+import FollowUp from './pages/doctor/FollowUp'
 import DoctorKyc from './pages/doctor/Kyc'
 import AdminDashboard from './pages/admin/Dashboard'
 import ManageSpecializations from './pages/admin/ManageSpecializations'
@@ -73,6 +74,7 @@ const router = createBrowserRouter([
       { path: 'appointments', element: <DoctorAppointments /> },
       { path: 'availability', element: <DoctorAvailability /> },
       { path: 'prescriptions/new', element: <CreatePrescription /> },
+      { path: 'follow-up', element: <FollowUp /> },
     ],
   },
   {

@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
 export default function DoctorAppointments() {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
+  const navigate = useNavigate();
 
   const load = async () => {
     setLoading(true);
@@ -20,8 +22,14 @@ export default function DoctorAppointments() {
   const updateAppt = async (id, payload) => {
     setUpdatingId(id);
     try {
-      await api.put(`/doctors/appointments/${id}`, payload);
+      const res = await api.put(`/doctors/appointments/${id}`, payload);
       await load();
+      // If we just marked as Completed or Follow-up, redirect to create prescription
+      const newStatus = payload.status;
+      if (newStatus === 'Completed' || newStatus === 'Follow-up') {
+        const appt = res.data?.data || list.find(a => a._id === id);
+        navigate('/doctor/prescriptions/new', { state: { patientId: appt?.patientId?._id || appt?.patientId, appointmentId: id } });
+      }
     } catch {
       alert('Update failed');
     } finally {
@@ -74,8 +82,22 @@ export default function DoctorAppointments() {
                     disabled={updatingId === a._id}
                   />
                 </td>
-                <td className="p-3">
-                  {updatingId === a._id ? 'Saving…' : ''}
+                <td className="p-3 space-x-2 whitespace-nowrap">
+                  {a.status === 'Scheduled' && (
+                    <>
+                      <button
+                        className="px-3 py-1 rounded bg-green-600 text-white disabled:opacity-50"
+                        disabled={updatingId === a._id}
+                        onClick={() => updateAppt(a._id, { status: 'Completed' })}
+                      >Mark as Completed</button>
+                      <button
+                        className="px-3 py-1 rounded bg-yellow-600 text-white disabled:opacity-50"
+                        disabled={updatingId === a._id}
+                        onClick={() => navigate('/doctor/follow-up', { state: { appointment: a } })}
+                      >Schedule Follow-up</button>
+                    </>
+                  )}
+                  {updatingId === a._id ? <span className="text-gray-500">Saving…</span> : null}
                 </td>
               </tr>
             ))}

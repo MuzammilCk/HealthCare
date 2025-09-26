@@ -87,11 +87,48 @@ exports.submitKyc = async (req, res) => {
 exports.createPrescription = async (req, res) => {
   const { appointmentId, medication, dosage, instructions } = req.body;
   try {
-    const appt = await Appointment.findOne({ _id: appointmentId, doctorId: req.user.id, status: 'Completed' });
-    if (!appt) return res.status(400).json({ success: false, message: 'Completed appointment not found' });
+    const appt = await Appointment.findOne({ _id: appointmentId, doctorId: req.user.id, status: { $in: ['Completed', 'Follow-up'] } });
+    if (!appt) return res.status(400).json({ success: false, message: 'Eligible appointment not found' });
     const pres = await Prescription.create({ appointmentId, patientId: appt.patientId, doctorId: req.user.id, medication, dosage, instructions });
     res.status(201).json({ success: true, data: pres });
   } catch (e) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+// Schedule a follow-up: update current appointment status, and create a new future appointment slot
+exports.scheduleFollowUp = async (req, res) => {
+  try {
+    const { date, timeSlot, notes } = req.body;
+    const current = await Appointment.findById(req.params.id).populate('patientId', 'name email');
+    if (!current) return res.status(404).json({ success: false, message: 'Appointment not found' });
+    if (current.doctorId.toString() !== req.user.id) return res.status(401).json({ success: false, message: 'Not authorized' });
+
+    if (!date || !timeSlot) {
+      return res.status(400).json({ success: false, message: 'date and timeSlot are required' });
+    }
+
+    // Mark current appointment as Follow-up planned and persist optional notes
+    current.status = 'Follow-up';
+    if (notes) current.notes = notes;
+    await current.save();
+
+    // Create new appointment for the selected future slot
+    const followUpAppt = await Appointment.create({
+      patientId: current.patientId._id || current.patientId,
+      doctorId: req.user.id,
+      date: new Date(date),
+      timeSlot,
+      status: 'Scheduled',
+      notes: notes || ''
+    });
+
+    res.json({ success: true, data: { current, followUp: followUpAppt } });
+  } catch (e) {
+    // Handle uniqueness conflicts (same slot) gracefully
+    if (e && e.code === 11000) {
+      return res.status(400).json({ success: false, message: 'Selected slot is no longer available' });
+    }
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };

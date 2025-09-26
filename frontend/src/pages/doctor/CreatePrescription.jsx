@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import api from '../../services/api';
 
 export default function CreatePrescription() {
+  const location = useLocation();
   const [appointments, setAppointments] = useState([]);
   const [form, setForm] = useState({ appointmentId: '', medication: '', dosage: '', instructions: '' });
   const [loading, setLoading] = useState(true);
@@ -11,13 +13,21 @@ export default function CreatePrescription() {
     (async () => {
       try {
         const res = await api.get('/doctors/appointments');
-        setAppointments((res.data.data || []).filter((a) => a.status === 'Completed'));
+        setAppointments((res.data.data || []).filter((a) => a.status === 'Completed' || a.status === 'Follow-up'));
       } catch (e) {
       } finally {
         setLoading(false);
       }
     })();
   }, []);
+
+  // Preselect appointment if navigated with state
+  useEffect(() => {
+    const apptIdFromState = location.state?.appointmentId;
+    if (apptIdFromState) {
+      setForm((f) => ({ ...f, appointmentId: apptIdFromState }));
+    }
+  }, [location.state]);
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 

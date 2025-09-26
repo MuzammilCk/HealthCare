@@ -1,6 +1,6 @@
 const express = require('express');
 const { protect, authorize } = require('../middleware/auth');
-const { getDoctorProfile, getDoctorAppointments, updateAppointment, updateAvailability, createPrescription, submitKyc } = require('../controllers/doctors');
+const { getDoctorProfile, getDoctorAppointments, updateAppointment, updateAvailability, createPrescription, submitKyc, scheduleFollowUp } = require('../controllers/doctors');
 
 const router = express.Router();
 
@@ -10,6 +10,7 @@ router.use(authorize('doctor'));
 router.get('/profile', getDoctorProfile);
 router.get('/appointments', getDoctorAppointments);
 router.put('/appointments/:id', updateAppointment);
+router.post('/appointments/:id/follow-up', scheduleFollowUp);
 router.put('/availability', updateAvailability);
 router.post('/prescriptions', createPrescription);
 router.post('/me/kyc', submitKyc);
