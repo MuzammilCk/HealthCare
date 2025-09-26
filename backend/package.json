@@ -6,7 +6,8 @@
   "type": "commonjs",
   "scripts": {
     "dev": "nodemon server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "migrate:kyc-verified": "node seedKycVerified.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

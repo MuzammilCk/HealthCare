@@ -19,6 +19,9 @@ export default function BookAppointment() {
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
 
+  // Today's date in YYYY-MM-DD for disabling past dates
+  const todayIsoDate = useMemo(() => new Date().toISOString().split('T')[0], []);
+
   // Fetch initial data for specializations and doctors
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -40,7 +43,15 @@ export default function BookAppointment() {
   }, [filterDistrict]);
 
   // Handle changes in the form
-  const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const onChange = (e) => {
+    const { name, value } = e.target;
+    // Reset timeSlot when date changes to avoid stale selection
+    if (name === 'date') {
+      setForm({ ...form, date: value, timeSlot: '' });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
+  };
 
   // Handle booking submission
   const onSubmit = async (e) => {
@@ -74,6 +85,18 @@ export default function BookAppointment() {
     if (!selectedSpec) return doctors;
     return doctors.filter(doc => doc.specializationId?._id === selectedSpec._id);
   }, [doctors, selectedSpec]);
+
+  // Memoized available slots based on selected date's weekday
+  const availableSlotsForSelectedDate = useMemo(() => {
+    if (!form.date || !selectedDoctor?.availability) return [];
+    // Ensure consistent parsing across browsers
+    const dateObj = new Date(`${form.date}T00:00:00`);
+    const dayIndex = dateObj.getDay(); // 0=Sun ... 6=Sat
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayName = dayNames[dayIndex];
+    const matched = selectedDoctor.availability.find(av => (av.day || '').toLowerCase() === dayName.toLowerCase());
+    return matched?.slots || [];
+  }, [form.date, selectedDoctor]);
 
   // UI components for each step
   const renderContent = () => {
@@ -150,18 +173,14 @@ export default function BookAppointment() {
       <form onSubmit={onSubmit} className="space-y-4 md:w-1/2">
         <div>
           <label className="block text-sm font-medium text-text-secondary mb-1">Date</label>
-          <input type="date" name="date" value={form.date} onChange={onChange} className="w-full border rounded-lg px-3 py-2 h-12" />
+          <input type="date" name="date" value={form.date} onChange={onChange} min={todayIsoDate} className="w-full border rounded-lg px-3 py-2 h-12" />
         </div>
         <div>
           <label className="block text-sm font-medium text-text-secondary mb-1">Available Time Slots</label>
           <select name="timeSlot" value={form.timeSlot} onChange={onChange} className="w-full border rounded-lg px-3 py-2 h-12">
             <option value="">Select a time</option>
-            {(selectedDoctor?.availability || []).map((avail, idx) => (
-              <optgroup key={idx} label={avail.day}>
-                {avail.slots.map((slot, i) => (
-                  <option key={`${idx}-${i}`} value={slot}>{slot}</option>
-                ))}
-              </optgroup>
+            {availableSlotsForSelectedDate.map((slot, i) => (
+              <option key={i} value={slot}>{slot}</option>
             ))}
           </select>
         </div>

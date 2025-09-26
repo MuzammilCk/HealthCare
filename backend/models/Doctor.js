@@ -20,6 +20,13 @@ const doctorSchema = new mongoose.Schema(
     location: { type: String },
     photoUrl: { type: String },
     district: { type: String, trim: true },
+  // New simplified KYC status column
+  kycVerified: {
+    type: String,
+    enum: ['submitted', 'verified', 'rejected', 'pending'],
+    default: 'pending',
+    required: true,
+  },
     // KYC / Verification
     verificationStatus: {
       type: String,
