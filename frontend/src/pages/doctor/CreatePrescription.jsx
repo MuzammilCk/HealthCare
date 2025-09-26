@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { FiFileText, FiUser, FiPlus, FiTrash2 } from 'react-icons/fi';
 
 export default function CreatePrescription() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
-  const [form, setForm] = useState({ appointmentId: '', medication: '', dosage: '', instructions: '' });
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [medications, setMedications] = useState([{ name: '', dosage: '', instructions: '' }]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -13,70 +16,126 @@ export default function CreatePrescription() {
     (async () => {
       try {
         const res = await api.get('/doctors/appointments');
-        setAppointments((res.data.data || []).filter((a) => a.status === 'Completed' || a.status === 'Follow-up'));
-      } catch (e) {
-      } finally {
+        const eligibleAppts = (res.data.data || []).filter(a => ['Completed', 'Follow-up'].includes(a.status));
+        setAppointments(eligibleAppts);
+
+        // Pre-select if navigated from another page
+        const apptIdFromState = location.state?.appointmentId;
+        if (apptIdFromState) {
+          const preselect = eligibleAppts.find(a => a._id === apptIdFromState);
+          if (preselect) setSelectedAppointment(preselect);
+        }
+      } catch (e) {} finally {
         setLoading(false);
       }
     })();
-  }, []);
-
-  // Preselect appointment if navigated with state
-  useEffect(() => {
-    const apptIdFromState = location.state?.appointmentId;
-    if (apptIdFromState) {
-      setForm((f) => ({ ...f, appointmentId: apptIdFromState }));
-    }
   }, [location.state]);
 
-  const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleMedicationChange = (index, field, value) => {
+    const newMeds = [...medications];
+    newMeds[index][field] = value;
+    setMedications(newMeds);
+  };
+
+  const addMedication = () => {
+    setMedications([...medications, { name: '', dosage: '', instructions: '' }]);
+  };
+
+  const removeMedication = (index) => {
+    setMedications(medications.filter((_, i) => i !== index));
+  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (!form.appointmentId || !form.medication || !form.dosage || !form.instructions) return alert('Complete all fields');
+    if (!selectedAppointment) return alert('Please select an appointment.');
+    
+    // Filter out empty medication entries before submitting
+    const filledMedications = medications.filter(m => m.name && m.dosage && m.instructions);
+    if (filledMedications.length === 0) return alert('Please add at least one complete medication entry.');
+
     setSaving(true);
     try {
-      await api.post('/doctors/prescriptions', form);
-      alert('Prescription created');
-      setForm({ appointmentId: '', medication: '', dosage: '', instructions: '' });
+      // Create a prescription for each medication entry
+      await Promise.all(filledMedications.map(med => 
+        api.post('/doctors/prescriptions', {
+          appointmentId: selectedAppointment._id,
+          medication: med.name,
+          dosage: med.dosage,
+          instructions: med.instructions
+        })
+      ));
+      alert('Prescription created successfully!');
+      navigate('/doctor/appointments');
     } catch (e) {
-      alert(e.response?.data?.message || 'Create failed');
+      alert(e.response?.data?.message || 'Failed to create prescription.');
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) return <div>Loading…</div>;
+  if (loading) return <div className="text-center p-6">Loading...</div>;
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Create Prescription</h1>
-      <form onSubmit={onSubmit} className="space-y-4 max-w-xl">
-        <div>
-          <label className="block text-sm mb-1">Completed Appointment</label>
-          <select name="appointmentId" value={form.appointmentId} onChange={onChange} className="w-full border rounded px-3 py-2">
-            <option value="">Select appointment</option>
+      <h1 className="text-2xl font-bold text-text-primary mb-6">Create Prescription</h1>
+      <div className="max-w-3xl mx-auto">
+        <div className="bg-white p-6 rounded-xl shadow-card mb-6">
+          <label htmlFor="appointment" className="block text-sm font-medium text-text-secondary mb-1">Select Completed Appointment</label>
+          <select
+            id="appointment"
+            value={selectedAppointment?._id || ''}
+            onChange={(e) => setSelectedAppointment(appointments.find(a => a._id === e.target.value))}
+            className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 px-3 focus:outline-none focus:ring-2 focus:ring-primary/50"
+          >
+            <option value="">-- Select --</option>
             {appointments.map((a) => (
               <option key={a._id} value={a._id}>
-                {new Date(a.date).toLocaleDateString()} {a.timeSlot} — {a.patientId?.name}
+                {`${new Date(a.date).toLocaleDateString()} - ${a.patientId?.name}`}
               </option>
             ))}
           </select>
         </div>
-        <div>
-          <label className="block text-sm mb-1">Medication</label>
-          <input name="medication" value={form.medication} onChange={onChange} className="w-full border rounded px-3 py-2" />
-        </div>
-        <div>
-          <label className="block text-sm mb-1">Dosage</label>
-          <input name="dosage" value={form.dosage} onChange={onChange} className="w-full border rounded px-3 py-2" />
-        </div>
-        <div>
-          <label className="block text-sm mb-1">Instructions</label>
-          <textarea name="instructions" rows={3} value={form.instructions} onChange={onChange} className="w-full border rounded px-3 py-2" />
-        </div>
-        <button disabled={saving} className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50">{saving ? 'Creating…' : 'Create Prescription'}</button>
-      </form>
+
+        {selectedAppointment && (
+          <form onSubmit={onSubmit}>
+            <div className="bg-white p-6 rounded-xl shadow-card mb-6 space-y-6">
+              <div className="border-b pb-4">
+                <h3 className="font-semibold text-lg flex items-center"><FiUser className="mr-2 text-primary" /> Patient Details</h3>
+                <p><strong>Name:</strong> {selectedAppointment.patientId?.name}</p>
+                <p><strong>Email:</strong> {selectedAppointment.patientId?.email}</p>
+              </div>
+              
+              <div>
+                <h3 className="font-semibold text-lg mb-4 flex items-center"><FiFileText className="mr-2 text-primary" /> Medication List</h3>
+                <div className="space-y-4">
+                  {medications.map((med, index) => (
+                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 border p-4 rounded-lg relative">
+                      <div className="md:col-span-3">
+                        <label className="text-sm font-medium text-text-secondary">Medication #{index + 1}</label>
+                      </div>
+                      <input type="text" placeholder="Medication Name" value={med.name} onChange={(e) => handleMedicationChange(index, 'name', e.target.value)} className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 px-3 focus:outline-none" />
+                      <input type="text" placeholder="Dosage (e.g., 500mg)" value={med.dosage} onChange={(e) => handleMedicationChange(index, 'dosage', e.target.value)} className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 px-3 focus:outline-none" />
+                      <input type="text" placeholder="Instructions (e.g., Twice a day)" value={med.instructions} onChange={(e) => handleMedicationChange(index, 'instructions', e.target.value)} className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 px-3 focus:outline-none" />
+                      {medications.length > 1 && (
+                        <button type="button" onClick={() => removeMedication(index)} className="absolute top-2 right-2 text-red-500 hover:text-red-700">
+                          <FiTrash2 />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <button type="button" onClick={addMedication} className="mt-4 flex items-center text-sm font-semibold text-primary hover:text-primary-light">
+                  <FiPlus className="mr-1" /> Add Another Medication
+                </button>
+              </div>
+            </div>
+
+            <button disabled={saving} className="w-full bg-primary text-white font-bold h-12 rounded-lg disabled:opacity-50 hover:bg-primary-light transition-all">
+              {saving ? 'Saving Prescription...' : 'Save Prescription'}
+            </button>
+          </form>
+        )}
+      </div>
     </div>
   );
 }

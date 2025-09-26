@@ -1,28 +1,23 @@
 import { useEffect, useMemo, useState } from 'react';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
-import { GoChevronLeft } from 'react-icons/go';
+import { FiSearch, FiCalendar, FiClock, FiX } from 'react-icons/fi';
 
-// List of districts in Kerala for the filter dropdown
 const districtsOfKerala = ["Thiruvananthapuram", "Kollam", "Pathanamthitta", "Alappuzha", "Kottayam", "Idukki", "Ernakulam", "Thrissur", "Palakkad", "Malappuram", "Kozhikode", "Wayanad", "Kannur", "Kasaragod"];
 
-// Main component for booking appointments
 export default function BookAppointment() {
   const { user } = useAuth();
-  const [step, setStep] = useState(1); // To manage the multi-step process
   const [specializations, setSpecializations] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [filterDistrict, setFilterDistrict] = useState(user?.district || '');
-  const [selectedSpec, setSelectedSpec] = useState(null);
+  const [selectedSpecId, setSelectedSpecId] = useState(null);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [form, setForm] = useState({ date: '', timeSlot: '' });
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
 
-  // Today's date in YYYY-MM-DD for disabling past dates
   const todayIsoDate = useMemo(() => new Date().toISOString().split('T')[0], []);
 
-  // Fetch initial data for specializations and doctors
   useEffect(() => {
     const fetchInitialData = async () => {
       setLoading(true);
@@ -42,10 +37,8 @@ export default function BookAppointment() {
     fetchInitialData();
   }, [filterDistrict]);
 
-  // Handle changes in the form
   const onChange = (e) => {
     const { name, value } = e.target;
-    // Reset timeSlot when date changes to avoid stale selection
     if (name === 'date') {
       setForm({ ...form, date: value, timeSlot: '' });
     } else {
@@ -53,11 +46,10 @@ export default function BookAppointment() {
     }
   };
 
-  // Handle booking submission
   const onSubmit = async (e) => {
     e.preventDefault();
     if (!selectedDoctor || !form.date || !form.timeSlot) {
-      alert('Please complete all fields to book your appointment.');
+      alert('Please complete all fields.');
       return;
     }
     setBooking(true);
@@ -67,147 +59,131 @@ export default function BookAppointment() {
         date: new Date(form.date),
         timeSlot: form.timeSlot,
       });
-      alert('Your appointment has been successfully booked!');
-      // Reset to the initial state after booking
-      setStep(1);
-      setSelectedSpec(null);
+      alert('Appointment booked successfully!');
       setSelectedDoctor(null);
       setForm({ date: '', timeSlot: '' });
     } catch (error) {
-      alert(error.response?.data?.message || 'Booking failed. Please try again.');
+      alert(error.response?.data?.message || 'Booking failed.');
     } finally {
       setBooking(false);
     }
   };
 
-  // Filter doctors based on the selected specialization
   const filteredDoctors = useMemo(() => {
-    if (!selectedSpec) return doctors;
-    return doctors.filter(doc => doc.specializationId?._id === selectedSpec._id);
-  }, [doctors, selectedSpec]);
+    if (!selectedSpecId) return doctors;
+    return doctors.filter(doc => doc.specializationId?._id === selectedSpecId);
+  }, [doctors, selectedSpecId]);
 
-  // Memoized available slots based on selected date's weekday
   const availableSlotsForSelectedDate = useMemo(() => {
     if (!form.date || !selectedDoctor?.availability) return [];
-    // Ensure consistent parsing across browsers
     const dateObj = new Date(`${form.date}T00:00:00`);
-    const dayIndex = dateObj.getDay(); // 0=Sun ... 6=Sat
+    const dayIndex = dateObj.getDay();
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const dayName = dayNames[dayIndex];
     const matched = selectedDoctor.availability.find(av => (av.day || '').toLowerCase() === dayName.toLowerCase());
     return matched?.slots || [];
   }, [form.date, selectedDoctor]);
 
-  // UI components for each step
-  const renderContent = () => {
-    if (step === 2) {
-      return <TimeSlotStep />;
-    }
-    return <DoctorSelectionStep />;
-  };
-
-  // Step 1: Choose a specialization and doctor
-  const DoctorSelectionStep = () => (
-    <div className="flex flex-col md:flex-row gap-6">
-      {/* Specializations List */}
-      <div className="w-full md:w-1/4">
-        <h2 className="text-lg font-semibold mb-3">Specialities</h2>
-        <div className="space-y-2">
-          {[{ _id: null, name: 'All' }, ...specializations].map(spec => (
-            <button key={spec._id || 'all'}
-              onClick={() => setSelectedSpec(spec._id ? spec : null)}
-              className={`w-full text-left p-2 rounded-lg transition-colors ${selectedSpec?._id === spec._id ? 'bg-primary text-white' : 'hover:bg-blue-100'}`}>
-              {spec.name}
-            </button>
-          ))}
-        </div>
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-text-primary">Find Your Doctor</h1>
+        <p className="text-text-secondary">Book your next appointment with ease.</p>
       </div>
 
-      {/* Doctors List */}
-      <div className="w-full md:w-3/4">
-        <h2 className="text-lg font-semibold mb-3">
-          {filteredDoctors.length} doctors available {selectedSpec ? `in ${selectedSpec.name}` : ''}
-        </h2>
-        <div className="space-y-3">
-          {filteredDoctors.length > 0 ? (
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {/* Filters */}
+        <div className="md:col-span-1 bg-white p-4 rounded-xl shadow-card space-y-4 self-start">
+          <h2 className="font-semibold text-text-primary border-b pb-2">Filters</h2>
+          <div>
+            <label htmlFor="district-filter" className="block text-sm font-medium text-text-secondary mb-1">District</label>
+            <select id="district-filter" value={filterDistrict} onChange={(e) => setFilterDistrict(e.target.value)}
+              className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 px-3 focus:outline-none focus:ring-2 focus:ring-primary/50">
+              <option value="">All Districts</option>
+              {districtsOfKerala.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-1">Specialization</label>
+            <div className="space-y-1">
+              {[{ _id: null, name: 'All' }, ...specializations].map(spec => (
+                <button key={spec._id || 'all'}
+                  onClick={() => setSelectedSpecId(spec._id)}
+                  className={`w-full text-left p-2 text-sm rounded-md transition-colors ${selectedSpecId === spec._id ? 'bg-primary/10 text-primary font-semibold' : 'hover:bg-primary/5'}`}>
+                  {spec.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Doctor List */}
+        <div className="md:col-span-3 space-y-4">
+          {loading ? (
+            <div className="text-center p-6">Loading doctors...</div>
+          ) : filteredDoctors.length > 0 ? (
             filteredDoctors.map(doc => (
-              <div key={doc.userId._id} className="flex items-center justify-between p-3 bg-light-gray rounded-lg">
+              <div key={doc.userId._id} className="bg-white p-4 rounded-xl shadow-card flex items-center justify-between transition-shadow hover:shadow-lg">
                 <div className="flex items-center">
-                  <img src={doc.photoUrl || 'https://i.pravatar.cc/150'} alt={doc.userId.name} className="w-12 h-12 rounded-full mr-4" />
+                  <img src={doc.photoUrl || 'https://i.pravatar.cc/150'} alt={doc.userId.name} className="w-16 h-16 rounded-full mr-4 object-cover" />
                   <div>
-                    <p className="font-bold text-text-primary">{doc.userId.name}</p>
-                    <p className="text-sm text-text-secondary">{doc.specializationId?.name}</p>
-                    <p className="text-xs text-medium-gray">{doc.qualifications}</p>
-                    <p className="text-xs text-text-secondary">Rating: {typeof doc.averageRating === 'number' ? `${doc.averageRating}★` : '0★'}</p>
+                    <h3 className="font-bold text-lg text-text-primary">{doc.userId.name}</h3>
+                    <p className="text-sm text-primary font-medium">{doc.specializationId?.name}</p>
+                    <p className="text-xs text-text-secondary mt-1">{doc.qualifications}</p>
+                    <p className="text-sm font-semibold mt-1 text-yellow-500">{typeof doc.averageRating === 'number' ? `${doc.averageRating} ★` : 'No rating'}</p>
                   </div>
                 </div>
-                <button onClick={() => { setSelectedDoctor(doc); setStep(2); }}
-                  className="bg-secondary text-white font-bold px-4 py-2 rounded-lg text-sm">
-                  Book Now
+                <button onClick={() => setSelectedDoctor(doc)} className="bg-primary text-white font-bold px-4 py-2 rounded-lg hover:bg-primary-light transition-transform hover:scale-105">
+                  View Availability
                 </button>
               </div>
             ))
           ) : (
-            <p className="text-text-secondary">No doctors available for this selection.</p>
+            <div className="bg-white p-6 rounded-xl shadow-card text-center text-text-secondary">
+              <FiSearch className="mx-auto text-4xl mb-2" />
+              <p>No doctors found for your selected filters.</p>
+            </div>
           )}
         </div>
       </div>
-    </div>
-  );
 
-  // Step 2: Book a time slot
-  const TimeSlotStep = () => (
-    <div>
-      <button onClick={() => setStep(1)} className="flex items-center text-sm text-primary mb-4 font-semibold">
-        <GoChevronLeft className="mr-1" />
-        Back to Doctor Selection
-      </button>
-      <div className="flex items-center mb-6">
-        <img src={selectedDoctor?.photoUrl || 'https://i.pravatar.cc/150'} alt={selectedDoctor?.userId.name} className="w-16 h-16 rounded-full mr-4" />
-        <div>
-          <h2 className="text-xl font-bold text-text-primary">{selectedDoctor?.userId.name}</h2>
-          <p className="text-text-secondary">{selectedDoctor?.specializationId?.name}</p>
-          <p className="text-sm text-text-secondary">Rating: {typeof selectedDoctor?.averageRating === 'number' ? `${selectedDoctor.averageRating}★` : '0★'}</p>
+      {/* Booking Modal */}
+      {selectedDoctor && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50 animate-fade-in-fast">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 relative">
+            <button onClick={() => setSelectedDoctor(null)} className="absolute top-4 right-4 text-text-secondary hover:text-text-primary">
+              <FiX size={24} />
+            </button>
+            <div className="flex items-center mb-6">
+              <img src={selectedDoctor.photoUrl || 'https://i.pravatar.cc/150'} alt={selectedDoctor.userId.name} className="w-20 h-20 rounded-full mr-4" />
+              <div>
+                <h2 className="text-2xl font-bold text-text-primary">{selectedDoctor.userId.name}</h2>
+                <p className="text-primary font-medium">{selectedDoctor.specializationId?.name}</p>
+              </div>
+            </div>
+            <form onSubmit={onSubmit} className="space-y-4">
+              <div className="relative">
+                <FiCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
+                <input type="date" name="date" value={form.date} onChange={onChange} min={todayIsoDate} required
+                  className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/50" />
+              </div>
+              <div className="relative">
+                <FiClock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
+                <select name="timeSlot" value={form.timeSlot} onChange={onChange} required disabled={!form.date}
+                  className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none">
+                  <option value="">Select a time</option>
+                  {availableSlotsForSelectedDate.map((slot, i) => <option key={i} value={slot}>{slot}</option>)}
+                  {form.date && availableSlotsForSelectedDate.length === 0 && <option disabled>No slots available</option>}
+                </select>
+              </div>
+              <button disabled={booking} className="w-full bg-primary text-white font-bold h-12 rounded-lg disabled:opacity-50 hover:bg-primary-light transition-all">
+                {booking ? 'Booking...' : 'Confirm Appointment'}
+              </button>
+            </form>
+          </div>
+          <style>{`.animate-fade-in-fast { animation: fade-in 0.2s ease-out forwards; }`}</style>
         </div>
-      </div>
-      <form onSubmit={onSubmit} className="space-y-4 md:w-1/2">
-        <div>
-          <label className="block text-sm font-medium text-text-secondary mb-1">Date</label>
-          <input type="date" name="date" value={form.date} onChange={onChange} min={todayIsoDate} className="w-full border rounded-lg px-3 py-2 h-12" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-text-secondary mb-1">Available Time Slots</label>
-          <select name="timeSlot" value={form.timeSlot} onChange={onChange} className="w-full border rounded-lg px-3 py-2 h-12">
-            <option value="">Select a time</option>
-            {availableSlotsForSelectedDate.map((slot, i) => (
-              <option key={i} value={slot}>{slot}</option>
-            ))}
-          </select>
-        </div>
-        <button disabled={booking} className="w-full bg-secondary text-white font-bold px-4 py-3 rounded-lg disabled:opacity-50 h-12">
-          {booking ? 'Booking...' : 'Confirm Appointment'}
-        </button>
-      </form>
-    </div>
-  );
-
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Book an Appointment</h1>
-        <div>
-          <label htmlFor="district-filter" className="sr-only">Filter by District</label>
-          <select id="district-filter" value={filterDistrict} onChange={(e) => setFilterDistrict(e.target.value)}
-            className="border rounded-lg px-3 py-2 h-12 bg-white">
-            <option value="">All Districts</option>
-            {districtsOfKerala.map(d => <option key={d} value={d}>{d}</option>)}
-          </select>
-        </div>
-      </div>
-
-      <div className="bg-white p-6 rounded-xl shadow-card">
-        {loading ? <div>Loading doctors...</div> : renderContent()}
-      </div>
+      )}
     </div>
   );
 }

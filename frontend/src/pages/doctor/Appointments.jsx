@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { FiEdit2, FiCheckCircle, FiXCircle, FiClock } from 'react-icons/fi';
 
 export default function DoctorAppointments() {
   const [list, setList] = useState([]);
@@ -18,13 +19,12 @@ export default function DoctorAppointments() {
   };
 
   useEffect(() => { load(); }, []);
-
+  
   const updateAppt = async (id, payload) => {
     setUpdatingId(id);
     try {
       const res = await api.put(`/doctors/appointments/${id}`, payload);
       await load();
-      // If we just marked as Completed or Follow-up, redirect to create prescription
       const newStatus = payload.status;
       if (newStatus === 'Completed' || newStatus === 'Follow-up') {
         const appt = res.data?.data || list.find(a => a._id === id);
@@ -37,72 +37,82 @@ export default function DoctorAppointments() {
     }
   };
 
-  if (loading) return <div>Loading…</div>;
+  if (loading) return <div className="text-center p-6">Loading appointments...</div>;
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">My Appointments</h1>
-      <div className="bg-white rounded shadow overflow-hidden">
+      <h1 className="text-2xl font-bold text-text-primary mb-6">My Appointments</h1>
+      <div className="bg-white rounded-xl shadow-card overflow-x-auto">
         <table className="min-w-full text-sm">
-          <thead className="bg-gray-50">
+          <thead className="bg-light-gray">
             <tr>
-              <th className="text-left p-3">Date</th>
-              <th className="text-left p-3">Time</th>
-              <th className="text-left p-3">Patient</th>
-              <th className="text-left p-3">Status</th>
-              <th className="text-left p-3">Notes</th>
-              <th className="text-left p-3">Actions</th>
+              <th className="text-left p-4 font-semibold text-text-primary">Date & Time</th>
+              <th className="text-left p-4 font-semibold text-text-primary">Patient</th>
+              <th className="text-left p-4 font-semibold text-text-primary">Status</th>
+              <th className="text-left p-4 font-semibold text-text-primary">Notes</th>
+              <th className="text-left p-4 font-semibold text-text-primary">Actions</th>
             </tr>
           </thead>
           <tbody>
             {list.map((a) => (
-              <tr key={a._id} className="border-t align-top">
-                <td className="p-3">{new Date(a.date).toLocaleDateString()}</td>
-                <td className="p-3">{a.timeSlot}</td>
-                <td className="p-3">{a.patientId?.name} <div className="text-xs text-gray-500">{a.patientId?.email}</div></td>
-                <td className="p-3">
-                  <select
+              <tr key={a._id} className="border-t border-slate-200 align-top">
+                <td className="p-4">
+                  <div className="font-medium text-text-primary">{new Date(a.date).toLocaleDateString()}</div>
+                  <div className="text-text-secondary">{a.timeSlot}</div>
+                </td>
+                <td className="p-4">
+                  <div className="font-medium text-text-primary">{a.patientId?.name}</div>
+                  <div className="text-text-secondary text-xs">{a.patientId?.email}</div>
+                </td>
+                <td className="p-4">
+                   <select
                     disabled={updatingId === a._id}
                     value={a.status}
                     onChange={(e) => updateAppt(a._id, { status: e.target.value })}
-                    className="border rounded px-2 py-1"
+                    className="w-full bg-bg-page border border-slate-300/70 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary/50"
                   >
                     <option>Scheduled</option>
                     <option>Completed</option>
                     <option>Cancelled</option>
                   </select>
                 </td>
-                <td className="p-3" style={{minWidth: 220}}>
+                <td className="p-4" style={{minWidth: 220}}>
                   <textarea
                     rows={2}
                     defaultValue={a.notes || ''}
                     onBlur={(e) => e.target.value !== a.notes && updateAppt(a._id, { notes: e.target.value })}
-                    className="w-full border rounded px-2 py-1"
+                    className="w-full bg-bg-page border border-slate-300/70 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary/50"
                     placeholder="Add notes…"
                     disabled={updatingId === a._id}
                   />
                 </td>
-                <td className="p-3 space-x-2 whitespace-nowrap">
+                <td className="p-4 space-x-2 whitespace-nowrap">
                   {a.status === 'Scheduled' && (
                     <>
                       <button
-                        className="px-3 py-1 rounded bg-green-600 text-white disabled:opacity-50"
+                        className="inline-flex items-center px-3 py-1 rounded-md bg-green-100 text-green-800 text-xs font-medium hover:bg-green-200 disabled:opacity-50"
                         disabled={updatingId === a._id}
                         onClick={() => updateAppt(a._id, { status: 'Completed' })}
-                      >Mark as Completed</button>
+                      >
+                        <FiCheckCircle className="mr-1.5"/>
+                        Complete
+                      </button>
                       <button
-                        className="px-3 py-1 rounded bg-yellow-600 text-white disabled:opacity-50"
+                        className="inline-flex items-center px-3 py-1 rounded-md bg-yellow-100 text-yellow-800 text-xs font-medium hover:bg-yellow-200 disabled:opacity-50"
                         disabled={updatingId === a._id}
                         onClick={() => navigate('/doctor/follow-up', { state: { appointment: a } })}
-                      >Schedule Follow-up</button>
+                      >
+                        <FiClock className="mr-1.5"/>
+                        Follow-up
+                      </button>
                     </>
                   )}
-                  {updatingId === a._id ? <span className="text-gray-500">Saving…</span> : null}
+                  {updatingId === a._id ? <span className="text-text-secondary text-xs">Saving…</span> : null}
                 </td>
               </tr>
             ))}
             {list.length === 0 && (
-              <tr><td className="p-3" colSpan="6">No appointments.</td></tr>
+              <tr><td className="p-4 text-center text-text-secondary" colSpan="6">No appointments found.</td></tr>
             )}
           </tbody>
         </table>
