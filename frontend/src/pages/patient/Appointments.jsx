@@ -1,10 +1,27 @@
 import { useEffect, useState } from 'react';
+import { FiCalendar, FiClock, FiUser, FiFileText, FiStar, FiCheck } from 'react-icons/fi';
+import toast from 'react-hot-toast';
 import api from '../../services/api';
+import {
+  ModernTableContainer,
+  ModernTableHeader,
+  ModernTableRow,
+  ModernTableCell,
+  StatusBadge,
+  StarRating,
+  DateTimeDisplay,
+  Avatar,
+  ExpandableText,
+  ActionButton,
+  EmptyState,
+  LoadingState,
+  MobileCard
+} from '../../components/ui';
 
 export default function Appointments() {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [ratingInputs, setRatingInputs] = useState({}); // { [appointmentId]: number }
+  const [ratingInputs, setRatingInputs] = useState({});
   const [submittingId, setSubmittingId] = useState(null);
 
   useEffect(() => {
@@ -19,89 +36,217 @@ export default function Appointments() {
     })();
   }, []);
 
-  if (loading) return <div>Loading…</div>;
-
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'Scheduled':
-        return 'bg-info text-white';
-      case 'Completed':
-        return 'bg-secondary text-white';
-      case 'Cancelled':
-        return 'bg-medium-gray text-white';
-      default:
-        return 'bg-light-gray text-dark-charcoal';
+  const handleRating = async (appointmentId, rating) => {
+    setSubmittingId(appointmentId);
+    try {
+      await api.post(`/patients/appointments/${appointmentId}/rate`, { rating });
+      setList(prev => prev.map(x => x._id === appointmentId ? { ...x, isRated: true } : x));
+      toast.success('Rating submitted successfully!');
+      setRatingInputs(prev => ({ ...prev, [appointmentId]: 0 }));
+    } catch (e) {
+      toast.error(e?.response?.data?.message || 'Failed to submit rating');
+    } finally {
+      setSubmittingId(null);
     }
   };
 
+  const columns = [
+    { label: 'Date & Time', icon: <FiCalendar className="w-4 h-4 text-blue-500" /> },
+    { label: 'Doctor', icon: <FiUser className="w-4 h-4 text-teal-500" /> },
+    { label: 'Status', icon: <FiCheck className="w-4 h-4 text-green-500" /> },
+    { label: 'Notes', icon: <FiFileText className="w-4 h-4 text-orange-500" /> },
+    { label: 'Rating', icon: <FiStar className="w-4 h-4 text-yellow-500" /> }
+  ];
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Appointments</h1>
+          <p className="text-gray-600">Track and manage your medical appointments</p>
+        </div>
+        <ModernTableContainer>
+          <LoadingState rows={5} />
+        </ModernTableContainer>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">My Appointments</h1>
-      <div className="bg-white rounded-xl shadow-card overflow-hidden">
-        <table className="min-w-full text-sm">
-          <thead className="bg-light-gray">
-            <tr>
-              <th className="text-left p-3">Date</th>
-              <th className="text-left p-3">Time</th>
-              <th className="text-left p-3">Doctor</th>
-              <th className="text-left p-3">Status</th>
-              <th className="text-left p-3">Notes</th>
-              <th className="text-left p-3">Rate</th>
-            </tr>
-          </thead>
-          <tbody>
-            {list.map((a) => (
-              <tr key={a._id} className="border-t">
-                <td className="p-3">{new Date(a.date).toLocaleDateString()}</td>
-                <td className="p-3">{a.timeSlot}</td>
-                <td className="p-3">{a.doctorId?.name || '—'}</td>
-                <td className="p-3"><span className={`px-2 py-1 rounded-full text-xs ${getStatusBadge(a.status)}`}>{a.status}</span></td>
-                <td className="p-3">{a.notes || '—'}</td>
-                <td className="p-3">
-                  {a.status === 'Completed' ? (
-                    a.isRated ? (
-                      <span className="text-green-700 text-xs bg-green-50 border border-green-200 px-2 py-1 rounded">Rated</span>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <select
-                          className="border rounded px-2 py-1"
-                          value={ratingInputs[a._id] || ''}
-                          onChange={(e) => setRatingInputs(prev => ({ ...prev, [a._id]: Number(e.target.value) }))}
-                        >
-                          <option value="">Select</option>
-                          {[1,2,3,4,5].map(n => <option key={n} value={n}>{n}★</option>)}
-                        </select>
-                        <button
-                          disabled={!ratingInputs[a._id] || submittingId === a._id}
-                          onClick={async () => {
-                            if (!ratingInputs[a._id]) return;
-                            setSubmittingId(a._id);
-                            try {
-                              await api.post(`/patients/appointments/${a._id}/rate`, { rating: ratingInputs[a._id] });
-                              setList(prev => prev.map(x => x._id === a._id ? { ...x, isRated: true } : x));
-                            } catch (e) {
-                              alert(e?.response?.data?.message || 'Failed to submit rating');
-                            } finally {
-                              setSubmittingId(null);
-                            }
-                          }}
-                          className="px-3 py-1 bg-primary text-white rounded disabled:opacity-60"
-                        >
-                          {submittingId === a._id ? 'Submitting…' : 'Rate'}
-                        </button>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">My Appointments</h1>
+        <p className="text-gray-600">Track and manage your medical appointments</p>
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block">
+        <ModernTableContainer
+          title="Appointment History"
+          subtitle={`${list.length} appointment${list.length !== 1 ? 's' : ''} found`}
+        >
+          {list.length === 0 ? (
+            <EmptyState
+              icon={<FiCalendar className="w-8 h-8 text-gray-400" />}
+              title="No Appointments Found"
+              description="You don't have any appointments yet. Book your first appointment to get started."
+            />
+          ) : (
+            <table className="min-w-full">
+              <ModernTableHeader columns={columns} />
+              <tbody>
+                {list.map((appointment, index) => (
+                  <ModernTableRow key={appointment._id} isEven={index % 2 === 0}>
+                    <ModernTableCell>
+                      <DateTimeDisplay 
+                        date={appointment.date} 
+                        time={appointment.timeSlot}
+                      />
+                    </ModernTableCell>
+                    
+                    <ModernTableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar 
+                          name={appointment.doctorId?.name || 'Unknown Doctor'} 
+                          size="sm"
+                        />
+                        <div>
+                          <div className="font-medium text-gray-900">
+                            {appointment.doctorId?.name || 'Unknown Doctor'}
+                          </div>
+                          <div className="text-sm text-gray-500">Doctor</div>
+                        </div>
                       </div>
-                    )
-                  ) : (
-                    <span className="text-xs text-text-secondary">—</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {list.length === 0 && (
-              <tr><td className="p-3" colSpan="6">No appointments yet.</td></tr>
-            )}
-          </tbody>
-        </table>
+                    </ModernTableCell>
+                    
+                    <ModernTableCell>
+                      <StatusBadge status={appointment.status} type="appointment" />
+                    </ModernTableCell>
+                    
+                    <ModernTableCell className="max-w-xs">
+                      <ExpandableText text={appointment.notes} maxLength={50} />
+                    </ModernTableCell>
+                    
+                    <ModernTableCell>
+                      {appointment.status === 'Completed' ? (
+                        appointment.isRated ? (
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200">
+                              <FiCheck className="w-3 h-3" />
+                              Rated
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <StarRating
+                              rating={ratingInputs[appointment._id] || 0}
+                              interactive={true}
+                              onRate={(rating) => setRatingInputs(prev => ({ ...prev, [appointment._id]: rating }))}
+                              size="sm"
+                            />
+                            {ratingInputs[appointment._id] > 0 && (
+                              <ActionButton
+                                variant="success"
+                                size="xs"
+                                icon={<FiCheck className="w-3 h-3" />}
+                                onClick={() => handleRating(appointment._id, ratingInputs[appointment._id])}
+                                disabled={submittingId === appointment._id}
+                              >
+                                {submittingId === appointment._id ? 'Submitting...' : 'Submit'}
+                              </ActionButton>
+                            )}
+                          </div>
+                        )
+                      ) : (
+                        <span className="text-sm text-gray-400">—</span>
+                      )}
+                    </ModernTableCell>
+                  </ModernTableRow>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </ModernTableContainer>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-4">
+        {list.length === 0 ? (
+          <MobileCard>
+            <EmptyState
+              icon={<FiCalendar className="w-8 h-8 text-gray-400" />}
+              title="No Appointments Found"
+              description="You don't have any appointments yet."
+            />
+          </MobileCard>
+        ) : (
+          list.map((appointment) => (
+            <MobileCard key={appointment._id}>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Avatar 
+                      name={appointment.doctorId?.name || 'Unknown Doctor'} 
+                      size="md"
+                    />
+                    <div>
+                      <h3 className="font-semibold text-gray-900">
+                        {appointment.doctorId?.name || 'Unknown Doctor'}
+                      </h3>
+                      <DateTimeDisplay 
+                        date={appointment.date} 
+                        time={appointment.timeSlot}
+                      />
+                    </div>
+                  </div>
+                  <StatusBadge status={appointment.status} type="appointment" />
+                </div>
+                
+                {appointment.notes && (
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Notes</label>
+                    <p className="mt-1 text-gray-700">{appointment.notes}</p>
+                  </div>
+                )}
+                
+                {appointment.status === 'Completed' && (
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Rating</label>
+                    <div className="mt-2">
+                      {appointment.isRated ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                          <FiCheck className="w-3 h-3" />
+                          Rated
+                        </span>
+                      ) : (
+                        <div className="space-y-2">
+                          <StarRating
+                            rating={ratingInputs[appointment._id] || 0}
+                            interactive={true}
+                            onRate={(rating) => setRatingInputs(prev => ({ ...prev, [appointment._id]: rating }))}
+                            size="md"
+                          />
+                          {ratingInputs[appointment._id] > 0 && (
+                            <ActionButton
+                              variant="success"
+                              size="sm"
+                              icon={<FiCheck className="w-4 h-4" />}
+                              onClick={() => handleRating(appointment._id, ratingInputs[appointment._id])}
+                              disabled={submittingId === appointment._id}
+                              className="w-full justify-center"
+                            >
+                              {submittingId === appointment._id ? 'Submitting...' : 'Submit Rating'}
+                            </ActionButton>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </MobileCard>
+          ))
+        )}
       </div>
     </div>
   );

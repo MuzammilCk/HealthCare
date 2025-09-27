@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import api from '../../services/api';
 
 export default function FollowUp() {
@@ -46,15 +47,24 @@ export default function FollowUp() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (!apptFromState?._id || !date || !timeSlot) return alert('Select date and time');
+    if (!apptFromState?._id || !date || !timeSlot) {
+      toast.error('Please select date and time');
+      return;
+    }
+    
     setSaving(true);
+    const loadingToast = toast.loading('Scheduling follow-up...');
+    
     try {
       const res = await api.post(`/doctors/appointments/${apptFromState._id}/follow-up`, { notes, date, timeSlot });
+      toast.dismiss(loadingToast);
+      toast.success('Follow-up scheduled successfully!');
       const newApptId = res.data?.data?.followUp?._id;
       const patientId = res.data?.data?.followUp?.patientId?._id || res.data?.data?.followUp?.patientId;
       navigate('/doctor/prescriptions/new', { state: { appointmentId: newApptId, patientId } });
     } catch (e) {
-      alert(e.response?.data?.message || 'Failed to schedule follow-up');
+      toast.dismiss(loadingToast);
+      toast.error(e.response?.data?.message || 'Failed to schedule follow-up');
     } finally {
       setSaving(false);
     }

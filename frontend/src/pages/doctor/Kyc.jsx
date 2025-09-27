@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import api from '../../services/api';
 
 export default function DoctorKyc() {
@@ -29,14 +30,23 @@ export default function DoctorKyc() {
   const onSubmit = async (e) => {
     e.preventDefault();
     const filtered = documents.map((d) => d.trim()).filter(Boolean);
-    if (filtered.length === 0) return alert('Please add at least one document URL');
+    if (filtered.length === 0) {
+      toast.error('Please add at least one document URL');
+      return;
+    }
+    
     setSubmitting(true);
+    const loadingToast = toast.loading('Submitting KYC documents...');
+    
     try {
       await api.post('/doctors/me/kyc', { documents: filtered });
-      alert('KYC submitted. Your application is under review.');
+      toast.dismiss(loadingToast);
+      toast.success('KYC documents submitted for verification.');
       navigate('/doctor');
     } catch (e) {
-      alert(e?.response?.data?.message || 'Failed to submit KYC');
+      toast.dismiss(loadingToast);
+      const errorMessage = e?.response?.data?.message || 'Failed to submit documents. Please check file types.';
+      toast.error(errorMessage);
     } finally {
       setSubmitting(false);
     }

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { FiSearch, FiCalendar, FiClock, FiX, FiMapPin } from 'react-icons/fi';
@@ -50,21 +51,31 @@ export default function BookAppointment() {
   const onSubmit = async (e) => {
     e.preventDefault();
     if (!selectedDoctor || !form.date || !form.timeSlot) {
-      alert('Please complete all fields.');
+      toast.error('Please complete all fields.');
       return;
     }
+    
     setBooking(true);
+    const loadingToast = toast.loading('Booking appointment...');
+    
     try {
       await api.post('/patients/appointments', {
         doctorId: selectedDoctor.userId._id,
         date: new Date(form.date),
         timeSlot: form.timeSlot,
       });
-      alert('Appointment booked successfully!');
+      toast.dismiss(loadingToast);
+      toast.success('Appointment booked successfully!');
       setSelectedDoctor(null);
       setForm({ date: '', timeSlot: '' });
     } catch (error) {
-      alert(error.response?.data?.message || 'Booking failed.');
+      toast.dismiss(loadingToast);
+      const errorMessage = error.response?.data?.message || 'Booking failed.';
+      if (errorMessage.includes('not available')) {
+        toast.error('This time slot is no longer available.');
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setBooking(false);
     }

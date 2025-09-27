@@ -1,8 +1,22 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FiCalendar, FiUser, FiActivity, FiFileText, FiCheckCircle, FiClock, FiEdit3 } from 'react-icons/fi';
+import toast from 'react-hot-toast';
 import api from '../../services/api';
-import { FiEdit2, FiCheckCircle, FiXCircle, FiClock, FiActivity } from 'react-icons/fi';
 import { AppSelect } from '../../components/ui';
+import {
+  ModernTableContainer,
+  ModernTableHeader,
+  ModernTableRow,
+  ModernTableCell,
+  StatusBadge,
+  DateTimeDisplay,
+  Avatar,
+  ActionButton,
+  EmptyState,
+  LoadingState,
+  MobileCard
+} from '../../components/ui';
 
 export default function DoctorAppointments() {
   const [list, setList] = useState([]);
@@ -26,101 +40,268 @@ export default function DoctorAppointments() {
     try {
       const res = await api.put(`/doctors/appointments/${id}`, payload);
       await load();
+      toast.success('Appointment updated successfully!');
       const newStatus = payload.status;
       if (newStatus === 'Completed' || newStatus === 'Follow-up') {
         const appt = res.data?.data || list.find(a => a._id === id);
         navigate('/doctor/prescriptions/new', { state: { patientId: appt?.patientId?._id || appt?.patientId, appointmentId: id } });
       }
     } catch {
-      alert('Update failed');
+      toast.error('Failed to update appointment.');
     } finally {
       setUpdatingId(null);
     }
   };
 
-  if (loading) return <div className="text-center p-6">Loading appointments...</div>;
+  const columns = [
+    { label: 'Date & Time', icon: <FiCalendar className="w-4 h-4 text-blue-500" /> },
+    { label: 'Patient', icon: <FiUser className="w-4 h-4 text-teal-500" /> },
+    { label: 'Status', icon: <FiActivity className="w-4 h-4 text-green-500" /> },
+    { label: 'Notes', icon: <FiFileText className="w-4 h-4 text-orange-500" /> },
+    { label: 'Actions', icon: <FiEdit3 className="w-4 h-4 text-purple-500" /> }
+  ];
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Appointments</h1>
+          <p className="text-gray-600">Manage your patient appointments and consultations</p>
+        </div>
+        <ModernTableContainer>
+          <LoadingState rows={5} />
+        </ModernTableContainer>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-text-primary mb-6">My Appointments</h1>
-      <div className="bg-white rounded-xl shadow-card overflow-x-auto">
-        <table className="min-w-full text-sm">
-          <thead className="bg-light-gray">
-            <tr>
-              <th className="text-left p-4 font-semibold text-text-primary">Date & Time</th>
-              <th className="text-left p-4 font-semibold text-text-primary">Patient</th>
-              <th className="text-left p-4 font-semibold text-text-primary">Status</th>
-              <th className="text-left p-4 font-semibold text-text-primary">Notes</th>
-              <th className="text-left p-4 font-semibold text-text-primary">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {list.map((a) => (
-              <tr key={a._id} className="border-t border-slate-200 align-top">
-                <td className="p-4">
-                  <div className="font-medium text-text-primary">{new Date(a.date).toLocaleDateString()}</div>
-                  <div className="text-text-secondary">{a.timeSlot}</div>
-                </td>
-                <td className="p-4">
-                  <div className="font-medium text-text-primary">{a.patientId?.name}</div>
-                  <div className="text-text-secondary text-xs">{a.patientId?.email}</div>
-                </td>
-                <td className="p-4">
-                  <AppSelect
-                    value={a.status}
-                    onChange={(value) => updateAppt(a._id, { status: value })}
-                    options={[
-                      { value: 'Scheduled', label: 'Scheduled' },
-                      { value: 'Completed', label: 'Completed' },
-                      { value: 'Cancelled', label: 'Cancelled' },
-                      { value: 'Follow-up', label: 'Follow-up' }
-                    ]}
-                    icon={FiActivity}
-                    disabled={updatingId === a._id}
-                    size="sm"
-                    className="min-w-[120px]"
-                  />
-                </td>
-                <td className="p-4" style={{minWidth: 220}}>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">My Appointments</h1>
+        <p className="text-gray-600">Manage your patient appointments and consultations</p>
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden lg:block">
+        <ModernTableContainer
+          title="Appointment Schedule"
+          subtitle={`${list.length} appointment${list.length !== 1 ? 's' : ''} found`}
+        >
+          {list.length === 0 ? (
+            <EmptyState
+              icon={<FiCalendar className="w-8 h-8 text-gray-400" />}
+              title="No Appointments Scheduled"
+              description="You don't have any appointments yet. They will appear here when patients book with you."
+            />
+          ) : (
+            <table className="min-w-full">
+              <ModernTableHeader columns={columns} />
+              <tbody>
+                {list.map((appointment, index) => (
+                  <ModernTableRow key={appointment._id} isEven={index % 2 === 0}>
+                    <ModernTableCell>
+                      <DateTimeDisplay 
+                        date={appointment.date} 
+                        time={appointment.timeSlot}
+                      />
+                    </ModernTableCell>
+                    
+                    <ModernTableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar 
+                          name={appointment.patientId?.name || 'Unknown Patient'} 
+                          size="sm"
+                        />
+                        <div>
+                          <div className="font-medium text-gray-900">
+                            {appointment.patientId?.name || 'Unknown Patient'}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {appointment.patientId?.email || 'No email'}
+                          </div>
+                        </div>
+                      </div>
+                    </ModernTableCell>
+                    
+                    <ModernTableCell>
+                      <div className="flex items-center gap-2">
+                        <StatusBadge status={appointment.status} type="appointment" />
+                        {updatingId === appointment._id && (
+                          <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
+                        )}
+                      </div>
+                    </ModernTableCell>
+                    
+                    <ModernTableCell className="max-w-xs">
+                      <div className="relative">
+                        <textarea
+                          rows={2}
+                          defaultValue={appointment.notes || ''}
+                          onBlur={(e) => {
+                            if (e.target.value !== appointment.notes) {
+                              updateAppt(appointment._id, { notes: e.target.value });
+                            }
+                          }}
+                          className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-3 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-150 ease-in-out resize-none hover:bg-white"
+                          placeholder="Add notes for this appointment..."
+                          disabled={updatingId === appointment._id}
+                        />
+                      </div>
+                    </ModernTableCell>
+                    
+                    <ModernTableCell>
+                      <div className="flex items-center gap-2">
+                        {appointment.status === 'Scheduled' && (
+                          <>
+                            <ActionButton
+                              variant="success"
+                              size="xs"
+                              icon={<FiCheckCircle className="w-3 h-3" />}
+                              onClick={() => updateAppt(appointment._id, { status: 'Completed' })}
+                              disabled={updatingId === appointment._id}
+                            >
+                              Complete
+                            </ActionButton>
+                            <ActionButton
+                              variant="warning"
+                              size="xs"
+                              icon={<FiClock className="w-3 h-3" />}
+                              onClick={() => navigate('/doctor/follow-up', { state: { appointment } })}
+                              disabled={updatingId === appointment._id}
+                            >
+                              Follow-up
+                            </ActionButton>
+                          </>
+                        )}
+                        {appointment.status === 'Completed' && (
+                          <ActionButton
+                            variant="primary"
+                            size="xs"
+                            icon={<FiFileText className="w-3 h-3" />}
+                            onClick={() => navigate('/doctor/prescriptions/new', { 
+                              state: { 
+                                patientId: appointment.patientId?._id, 
+                                appointmentId: appointment._id 
+                              } 
+                            })}
+                          >
+                            Prescription
+                          </ActionButton>
+                        )}
+                      </div>
+                    </ModernTableCell>
+                  </ModernTableRow>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </ModernTableContainer>
+      </div>
+
+      {/* Mobile/Tablet Card View */}
+      <div className="lg:hidden space-y-4">
+        {list.length === 0 ? (
+          <MobileCard>
+            <EmptyState
+              icon={<FiCalendar className="w-8 h-8 text-gray-400" />}
+              title="No Appointments Scheduled"
+              description="You don't have any appointments yet."
+            />
+          </MobileCard>
+        ) : (
+          list.map((appointment) => (
+            <MobileCard key={appointment._id}>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Avatar 
+                      name={appointment.patientId?.name || 'Unknown Patient'} 
+                      size="md"
+                    />
+                    <div>
+                      <h3 className="font-semibold text-gray-900">
+                        {appointment.patientId?.name || 'Unknown Patient'}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        {appointment.patientId?.email || 'No email'}
+                      </p>
+                      <DateTimeDisplay 
+                        date={appointment.date} 
+                        time={appointment.timeSlot}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <StatusBadge status={appointment.status} type="appointment" />
+                    {updatingId === appointment._id && (
+                      <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
+                    )}
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Notes</label>
                   <textarea
-                    rows={2}
-                    defaultValue={a.notes || ''}
-                    onBlur={(e) => e.target.value !== a.notes && updateAppt(a._id, { notes: e.target.value })}
-                    className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-150 ease-in-out resize-none"
-                    placeholder="Add notes…"
-                    disabled={updatingId === a._id}
+                    rows={3}
+                    defaultValue={appointment.notes || ''}
+                    onBlur={(e) => {
+                      if (e.target.value !== appointment.notes) {
+                        updateAppt(appointment._id, { notes: e.target.value });
+                      }
+                    }}
+                    className="mt-1 w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-3 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-150 ease-in-out resize-none"
+                    placeholder="Add notes for this appointment..."
+                    disabled={updatingId === appointment._id}
                   />
-                </td>
-                <td className="p-4 space-x-2 whitespace-nowrap">
-                  {a.status === 'Scheduled' && (
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  {appointment.status === 'Scheduled' && (
                     <>
-                      <button
-                        className="inline-flex items-center px-3 py-1 rounded-md bg-green-100 text-green-800 text-xs font-medium hover:bg-green-200 disabled:opacity-50"
-                        disabled={updatingId === a._id}
-                        onClick={() => updateAppt(a._id, { status: 'Completed' })}
+                      <ActionButton
+                        variant="success"
+                        size="sm"
+                        icon={<FiCheckCircle className="w-4 h-4" />}
+                        onClick={() => updateAppt(appointment._id, { status: 'Completed' })}
+                        disabled={updatingId === appointment._id}
+                        className="flex-1"
                       >
-                        <FiCheckCircle className="mr-1.5"/>
-                        Complete
-                      </button>
-                      <button
-                        className="inline-flex items-center px-3 py-1 rounded-md bg-yellow-100 text-yellow-800 text-xs font-medium hover:bg-yellow-200 disabled:opacity-50"
-                        disabled={updatingId === a._id}
-                        onClick={() => navigate('/doctor/follow-up', { state: { appointment: a } })}
+                        Mark Complete
+                      </ActionButton>
+                      <ActionButton
+                        variant="warning"
+                        size="sm"
+                        icon={<FiClock className="w-4 h-4" />}
+                        onClick={() => navigate('/doctor/follow-up', { state: { appointment } })}
+                        disabled={updatingId === appointment._id}
+                        className="flex-1"
                       >
-                        <FiClock className="mr-1.5"/>
-                        Follow-up
-                      </button>
+                        Schedule Follow-up
+                      </ActionButton>
                     </>
                   )}
-                  {updatingId === a._id ? <span className="text-text-secondary text-xs">Saving…</span> : null}
-                </td>
-              </tr>
-            ))}
-            {list.length === 0 && (
-              <tr><td className="p-4 text-center text-text-secondary" colSpan="6">No appointments found.</td></tr>
-            )}
-          </tbody>
-        </table>
+                  {appointment.status === 'Completed' && (
+                    <ActionButton
+                      variant="primary"
+                      size="sm"
+                      icon={<FiFileText className="w-4 h-4" />}
+                      onClick={() => navigate('/doctor/prescriptions/new', { 
+                        state: { 
+                          patientId: appointment.patientId?._id, 
+                          appointmentId: appointment._id 
+                        } 
+                      })}
+                      className="w-full justify-center"
+                    >
+                      Create Prescription
+                    </ActionButton>
+                  )}
+                </div>
+              </div>
+            </MobileCard>
+          ))
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import api from '../../services/api';
 import { FiFileText, FiUser, FiPlus, FiTrash2, FiCalendar } from 'react-icons/fi';
 import { AppSelect } from '../../components/ui';
@@ -48,13 +49,21 @@ export default function CreatePrescription() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedAppointment) return alert('Please select an appointment.');
+    if (!selectedAppointment) {
+      toast.error('Please select an appointment.');
+      return;
+    }
     
     // Filter out empty medication entries before submitting
     const filledMedications = medications.filter(m => m.name && m.dosage && m.instructions);
-    if (filledMedications.length === 0) return alert('Please add at least one complete medication entry.');
+    if (filledMedications.length === 0) {
+      toast.error('Please add at least one complete medication entry.');
+      return;
+    }
 
     setSaving(true);
+    const loadingToast = toast.loading('Creating prescription...');
+    
     try {
       // Create a prescription for each medication entry
       await Promise.all(filledMedications.map(med => 
@@ -65,10 +74,12 @@ export default function CreatePrescription() {
           instructions: med.instructions
         })
       ));
-      alert('Prescription created successfully!');
+      toast.dismiss(loadingToast);
+      toast.success('Prescription created successfully!');
       navigate('/doctor/appointments');
     } catch (e) {
-      alert(e.response?.data?.message || 'Failed to create prescription.');
+      toast.dismiss(loadingToast);
+      toast.error(e.response?.data?.message || 'Failed to create prescription.');
     } finally {
       setSaving(false);
     }

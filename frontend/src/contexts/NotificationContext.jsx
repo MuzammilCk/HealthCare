@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import { useSocket } from './SocketContext';
 import { useAuth } from './AuthContext';
 import api from '../services/api';
@@ -124,6 +125,17 @@ export const NotificationProvider = ({ children }) => {
         
         // Increment unread count
         setUnreadCount(prev => prev + 1);
+        
+        // Show toast notification
+        toast(notification.message, { 
+          icon: '🔔',
+          duration: 6000,
+          style: {
+            background: '#f3f4f6',
+            color: '#374151',
+            border: '1px solid #d1d5db'
+          }
+        });
         
         // Optional: Show browser notification
         if (Notification.permission === 'granted') {

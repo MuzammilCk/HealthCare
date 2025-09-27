@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import { FiCopy, FiTrash2, FiSave, FiX, FiPlus, FiGrid } from 'react-icons/fi';
 import api from '../../services/api';
 
@@ -147,13 +148,19 @@ export default function ManageAvailability() {
       })).filter(d => d.slots.length > 0)
     };
     
+    console.log('Saving availability with payload:', payload);
+    
     try {
-      await api.put('/doctors/availability', payload);
+      const response = await api.put('/doctors/availability', payload);
+      console.log('Save response:', response);
       setLastSaved(JSON.parse(JSON.stringify(availability)));
+      toast.success('Availability updated successfully!');
       setShowToast(true);
       setTimeout(() => setShowToast(false), 4000);
     } catch (error) {
-      alert("Failed to save. Please try again.");
+      console.error('Save error:', error);
+      console.error('Error response:', error.response?.data);
+      toast.error(`Failed to update availability: ${error.response?.data?.message || error.message}`);
     } finally {
       setIsSaving(false);
     }

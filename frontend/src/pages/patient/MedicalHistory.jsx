@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import api from '../../services/api';
 import { FiHeart, FiAlertTriangle, FiPlusCircle } from 'react-icons/fi';
 
@@ -31,16 +32,20 @@ export default function MedicalHistory() {
   const onSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
+    const loadingToast = toast.loading('Saving medical history...');
+    
     try {
       await api.put('/patients/me/medical-history', {
         bloodType: form.bloodType,
         allergies: form.allergies ? form.allergies.split(',').map((s) => s.trim()).filter(Boolean) : [],
         pastConditions: form.pastConditions ? form.pastConditions.split(',').map((s) => s.trim()).filter(Boolean) : [],
       });
-      alert('Medical history saved successfully!');
+      toast.dismiss(loadingToast);
+      toast.success('Medical history saved successfully!');
       setNotFound(false);
     } catch (e) {
-      alert('Save failed. Please try again.');
+      toast.dismiss(loadingToast);
+      toast.error('Failed to save medical history.');
     } finally {
       setSaving(false);
     }

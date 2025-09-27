@@ -60,13 +60,32 @@ exports.updateAppointment = async (req, res) => {
 exports.updateAvailability = async (req, res) => {
   const { availability } = req.body;
   try {
+    console.log('updateAvailability called with:', { 
+      userId: req.user?.id, 
+      userRole: req.user?.role, 
+      availability 
+    });
+
+    // Validate user role
+    if (req.user.role !== 'doctor') {
+      return res.status(403).json({ success: false, message: 'Only doctors can update availability' });
+    }
+
     const doctor = await Doctor.findOne({ userId: req.user.id });
-    if (!doctor) return res.status(404).json({ success: false, message: 'Doctor profile not found' });
+    if (!doctor) {
+      console.log('Doctor profile not found for userId:', req.user.id);
+      return res.status(404).json({ success: false, message: 'Doctor profile not found' });
+    }
+
+    console.log('Found doctor:', doctor._id);
     doctor.availability = availability || [];
     await doctor.save();
+    console.log('Availability saved successfully');
+    
     res.json({ success: true, data: doctor.availability });
   } catch (e) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Error updating availability:', e);
+    res.status(500).json({ success: false, message: 'Server error: ' + e.message });
   }
 };
 

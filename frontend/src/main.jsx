@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 import './index.css'
 import { AuthProvider } from './contexts/AuthContext'
 import { SocketProvider } from './contexts/SocketContext'
@@ -139,6 +140,17 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             future={{
               v7_startTransition: true,
               v7_relativeSplatPath: true,
+            }}
+          />
+          <Toaster
+            position="top-center"
+            reverseOrder={false}
+            toastOptions={{
+              duration: 5000,
+              style: {
+                background: '#363636',
+                color: '#fff',
+              },
             }}
           />
         </NotificationProvider>
