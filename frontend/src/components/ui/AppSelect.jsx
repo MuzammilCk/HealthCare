@@ -41,6 +41,8 @@ const AppSelect = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [internalValue, setInternalValue] = useState(value);
+  const [openUp, setOpenUp] = useState(false);
+  const [dropdownMax, setDropdownMax] = useState(256); // pixels
   
   const selectRef = useRef(null);
   const searchRef = useRef(null);
@@ -71,6 +73,33 @@ const AppSelect = ({
       searchRef.current.focus();
     }
   }, [isOpen, searchable]);
+
+  // Auto position: decide opening direction and max height
+  useEffect(() => {
+    if (!isOpen) return;
+    const updatePlacement = () => {
+      const el = selectRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const viewportH = window.innerHeight || document.documentElement.clientHeight;
+      const gap = 8; // px between control and dropdown
+      const preferred = 320; // desired dropdown height
+      const spaceBelow = Math.max(0, viewportH - rect.bottom - gap);
+      const spaceAbove = Math.max(0, rect.top - gap);
+      const shouldOpenUp = spaceBelow < 200 && spaceAbove > spaceBelow;
+      setOpenUp(shouldOpenUp);
+      const usable = shouldOpenUp ? spaceAbove : spaceBelow;
+      const maxH = Math.max(160, Math.min(preferred, usable));
+      setDropdownMax(maxH);
+    };
+    updatePlacement();
+    window.addEventListener('resize', updatePlacement);
+    window.addEventListener('scroll', updatePlacement, true);
+    return () => {
+      window.removeEventListener('resize', updatePlacement);
+      window.removeEventListener('scroll', updatePlacement, true);
+    };
+  }, [isOpen]);
 
   // Filter options based on search term
   const filteredOptions = useMemo(() => {
@@ -251,12 +280,14 @@ const AppSelect = ({
 
       {/* Dropdown List */}
       {isOpen && (
-        <div className={cn(
-          'absolute z-50 w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200',
-          'sm:max-w-none max-w-[calc(100vw-2rem)]', // Responsive width
-          maxHeight,
-          'overflow-hidden'
-        )}>
+        <div
+          className={cn(
+            'absolute z-[999] w-full bg-white rounded-md shadow-lg border border-gray-200',
+            'sm:max-w-none max-w-[calc(100vw-2rem)]', // Responsive width
+            openUp ? 'mb-2' : 'mt-2'
+          )}
+          style={openUp ? { bottom: '100%' } : { top: '100%' }}
+        >
           {/* Search Input */}
           {searchable && (
             <div className="p-2 border-b border-gray-200">
@@ -275,7 +306,7 @@ const AppSelect = ({
           )}
 
           {/* Options List */}
-          <div className="py-2 overflow-y-auto">
+          <div className="py-2 overflow-y-auto" style={{ maxHeight: dropdownMax }}>
             {loading ? (
               <div className="flex items-center justify-center py-4">
                 <FiLoader className="w-4 h-4 text-gray-400 animate-spin mr-2" />
