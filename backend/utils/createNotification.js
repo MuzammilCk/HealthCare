@@ -1,4 +1,4 @@
-const Notification = require('../models/notification');
+const Notification = require('../models/Notification');
 
 /**
  * Creates a new notification and sends it in real-time if user is online

@@ -5,6 +5,7 @@ exports.getSpecializations = async (req, res) => {
     const list = await Specialization.find().sort('name');
     res.json({ success: true, count: list.length, data: list });
   } catch (e) {
+    console.error('getSpecializations error:', e);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
@@ -15,6 +16,7 @@ exports.createSpecialization = async (req, res) => {
     res.status(201).json({ success: true, data: spec });
   } catch (e) {
     if (e.code === 11000) return res.status(400).json({ success: false, message: 'Specialization already exists' });
+    console.error('createSpecialization error:', e);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };

@@ -12,15 +12,34 @@ const app = express();
 const server = http.createServer(app);
 
 // CORS
-const allowedOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:5173';
-app.use(cors({ origin: allowedOrigin }));
+// Support multiple allowed origins (comma-separated) and include 127.0.0.1 fallback
+const allowedOrigins = (process.env.FRONTEND_ORIGIN || 'http://localhost:5173,http://127.0.0.1:5173')
+  .split(',')
+  .map((o) => o.trim());
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // allow requests with no origin (like mobile apps, curl)
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)
+      ) {
+        return callback(null, true);
+      }
+      return callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+  })
+);
 
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigin,
-    methods: ['GET', 'POST']
-  }
+    origin: allowedOrigins,
+    methods: ['GET', 'POST'],
+  },
 });
 
 // Online users tracking
