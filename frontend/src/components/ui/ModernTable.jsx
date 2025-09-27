@@ -194,19 +194,19 @@ export const ExpandableText = ({ text, maxLength = 50 }) => {
   );
 };
 
-// Modern Table Container
+// Modern Table Container with Enhanced Depth
 export const ModernTableContainer = ({ children, title, subtitle, actions }) => {
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+    <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-900/10 border border-slate-200/60 overflow-hidden">
       {(title || subtitle || actions) && (
-        <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+        <div className="px-8 py-6 border-b border-slate-200/60 bg-gradient-to-r from-slate-50/80 to-white/80 backdrop-blur-sm">
           <div className="flex items-center justify-between">
             <div>
               {title && (
-                <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+                <h3 className="text-xl font-bold text-slate-900 tracking-tight">{title}</h3>
               )}
               {subtitle && (
-                <p className="text-sm text-gray-600 mt-1">{subtitle}</p>
+                <p className="text-sm font-medium text-slate-600 mt-1">{subtitle}</p>
               )}
             </div>
             {actions && (
@@ -224,19 +224,19 @@ export const ModernTableContainer = ({ children, title, subtitle, actions }) => 
   );
 };
 
-// Modern Table Header
+// Modern Table Header with Enhanced Typography
 export const ModernTableHeader = ({ columns }) => {
   return (
-    <thead className="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0 z-10">
+    <thead className="bg-gradient-to-r from-slate-50/90 to-slate-100/90 backdrop-blur-sm sticky top-0 z-10">
       <tr>
         {columns.map((column, index) => (
           <th
             key={index}
-            className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200"
+            className="px-8 py-5 text-left text-xs font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200/60"
           >
-            <div className="flex items-center gap-2">
-              {column.icon}
-              {column.label}
+            <div className="flex items-center gap-3">
+              <span className="opacity-80">{column.icon}</span>
+              <span className="font-bold">{column.label}</span>
             </div>
           </th>
         ))}
@@ -245,14 +245,15 @@ export const ModernTableHeader = ({ columns }) => {
   );
 };
 
-// Modern Table Row
+// Modern Table Row with Enhanced Hover Effects
 export const ModernTableRow = ({ children, isEven = false, onClick = null, className = '' }) => {
   return (
     <tr
       className={`
-        ${isEven ? 'bg-gray-50/50' : 'bg-white'}
-        hover:bg-blue-50/50 transition-all duration-200 border-b border-gray-100 last:border-b-0
-        ${onClick ? 'cursor-pointer' : ''}
+        ${isEven ? 'bg-slate-50/30' : 'bg-white/50'}
+        hover:bg-gradient-to-r hover:from-blue-50/80 hover:to-indigo-50/80 hover:shadow-sm
+        transition-all duration-300 border-b border-slate-200/40 last:border-b-0
+        ${onClick ? 'cursor-pointer hover:scale-[1.01]' : ''}
         ${className}
       `}
       onClick={onClick}
@@ -262,16 +263,16 @@ export const ModernTableRow = ({ children, isEven = false, onClick = null, class
   );
 };
 
-// Modern Table Cell
+// Modern Table Cell with Enhanced Spacing
 export const ModernTableCell = ({ children, className = '' }) => {
   return (
-    <td className={`px-6 py-4 whitespace-nowrap ${className}`}>
+    <td className={`px-8 py-5 whitespace-nowrap ${className}`}>
       {children}
     </td>
   );
 };
 
-// Action Button Component
+// Action Button Component with Enhanced Variants
 export const ActionButton = ({ 
   variant = 'primary', 
   size = 'sm', 
@@ -282,18 +283,20 @@ export const ActionButton = ({
   className = ''
 }) => {
   const variants = {
-    primary: 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white',
-    success: 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white',
-    danger: 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white',
-    warning: 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white',
-    secondary: 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
+    primary: 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40',
+    secondary: 'bg-white hover:bg-gray-50 text-gray-700 border-2 border-gray-200 hover:border-gray-300 shadow-sm hover:shadow-md',
+    outline: 'bg-transparent hover:bg-blue-50 text-blue-600 border-2 border-blue-200 hover:border-blue-300 shadow-sm hover:shadow-md',
+    ghost: 'bg-transparent hover:bg-gray-100 text-gray-600 hover:text-gray-900 shadow-none hover:shadow-sm',
+    success: 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg shadow-green-500/25 hover:shadow-green-500/40',
+    danger: 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg shadow-red-500/25 hover:shadow-red-500/40',
+    warning: 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white shadow-lg shadow-yellow-500/25 hover:shadow-yellow-500/40'
   };
 
   const sizes = {
-    xs: 'px-2 py-1 text-xs',
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-sm',
-    lg: 'px-6 py-3 text-base'
+    xs: 'px-3 py-1.5 text-xs font-medium',
+    sm: 'px-4 py-2 text-sm font-semibold',
+    md: 'px-6 py-2.5 text-sm font-semibold',
+    lg: 'px-8 py-3 text-base font-semibold'
   };
 
   return (
@@ -301,9 +304,9 @@ export const ActionButton = ({
       onClick={onClick}
       disabled={disabled}
       className={`
-        inline-flex items-center gap-2 rounded-lg font-medium transition-all duration-200
+        inline-flex items-center gap-2 rounded-xl font-medium transition-all duration-200
         ${variants[variant]} ${sizes[size]}
-        ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md hover:-translate-y-0.5'}
+        ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'}
         ${className}
       `}
     >
@@ -345,12 +348,12 @@ export const LoadingState = ({ rows = 5 }) => {
   );
 };
 
-// Mobile Card Component for responsive design
+// Mobile Card Component with Enhanced Depth
 export const MobileCard = ({ children, className = '' }) => {
   return (
     <div className={`
-      bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4
-      hover:shadow-md transition-shadow duration-200
+      bg-white/95 backdrop-blur-xl rounded-2xl shadow-lg shadow-slate-900/10 border border-slate-200/60 p-6 mb-6
+      hover:shadow-xl hover:shadow-slate-900/15 hover:scale-[1.02] transition-all duration-300
       ${className}
     `}>
       {children}

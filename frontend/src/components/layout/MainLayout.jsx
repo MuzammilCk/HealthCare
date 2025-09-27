@@ -7,9 +7,13 @@ function NavLink({ to, label, isSidebarOpen, icon }) {
   const { pathname } = useLocation();
   const active = pathname === to;
   return (
-    <Link to={to} className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${active ? 'bg-primary text-white' : 'text-text-secondary hover:bg-primary/10 hover:text-text-primary'}`}>
-      {icon}
-      <span className={`ml-3 ${!isSidebarOpen && 'hidden'}`}>{label}</span>
+    <Link to={to} className={`flex items-center ${isSidebarOpen ? 'px-3' : 'px-2 justify-center'} py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+      active 
+        ? 'bg-gradient-to-r from-primary to-primary-light text-white shadow-lg shadow-primary/25 scale-105' 
+        : 'text-text-secondary hover:bg-white/10 hover:text-text-primary hover:shadow-md hover:scale-105'
+    }`}>
+      <span className={`${active ? 'text-white' : ''} flex-shrink-0`}>{icon}</span>
+      <span className={`ml-3 whitespace-nowrap ${!isSidebarOpen && 'hidden'}`}>{label}</span>
     </Link>
   );
 }
@@ -56,15 +60,19 @@ function NavigationLinks({ role, isSidebarOpen }) {
 export default function MainLayout({ role: roleProp }) {
   const { user } = useAuth();
   const role = roleProp || user?.role;
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [isSidebarOpen, setSidebarOpen] = useState(true);
 
   return (
-    <div className="min-h-screen flex bg-bg-page">
-      <aside className={`hidden md:flex md:flex-col bg-bg-card/80 backdrop-blur-xl border-r border-white/20 p-4 transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
-        <div className="flex items-center justify-between mb-6 h-[60px]">
-          <span className={`font-bold text-lg ${!isSidebarOpen && 'hidden'}`}>Menu</span>
-          <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="p-2">
-            <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 transition-transform duration-300 ${isSidebarOpen ? '' : 'transform rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      {/* Fixed Sidebar with Overlay Positioning */}
+      <aside className={`hidden md:flex md:flex-col bg-white/95 backdrop-blur-xl border-r border-slate-200/60 shadow-xl shadow-slate-900/5 p-6 transition-all duration-300 fixed inset-y-0 left-0 z-30 ${isSidebarOpen ? 'w-72' : 'w-24'}`}>
+        <div className="flex items-center justify-between mb-8 h-[60px]">
+          <span className={`font-bold text-xl text-slate-800 ${!isSidebarOpen && 'hidden'}`}>HealthCare</span>
+          <button 
+            onClick={() => setSidebarOpen(!isSidebarOpen)} 
+            className="p-2 rounded-lg hover:bg-slate-100 transition-colors duration-200"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 text-slate-600 transition-transform duration-300 ${isSidebarOpen ? '' : 'transform rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
@@ -72,11 +80,19 @@ export default function MainLayout({ role: roleProp }) {
         <NavigationLinks role={role} isSidebarOpen={isSidebarOpen} />
       </aside>
 
-      <div className="flex-1 flex flex-col w-full">
-        <CardNav />
-        <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
-          <div className="bg-bg-card/90 backdrop-blur-xl border border-white/20 rounded-xl shadow-card p-4 sm:p-6">
-            <Outlet />
+      {/* Main Content Area with Dynamic Margin */}
+      <div className={`flex flex-col min-h-screen transition-all duration-300 ${isSidebarOpen ? 'md:ml-72' : 'md:ml-24'}`}>
+        {/* Clean Header without Background */}
+        <div className="relative z-40">
+          <CardNav />
+        </div>
+        
+        {/* Constrained Content Area with Better Spacing */}
+        <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
+          <div className="max-w-7xl mx-auto">
+            <div className="bg-white/95 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-xl shadow-slate-900/5 p-6 lg:p-8 relative z-10">
+              <Outlet />
+            </div>
           </div>
         </main>
       </div>
