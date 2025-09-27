@@ -13,3 +13,32 @@ body {
   font-family: 'Inter', sans-serif;
   position: relative;
 }
+
+/* Custom Scrollbar Styles for the Entire App */
+@layer utilities {
+  /* For Webkit-based browsers (Chrome, Safari, Edge) */
+  ::-webkit-scrollbar {
+    width: 8px;  /* Width for vertical scrollbar */
+    height: 8px; /* Height for horizontal scrollbar */
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1; /* A neutral, subtle gray */
+    border-radius: 10px;
+    border: 2px solid #f1f5f9; /* Your app's page background color */
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3b82f6; /* Your app's primary color */
+  }
+
+  /* For Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+  }
+}
