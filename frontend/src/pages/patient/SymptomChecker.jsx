@@ -89,7 +89,7 @@ export default function SymptomChecker() {
         <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl mx-auto mb-4">
           <FiActivity className="w-8 h-8 text-blue-600" />
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">AI Symptom Checker</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Symptom Checker</h1>
         <p className="text-gray-600 max-w-2xl mx-auto">
           Get preliminary insights about your symptoms using AI technology. This tool provides informational guidance only and should not replace professional medical advice.
         </p>
