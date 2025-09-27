@@ -1,12 +1,11 @@
+// Load environment variables FIRST - before any other imports
+require('dotenv').config();
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const http = require('http');
 const { Server } = require('socket.io');
-
-// Load env
-dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
@@ -107,6 +106,7 @@ app.use('/api/doctors', require('./routes/doctors'));
 app.use('/api/specializations', require('./routes/specializations'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/ai/check-symptoms', require('./routes/aiSymptomChecker'));
 
 // Error handler
 app.use((err, req, res, next) => {

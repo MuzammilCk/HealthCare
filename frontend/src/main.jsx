@@ -19,6 +19,7 @@ import MedicalHistory from './pages/patient/MedicalHistory'
 import PatientAppointments from './pages/patient/Appointments'
 import Prescriptions from './pages/patient/Prescriptions'
 import BookAppointment from './pages/patient/BookAppointment'
+import SymptomChecker from './pages/patient/SymptomChecker'
 import DoctorDashboard from './pages/doctor/Dashboard'
 import DoctorAppointments from './pages/doctor/Appointments'
 import DoctorAvailability from './pages/doctor/Availability'
@@ -59,6 +60,7 @@ const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <PatientDashboard /> },
+      { path: 'symptom-checker', element: <SymptomChecker /> },
       { path: 'medical-history', element: <MedicalHistory /> },
       { path: 'appointments', element: <PatientAppointments /> },
       { path: 'prescriptions', element: <Prescriptions /> },
