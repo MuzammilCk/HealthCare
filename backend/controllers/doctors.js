@@ -27,12 +27,30 @@ exports.getDoctorAppointments = async (req, res) => {
 exports.updateAppointment = async (req, res) => {
   const { status, notes } = req.body;
   try {
+    // Validate user role
+    if (req.user.role !== 'doctor') {
+      return res.status(403).json({ success: false, message: 'Only doctors can update appointments' });
+    }
+
     const appt = await Appointment.findById(req.params.id);
     if (!appt) return res.status(404).json({ success: false, message: 'Appointment not found' });
-    if (appt.doctorId.toString() !== req.user.id) return res.status(401).json({ success: false, message: 'Not authorized' });
+    
+    // Ensure only the assigned doctor can update the appointment
+    if (appt.doctorId.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'You can only update your own appointments' });
+    }
+
+    // Validate status transitions
+    const validStatuses = ['Scheduled', 'Completed', 'Cancelled', 'Follow-up'];
+    if (status && !validStatuses.includes(status)) {
+      return res.status(400).json({ success: false, message: 'Invalid appointment status' });
+    }
+
+    // Update appointment
     if (status) appt.status = status;
     if (notes) appt.notes = notes;
     await appt.save();
+    
     res.json({ success: true, data: appt });
   } catch (e) {
     res.status(500).json({ success: false, message: 'Server error' });
@@ -99,10 +117,23 @@ exports.submitKyc = async (req, res) => {
 exports.createPrescription = async (req, res) => {
   const { appointmentId, medication, dosage, instructions } = req.body;
   try {
+    // Validate user role
+    if (req.user.role !== 'doctor') {
+      return res.status(403).json({ success: false, message: 'Only doctors can create prescriptions' });
+    }
+
+    // Validate required fields
+    if (!appointmentId || !medication || !dosage || !instructions) {
+      return res.status(400).json({ success: false, message: 'All fields (appointmentId, medication, dosage, instructions) are required' });
+    }
+
     const appt = await Appointment.findOne({ _id: appointmentId, doctorId: req.user.id, status: { $in: ['Completed', 'Follow-up'] } })
       .populate('patientId', 'name')
       .populate('doctorId', 'name');
-    if (!appt) return res.status(400).json({ success: false, message: 'Eligible appointment not found' });
+    
+    if (!appt) {
+      return res.status(400).json({ success: false, message: 'Eligible appointment not found or you are not authorized to prescribe for this appointment' });
+    }
     
     const pres = await Prescription.create({ appointmentId, patientId: appt.patientId, doctorId: req.user.id, medication, dosage, instructions });
     
@@ -124,13 +155,27 @@ exports.createPrescription = async (req, res) => {
 // Schedule a follow-up: update current appointment status, and create a new future appointment slot
 exports.scheduleFollowUp = async (req, res) => {
   try {
+    // Validate user role
+    if (req.user.role !== 'doctor') {
+      return res.status(403).json({ success: false, message: 'Only doctors can schedule follow-ups' });
+    }
+
     const { date, timeSlot, notes } = req.body;
     const current = await Appointment.findById(req.params.id).populate('patientId', 'name email');
     if (!current) return res.status(404).json({ success: false, message: 'Appointment not found' });
-    if (current.doctorId.toString() !== req.user.id) return res.status(401).json({ success: false, message: 'Not authorized' });
+    
+    // Ensure only the assigned doctor can schedule follow-up
+    if (current.doctorId.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'You can only schedule follow-ups for your own appointments' });
+    }
 
     if (!date || !timeSlot) {
       return res.status(400).json({ success: false, message: 'date and timeSlot are required' });
+    }
+
+    // Validate that the appointment is in a state that allows follow-up
+    if (!['Completed', 'Scheduled'].includes(current.status)) {
+      return res.status(400).json({ success: false, message: 'Follow-up can only be scheduled for completed or scheduled appointments' });
     }
 
     // Mark current appointment as Follow-up planned and persist optional notes

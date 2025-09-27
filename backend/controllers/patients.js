@@ -128,13 +128,18 @@ exports.rateAppointment = async (req, res) => {
     let { rating } = req.body;
     rating = Number(rating);
 
+    // Validate user role
+    if (req.user.role !== 'patient') {
+      return res.status(403).json({ success: false, message: 'Only patients can rate appointments' });
+    }
+
     if (!rating || rating < 1 || rating > 5) {
       return res.status(400).json({ success: false, message: 'Rating must be a number between 1 and 5' });
     }
 
     const appt = await Appointment.findById(appointmentId);
     if (!appt || appt.patientId.toString() !== req.user.id) {
-      return res.status(404).json({ success: false, message: 'Appointment not found' });
+      return res.status(404).json({ success: false, message: 'Appointment not found or unauthorized' });
     }
     if (appt.status !== 'Completed') {
       return res.status(400).json({ success: false, message: 'Appointment not completed' });

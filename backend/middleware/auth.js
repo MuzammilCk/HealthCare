@@ -18,8 +18,18 @@ exports.protect = async (req, res, next) => {
 };
 
 exports.authorize = (...roles) => (req, res, next) => {
-  if (!roles.includes(req.user.role)) {
-    return res.status(403).json({ success: false, message: 'Forbidden' });
+  // Ensure user exists and has a role
+  if (!req.user || !req.user.role) {
+    return res.status(401).json({ success: false, message: 'User authentication required' });
   }
+  
+  // Check if user's role is in the allowed roles
+  if (!roles.includes(req.user.role)) {
+    return res.status(403).json({ 
+      success: false, 
+      message: `Access denied. Required role: ${roles.join(' or ')}. Your role: ${req.user.role}` 
+    });
+  }
+  
   next();
 };
