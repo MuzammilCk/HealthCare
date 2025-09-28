@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
@@ -303,10 +304,17 @@ export default function BookAppointment() {
         </div>
       </div>
 
-      {/* Booking Modal */}
-      {selectedDoctor && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50 animate-fade-in-fast">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 relative">
+      {/* Booking Modal - Viewport Centered (Portal + fixed) */}
+      {selectedDoctor && createPortal(
+        <>
+          {/* Backdrop (covers viewport) */}
+          <div
+            className="fixed inset-0 z-[1000] bg-white/10 backdrop-blur-sm backdrop-saturate-150 animate-fade-in-fast"
+            onClick={() => setSelectedDoctor(null)}
+          />
+
+          {/* Modal (centered to viewport, not parent) */}
+          <div className="fixed z-[1001] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-xl shadow-xl p-6">
             <button onClick={() => setSelectedDoctor(null)} className="absolute top-4 right-4 text-text-secondary hover:text-text-primary">
               <FiX size={24} />
             </button>
@@ -341,36 +349,25 @@ export default function BookAppointment() {
                 disabled={!form.date || loadingSlots}
                 searchPlaceholder="Search time slots..."
               />
-              
-              {/* Appointment Summary */}
               {form.date && form.timeSlot && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <h4 className="font-semibold text-blue-900 mb-2">Appointment Summary</h4>
                   <div className="space-y-1 text-sm text-blue-800">
                     <p><span className="font-medium">Doctor:</span> {selectedDoctor.userId.name}</p>
                     <p><span className="font-medium">Specialization:</span> {selectedDoctor.specializationId?.name}</p>
-                    <p><span className="font-medium">Date:</span> {new Date(form.date).toLocaleDateString('en-US', { 
-                      weekday: 'long', 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}</p>
+                    <p><span className="font-medium">Date:</span> {new Date(form.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                     <p><span className="font-medium">Time:</span> {form.timeSlot}</p>
                   </div>
                 </div>
               )}
-              
-              <button 
-                type="submit"
-                disabled={booking || !form.date || !form.timeSlot} 
-                className="w-full bg-primary text-white font-bold h-12 rounded-lg disabled:opacity-50 hover:bg-primary-light transition-all"
-              >
+              <button type="submit" disabled={booking || !form.date || !form.timeSlot} className="w-full bg-primary text-white font-bold h-12 rounded-lg disabled:opacity-50 hover:bg-primary-light transition-all">
                 {booking ? 'Booking...' : 'Confirm Appointment'}
               </button>
             </form>
           </div>
           <style>{`.animate-fade-in-fast { animation: fade-in 0.2s ease-out forwards; }`}</style>
-        </div>
+        </>,
+        document.body
       )}
     </div>
   );
