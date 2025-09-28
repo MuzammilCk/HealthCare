@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Avatar } from './ui';
 import './ProfileButton.css';
 import { GoArrowRight } from 'react-icons/go';
-import { FiUser, FiSettings } from 'react-icons/fi';
+import { FiUser } from 'react-icons/fi';
 
 
 export default function ProfileButton() {
@@ -65,16 +65,6 @@ export default function ProfileButton() {
               <span>Profile</span>
               <GoArrowRight />
             </Link>
-            
-            <Link 
-              to={`/${user.role}`} 
-              className="profile-menu-item"
-              onClick={() => setIsOpen(false)}
-            >
-              <FiSettings className="w-4 h-4" />
-              <span>Dashboard</span>
-              <GoArrowRight />
-            </Link>
           </div>
           
           <div className="profile-menu-divider"></div>
@@ -88,3 +78,4 @@ export default function ProfileButton() {
     </div>
   );
 }
+
