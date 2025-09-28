@@ -22,46 +22,39 @@
   border-color: #3b82f6;
 }
 
-.profile-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.profile-initials {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #60a5fa;
-  color: white;
-  font-weight: 600;
-  font-size: 1rem;
-  text-transform: uppercase;
-}
-
 .profile-menu {
   position: absolute;
   right: 0;
   top: calc(100% + 10px);
-  width: 240px;
+  width: 350px; /* Increased width for more space */
   background-color: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
   border: 1px solid #f1f5f9;
   z-index: 9999;
   overflow: hidden;
   animation: fadeIn 0.2s ease-out;
 }
 
+/* --- NEW HEADER STYLES --- */
 .profile-menu-header {
-  padding: 1rem;
-  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem; /* Increased space between avatar and text */
+  padding: 1.25rem; /* Increased padding for a roomier feel */
+  background-color: #f8fafc;
+}
+
+.profile-info-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .profile-menu-name {
   font-weight: 600;
+  font-size: 1.125rem;
   color: #1e293b;
   margin: 0;
   white-space: nowrap;
@@ -77,6 +70,20 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.profile-menu-role {
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  background-color: #e0f2fe;
+  color: #0c4a6e;
+  align-self: flex-start;
+}
+/* --- END NEW HEADER STYLES --- */
+
 
 .profile-menu-items {
   padding: 0.5rem 0;

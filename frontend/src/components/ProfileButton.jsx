@@ -37,9 +37,22 @@ export default function ProfileButton() {
 
       {isOpen && (
         <div className="profile-menu">
+          {/* --- MODIFIED HEADER --- */}
           <div className="profile-menu-header">
-            <p className="profile-menu-name">{user.name}</p>
-            <p className="profile-menu-email">{user.email}</p>
+            {/* Part 1: Avatar */}
+            <div className="flex-shrink-0">
+              <Avatar 
+                src={user.photoUrl} 
+                name={user.name} 
+                size="xl"
+              />
+            </div>
+            {/* Part 2: Info Column */}
+            <div className="profile-info-details">
+              <p className="profile-menu-name">{user.name}</p>
+              <p className="profile-menu-email">{user.email}</p>
+              <span className="profile-menu-role">{user.role}</span>
+            </div>
           </div>
           
           <div className="profile-menu-items">
