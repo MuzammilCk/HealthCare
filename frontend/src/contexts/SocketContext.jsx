@@ -52,12 +52,12 @@ export const SocketProvider = ({ children }) => {
     }
   }, [isAuthenticated, user]);
 
-  // Re-identify user when user changes
+  // Re-identify user when user ID changes (not the entire user object)
   useEffect(() => {
-    if (socket && user) {
+    if (socket && user?.id) {
       socket.emit('newUser', user.id);
     }
-  }, [socket, user]);
+  }, [socket, user?.id]);
 
   const value = {
     socket,

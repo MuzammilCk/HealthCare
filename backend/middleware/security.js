@@ -65,34 +65,123 @@ exports.validateAppointmentOwnership = async (req, res, next) => {
   }
 };
 
+// Rate limiting storage (in production, use Redis)
+const rateLimitStore = new Map();
+
 // Rate limiting middleware for sensitive operations
-exports.rateLimitSensitiveOps = (req, res, next) => {
-  // This is a placeholder for rate limiting implementation
-  // In production, you would use a proper rate limiting library like express-rate-limit
-  next();
+exports.rateLimitSensitiveOps = (windowMs = 15 * 60 * 1000, maxRequests = 5) => {
+  return (req, res, next) => {
+    const identifier = req.ip || req.connection.remoteAddress;
+    const now = Date.now();
+    const windowStart = now - windowMs;
+    
+    // Clean old entries
+    if (rateLimitStore.has(identifier)) {
+      const requests = rateLimitStore.get(identifier).filter(time => time > windowStart);
+      rateLimitStore.set(identifier, requests);
+    }
+    
+    // Get current requests in window
+    const requests = rateLimitStore.get(identifier) || [];
+    
+    if (requests.length >= maxRequests) {
+      return res.status(429).json({
+        success: false,
+        message: 'Too many requests. Please try again later.',
+        retryAfter: Math.ceil((requests[0] + windowMs - now) / 1000)
+      });
+    }
+    
+    // Add current request
+    requests.push(now);
+    rateLimitStore.set(identifier, requests);
+    
+    next();
+  };
 };
 
-// Input sanitization middleware
+// Enhanced input sanitization middleware
 exports.sanitizeInput = (req, res, next) => {
-  // Basic input sanitization
+  const validator = require('validator');
+  
   const sanitizeString = (str) => {
     if (typeof str !== 'string') return str;
-    return str.trim().replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+    
+    // Trim whitespace
+    str = str.trim();
+    
+    // Remove script tags and other dangerous HTML
+    str = str.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+    str = str.replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '');
+    str = str.replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '');
+    str = str.replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '');
+    str = str.replace(/<link\b[^<]*(?:(?!<\/link>)<[^<]*)*<\/link>/gi, '');
+    str = str.replace(/<meta\b[^<]*(?:(?!<\/meta>)<[^<]*)*<\/meta>/gi, '');
+    
+    // Remove javascript: and data: URLs
+    str = str.replace(/javascript:/gi, '');
+    str = str.replace(/data:/gi, '');
+    str = str.replace(/vbscript:/gi, '');
+    
+    // Remove on* event handlers
+    str = str.replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '');
+    
+    // Escape HTML entities for safety
+    str = validator.escape(str);
+    
+    return str;
   };
 
   const sanitizeObject = (obj) => {
-    for (let key in obj) {
-      if (typeof obj[key] === 'string') {
-        obj[key] = sanitizeString(obj[key]);
-      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-        sanitizeObject(obj[key]);
-      }
+    if (obj === null || obj === undefined) return obj;
+    
+    if (Array.isArray(obj)) {
+      return obj.map(item => sanitizeObject(item));
     }
+    
+    if (typeof obj === 'object') {
+      const sanitized = {};
+      for (let key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          // Sanitize key names too
+          const sanitizedKey = typeof key === 'string' ? key.replace(/[^\w\-_.]/g, '') : key;
+          sanitized[sanitizedKey] = sanitizeObject(obj[key]);
+        }
+      }
+      return sanitized;
+    }
+    
+    if (typeof obj === 'string') {
+      return sanitizeString(obj);
+    }
+    
+    return obj;
   };
 
-  if (req.body) sanitizeObject(req.body);
-  if (req.query) sanitizeObject(req.query);
-  if (req.params) sanitizeObject(req.params);
+  // Sanitize all input
+  if (req.body) req.body = sanitizeObject(req.body);
+  if (req.query) req.query = sanitizeObject(req.query);
+  if (req.params) req.params = sanitizeObject(req.params);
 
+  next();
+};
+
+// Additional security headers middleware
+exports.securityHeaders = (req, res, next) => {
+  // Prevent XSS attacks
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  
+  // Prevent MIME type sniffing
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  
+  // Prevent clickjacking
+  res.setHeader('X-Frame-Options', 'DENY');
+  
+  // Enforce HTTPS
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  
+  // Content Security Policy
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:;");
+  
   next();
 };

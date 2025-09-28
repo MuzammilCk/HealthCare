@@ -4,18 +4,24 @@ import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiMapPin, FiBriefcase } from 'react-icons/fi';
 import { AppSelect } from '../../components/ui';
-
-const districtsOfKerala = ["Thiruvananthapuram", "Kollam", "Pathanamthitta", "Alappuzha", "Kottayam", "Idukki", "Ernakulam", "Thrissur", "Palakkad", "Malappuram", "Kozhikode", "Wayanad", "Kannur", "Kasaragod"];
+import { KERALA_DISTRICTS } from '../../constants';
 
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
   const { role, setRole } = useOutletContext(); // Get context from layout
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'patient', specializationId: '', district: '' });
   const [loading, setLoading] = useState(false);
   const [specializations, setSpecializations] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: role || 'patient',
+    district: '',
+    specializationId: ''
+  });
 
   // Sync the form's role with the role from the layout context
   useEffect(() => {
@@ -102,7 +108,7 @@ export default function Register() {
           placeholder="Select your district"
           value={form.district}
           onChange={(value) => setForm({ ...form, district: value })}
-          options={districtsOfKerala.map(district => ({ value: district, label: district }))}
+          options={KERALA_DISTRICTS.map(district => ({ value: district, label: district }))}
           icon={FiMapPin}
           required
           searchable

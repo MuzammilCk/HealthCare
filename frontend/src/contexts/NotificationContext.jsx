@@ -42,7 +42,7 @@ export const NotificationProvider = ({ children }) => {
     }
   };
 
-  // Fetch unread count only
+  // Fetch unread count only (lightweight version when we don't need full notifications)
   const fetchUnreadCount = async () => {
     if (!isAuthenticated) return;
     
@@ -194,7 +194,7 @@ export const NotificationProvider = ({ children }) => {
   // Fetch notifications on mount and when authentication changes
   useEffect(() => {
     if (isAuthenticated) {
-      fetchNotifications();
+      fetchNotifications(); // This already calculates unread count
       fetchUnreadKycCount();
     } else {
       setNotifications([]);

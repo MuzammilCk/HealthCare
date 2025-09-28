@@ -42,20 +42,102 @@ exports.updateMedicalHistory = async (req, res) => {
 // GET /api/patients/doctors
 exports.getDoctors = async (req, res) => {
   try {
-    const { district } = req.query;
-    // --- THIS IS THE CHANGE ---
-    // Only find doctors that have been explicitly approved.
+    const { district, search, specializationId, page = 1, limit = 20 } = req.query;
+    
+    // Build query for approved doctors
     let query = { verificationStatus: 'Approved' };
+    
+    // Filter by district
     if (district) {
       query.district = district;
     }
+    
+    // Filter by specialization
+    if (specializationId) {
+      query.specializationId = specializationId;
+    }
 
-    const doctors = await Doctor.find(query)
-      .populate('userId', 'name email')
-      .populate('specializationId', 'name description');
+    // Build aggregation pipeline for search functionality
+    const pipeline = [
+      { $match: query },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userId'
+        }
+      },
+      { $unwind: '$userId' },
+      {
+        $lookup: {
+          from: 'specializations',
+          localField: 'specializationId',
+          foreignField: '_id',
+          as: 'specializationId'
+        }
+      },
+      { $unwind: '$specializationId' }
+    ];
 
-    res.json({ success: true, count: doctors.length, data: doctors });
+    // Add search functionality
+    if (search && search.trim()) {
+      pipeline.push({
+        $match: {
+          $or: [
+            { 'userId.name': { $regex: search.trim(), $options: 'i' } },
+            { 'specializationId.name': { $regex: search.trim(), $options: 'i' } },
+            { qualifications: { $regex: search.trim(), $options: 'i' } },
+            { bio: { $regex: search.trim(), $options: 'i' } }
+          ]
+        }
+      });
+    }
+
+    // Add sorting (by average rating desc, then by name)
+    pipeline.push({
+      $addFields: {
+        averageRating: {
+          $cond: {
+            if: { $gt: [{ $size: '$ratings' }, 0] },
+            then: { $avg: '$ratings' },
+            else: 0
+          }
+        }
+      }
+    });
+
+    pipeline.push({
+      $sort: {
+        averageRating: -1,
+        'userId.name': 1
+      }
+    });
+
+    // Add pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: parseInt(limit) });
+
+    // Execute aggregation
+    const doctors = await Doctor.aggregate(pipeline);
+
+    // Get total count for pagination
+    const countPipeline = [...pipeline.slice(0, -2)]; // Remove skip and limit
+    countPipeline.push({ $count: 'total' });
+    const countResult = await Doctor.aggregate(countPipeline);
+    const totalCount = countResult[0]?.total || 0;
+
+    res.json({ 
+      success: true, 
+      count: doctors.length, 
+      total: totalCount,
+      page: parseInt(page),
+      pages: Math.ceil(totalCount / parseInt(limit)),
+      data: doctors 
+    });
   } catch (e) {
+    console.error('Error fetching doctors:', e);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
@@ -91,6 +173,43 @@ exports.getAvailableSlots = async (req, res) => {
       return res.json({ success: true, data: [] });
     }
 
+    // Expand time ranges into individual slots
+    // Each slot in the database is a range like "09:00-17:00"
+    // We need to convert this into individual time slots
+    const expandTimeRange = (timeRange) => {
+      const [startTime, endTime] = timeRange.split('-');
+      const slots = [];
+      
+      const parseTime = (timeStr) => {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return hours * 60 + minutes;
+      };
+      
+      const formatTime = (minutes) => {
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+      };
+      
+      const startMinutes = parseTime(startTime);
+      const endMinutes = parseTime(endTime);
+      
+      // Generate 30-minute slots
+      for (let time = startMinutes; time < endMinutes; time += 30) {
+        const slotStart = formatTime(time);
+        const slotEnd = formatTime(time + 30);
+        slots.push(`${slotStart}-${slotEnd}`);
+      }
+      
+      return slots;
+    };
+
+    // Expand all time ranges into individual slots
+    const allAvailableSlots = [];
+    dayAvailability.slots.forEach(range => {
+      allAvailableSlots.push(...expandTimeRange(range));
+    });
+
     // Get all scheduled appointments for this doctor on this date
     const bookedAppointments = await Appointment.find({
       doctorId: doctorId,
@@ -101,7 +220,7 @@ exports.getAvailableSlots = async (req, res) => {
     const bookedSlots = bookedAppointments.map(apt => apt.timeSlot);
 
     // Filter out booked slots from available slots
-    const availableSlots = dayAvailability.slots.filter(slot => 
+    const availableSlots = allAvailableSlots.filter(slot => 
       !bookedSlots.includes(slot)
     );
 

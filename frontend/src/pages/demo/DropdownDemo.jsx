@@ -1,12 +1,7 @@
 import { useState } from 'react';
 import { FiUser, FiMapPin, FiBriefcase, FiCalendar, FiClock, FiSearch, FiFilter } from 'react-icons/fi';
 import { AppSelect } from '../../components/ui';
-
-const districtsOfKerala = [
-  "Thiruvananthapuram", "Kollam", "Pathanamthitta", "Alappuzha", 
-  "Kottayam", "Idukki", "Ernakulam", "Thrissur", "Palakkad", 
-  "Malappuram", "Kozhikode", "Wayanad", "Kannur", "Kasaragod"
-];
+import { KERALA_DISTRICTS } from '../../constants';
 
 const specializations = [
   { value: 'cardiology', label: 'Cardiology' },
@@ -65,7 +60,7 @@ export default function DropdownDemo() {
             placeholder="Select your district"
             value={selectedDistrict}
             onChange={setSelectedDistrict}
-            options={districtsOfKerala.map(d => ({ value: d, label: d }))}
+            options={KERALA_DISTRICTS.map(d => ({ value: d, label: d }))}
             icon={FiMapPin}
             required
           />
@@ -90,7 +85,7 @@ export default function DropdownDemo() {
             placeholder="Search and select district"
             value={selectedDistrict}
             onChange={setSelectedDistrict}
-            options={districtsOfKerala.map(d => ({ value: d, label: d }))}
+            options={KERALA_DISTRICTS.map(d => ({ value: d, label: d }))}
             icon={FiSearch}
             searchable
             searchPlaceholder="Type to search districts..."

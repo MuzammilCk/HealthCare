@@ -4,8 +4,7 @@ import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { FiSearch, FiCalendar, FiClock, FiX, FiMapPin } from 'react-icons/fi';
 import { AppSelect } from '../../components/ui';
-
-const districtsOfKerala = ["Thiruvananthapuram", "Kollam", "Pathanamthitta", "Alappuzha", "Kottayam", "Idukki", "Ernakulam", "Thrissur", "Palakkad", "Malappuram", "Kozhikode", "Wayanad", "Kannur", "Kasaragod"];
+import { KERALA_DISTRICTS } from '../../constants';
 
 export default function BookAppointment() {
   const { user } = useAuth();
@@ -18,27 +17,63 @@ export default function BookAppointment() {
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchTimeout, setSearchTimeout] = useState(null);
 
   const todayIsoDate = useMemo(() => new Date().toISOString().split('T')[0], []);
 
+  // Fetch doctors with search and filters
+  const fetchDoctors = async (search = '', district = filterDistrict, specializationId = selectedSpecId) => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (district) params.append('district', district);
+      if (search.trim()) params.append('search', search.trim());
+      if (specializationId) params.append('specializationId', specializationId);
+      
+      const response = await api.get(`/patients/doctors?${params.toString()}`);
+      setDoctors(response.data.data || []);
+    } catch (error) {
+      console.error("Failed to fetch doctors:", error);
+      toast.error('Failed to load doctors');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial data fetch
   useEffect(() => {
     const fetchInitialData = async () => {
-      setLoading(true);
       try {
-        const [specRes, docRes] = await Promise.all([
-          api.get('/specializations'),
-          api.get(`/patients/doctors?district=${filterDistrict}`),
-        ]);
+        const specRes = await api.get('/specializations');
         setSpecializations(specRes.data.data || []);
-        setDoctors(docRes.data.data || []);
       } catch (error) {
-        console.error("Failed to fetch initial data:", error);
-      } finally {
-        setLoading(false);
+        console.error("Failed to fetch specializations:", error);
       }
     };
     fetchInitialData();
-  }, [filterDistrict]);
+  }, []);
+
+  // Fetch doctors when filters change
+  useEffect(() => {
+    fetchDoctors(searchQuery, filterDistrict, selectedSpecId);
+  }, [filterDistrict, selectedSpecId]);
+
+  // Debounced search
+  useEffect(() => {
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+    
+    const timeout = setTimeout(() => {
+      fetchDoctors(searchQuery, filterDistrict, selectedSpecId);
+    }, 500); // 500ms delay
+    
+    setSearchTimeout(timeout);
+    
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [searchQuery]);
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -83,23 +118,6 @@ export default function BookAppointment() {
     }
   };
 
-  const filteredDoctors = useMemo(() => {
-    let filtered = doctors;
-    
-    // Filter by specialization
-    if (selectedSpecId) {
-      filtered = filtered.filter(doc => doc.specializationId?._id === selectedSpecId);
-    }
-    
-    // Filter by search query (case-insensitive)
-    if (searchQuery.trim()) {
-      filtered = filtered.filter(doc => 
-        doc.userId.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-    
-    return filtered;
-  }, [doctors, selectedSpecId, searchQuery]);
   // Clear search when district changes
   useEffect(() => {
     setSearchQuery('');
@@ -148,7 +166,7 @@ export default function BookAppointment() {
             placeholder="All Districts"
             value={filterDistrict}
             onChange={setFilterDistrict}
-            options={[{ value: '', label: 'All Districts' }, ...districtsOfKerala.map(d => ({ value: d, label: d }))]}
+            options={[{ value: '', label: 'All Districts' }, ...KERALA_DISTRICTS.map(d => ({ value: d, label: d }))]}
             icon={FiMapPin}
             searchable
             searchPlaceholder="Search districts..."
@@ -185,8 +203,8 @@ export default function BookAppointment() {
           
           {loading ? (
             <div className="text-center p-6">Loading doctors...</div>
-          ) : filteredDoctors.length > 0 ? (
-            filteredDoctors.map(doc => (
+          ) : doctors.length > 0 ? (
+            doctors.map(doc => (
               <div key={doc.userId._id} className="bg-white p-4 rounded-xl shadow-card flex items-center justify-between transition-shadow hover:shadow-lg">
                 <div className="flex items-center">
                   <img src={doc.photoUrl || 'https://i.pravatar.cc/150'} alt={doc.userId.name} className="w-16 h-16 rounded-full mr-4 object-cover" />
