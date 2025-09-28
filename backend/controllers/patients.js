@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const MedicalHistory = require('../models/MedicalHistory');
 const Doctor = require('../models/Doctor');
 const Appointment = require('../models/Appointment');
@@ -14,7 +15,6 @@ exports.getMedicalHistory = async (req, res) => {
   }
 };
 
-// PUT /api/patients/me/medical-history
 exports.updateMedicalHistory = async (req, res) => {
   const { bloodType, allergies, pastConditions } = req.body;
   try {
@@ -39,27 +39,17 @@ exports.updateMedicalHistory = async (req, res) => {
   }
 };
 
-// GET /api/patients/doctors
 exports.getDoctors = async (req, res) => {
   try {
     const { district, search, specializationId, page = 1, limit = 20 } = req.query;
-    
-    // Build query for approved doctors
-    let query = { verificationStatus: 'Approved' };
-    
-    // Filter by district
-    if (district) {
-      query.district = district;
-    }
-    
-    // Filter by specialization
-    if (specializationId) {
-      query.specializationId = specializationId;
-    }
 
-    // Build aggregation pipeline for search functionality
+    // The aggregation pipeline. We perform lookups first to get all necessary data.
     const pipeline = [
-      { $match: query },
+      // 1. Start with approved doctors
+      { 
+        $match: { verificationStatus: 'Approved' } 
+      },
+      // 2. Join with the 'users' collection to get doctor's name, email, etc.
       {
         $lookup: {
           from: 'users',
@@ -69,6 +59,7 @@ exports.getDoctors = async (req, res) => {
         }
       },
       { $unwind: '$userId' },
+      // 3. Join with 'specializations' collection to get specialization name
       {
         $lookup: {
           from: 'specializations',
@@ -80,26 +71,43 @@ exports.getDoctors = async (req, res) => {
       { $unwind: '$specializationId' }
     ];
 
-    // Add search functionality
+    // 4. Build a dynamic and consolidated match stage for all filters
+    const matchConditions = [];
+
+    if (district) {
+      // Filter by the district field on the Doctor model
+      matchConditions.push({ district: district });
+    }
+
+    if (specializationId && mongoose.Types.ObjectId.isValid(specializationId)) {
+      // Filter by the specialization's ID (which is now an object after the lookup)
+      matchConditions.push({ 'specializationId._id': new mongoose.Types.ObjectId(specializationId) });
+    }
+
     if (search && search.trim()) {
-      pipeline.push({
-        $match: {
-          $or: [
-            { 'userId.name': { $regex: search.trim(), $options: 'i' } },
-            { 'specializationId.name': { $regex: search.trim(), $options: 'i' } },
-            { qualifications: { $regex: search.trim(), $options: 'i' } },
-            { bio: { $regex: search.trim(), $options: 'i' } }
-          ]
-        }
+      const searchRegex = { $regex: search.trim(), $options: 'i' };
+      // Search across multiple fields from the joined collections
+      matchConditions.push({
+        $or: [
+          { 'userId.name': searchRegex },
+          { 'specializationId.name': searchRegex },
+          { qualifications: searchRegex },
+          { bio: searchRegex }
+        ]
       });
     }
 
-    // Add sorting (by average rating desc, then by name)
+    // 5. If there are any filters, add them to the pipeline in a single $match stage
+    if (matchConditions.length > 0) {
+      pipeline.push({ $match: { $and: matchConditions } });
+    }
+
+    // 6. Add sorting fields after all filtering is done
     pipeline.push({
       $addFields: {
         averageRating: {
           $cond: {
-            if: { $gt: [{ $size: '$ratings' }, 0] },
+            if: { $gt: [{ $size: { $ifNull: ['$ratings', []] } }, 0] },
             then: { $avg: '$ratings' },
             else: 0
           }
@@ -114,27 +122,30 @@ exports.getDoctors = async (req, res) => {
       }
     });
 
-    // Add pagination
+    // 7. Handle Pagination
+    // Create a parallel pipeline to get the total count *before* applying skip/limit
+    const countPipeline = [...pipeline, { $count: 'total' }];
+    
+    // Add pagination to the main data pipeline
     const skip = (parseInt(page) - 1) * parseInt(limit);
     pipeline.push({ $skip: skip });
     pipeline.push({ $limit: parseInt(limit) });
 
-    // Execute aggregation
-    const doctors = await Doctor.aggregate(pipeline);
-
-    // Get total count for pagination
-    const countPipeline = [...pipeline.slice(0, -2)]; // Remove skip and limit
-    countPipeline.push({ $count: 'total' });
-    const countResult = await Doctor.aggregate(countPipeline);
+    // Execute both pipelines concurrently for efficiency
+    const [doctors, countResult] = await Promise.all([
+      Doctor.aggregate(pipeline),
+      Doctor.aggregate(countPipeline)
+    ]);
+    
     const totalCount = countResult[0]?.total || 0;
 
-    res.json({ 
-      success: true, 
-      count: doctors.length, 
+    res.json({
+      success: true,
+      count: doctors.length,
       total: totalCount,
       page: parseInt(page),
       pages: Math.ceil(totalCount / parseInt(limit)),
-      data: doctors 
+      data: doctors
     });
   } catch (e) {
     console.error('Error fetching doctors:', e);
@@ -142,7 +153,7 @@ exports.getDoctors = async (req, res) => {
   }
 };
 
-// GET /api/patients/doctors/:doctorId/available-slots?date=YYYY-MM-DD
+
 exports.getAvailableSlots = async (req, res) => {
   try {
     const { doctorId } = req.params;
@@ -152,30 +163,24 @@ exports.getAvailableSlots = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Date is required' });
     }
 
-    // Find the doctor
     const doctor = await Doctor.findOne({ userId: doctorId });
     if (!doctor) {
       return res.status(404).json({ success: false, message: 'Doctor not found' });
     }
 
-    // Get the day of the week for the requested date
     const dateObj = new Date(date + 'T00:00:00');
     const dayIndex = dateObj.getDay();
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const dayName = dayNames[dayIndex];
 
-    // Find doctor's availability for this day
-    const dayAvailability = doctor.availability.find(av => 
+    const dayAvailability = doctor.availability.find(av =>
       (av.day || '').toLowerCase() === dayName.toLowerCase()
     );
 
     if (!dayAvailability || !dayAvailability.slots) {
       return res.json({ success: true, data: [] });
     }
-
-    // Expand time ranges into individual slots
-    // Each slot in the database is a range like "09:00-17:00"
-    // We need to convert this into individual time slots
+    
     const expandTimeRange = (timeRange) => {
       const [startTime, endTime] = timeRange.split('-');
       const slots = [];
@@ -194,7 +199,6 @@ exports.getAvailableSlots = async (req, res) => {
       const startMinutes = parseTime(startTime);
       const endMinutes = parseTime(endTime);
       
-      // Generate 30-minute slots
       for (let time = startMinutes; time < endMinutes; time += 30) {
         const slotStart = formatTime(time);
         const slotEnd = formatTime(time + 30);
@@ -204,35 +208,26 @@ exports.getAvailableSlots = async (req, res) => {
       return slots;
     };
 
-    // Expand all time ranges into individual slots
     const allAvailableSlots = [];
     dayAvailability.slots.forEach(range => {
       allAvailableSlots.push(...expandTimeRange(range));
     });
 
-    // Get all scheduled appointments for this doctor on this date
     const bookedAppointments = await Appointment.find({
       doctorId: doctorId,
       date: dateObj,
-      status: 'Scheduled' // Only consider scheduled appointments as blocking slots
+      status: 'Scheduled'
     }).select('timeSlot');
 
     const bookedSlots = bookedAppointments.map(apt => apt.timeSlot);
 
-    // Filter out booked slots from available slots
-    const availableSlots = allAvailableSlots.filter(slot => 
+    const availableSlots = allAvailableSlots.filter(slot =>
       !bookedSlots.includes(slot)
     );
 
-    res.json({ 
-      success: true, 
-      data: availableSlots,
-      debug: {
-        dayName,
-        totalSlots: dayAvailability.slots,
-        bookedSlots,
-        availableSlots
-      }
+    res.json({
+      success: true,
+      data: availableSlots
     });
   } catch (error) {
     console.error('Error getting available slots:', error);
@@ -240,21 +235,18 @@ exports.getAvailableSlots = async (req, res) => {
   }
 };
 
-// POST /api/patients/appointments
 exports.bookAppointment = async (req, res) => {
   const { doctorId, date, timeSlot } = req.body;
   try {
     const existing = await Appointment.findOne({ doctorId, date, timeSlot, status: 'Scheduled' });
     if (existing) return res.status(400).json({ success: false, message: 'Time slot not available' });
-    
+
     const appt = await Appointment.create({ patientId: req.user.id, doctorId, date, timeSlot });
-    
-    // Populate appointment data for notifications
+
     const populatedAppt = await Appointment.findById(appt._id)
       .populate('patientId', 'name')
       .populate('doctorId', 'name');
-    
-    // Notify the doctor about the new appointment
+
     await createNotification(
       doctorId,
       `You have a new appointment with ${populatedAppt.patientId.name} on ${new Date(date).toLocaleDateString()} at ${timeSlot}`,
@@ -262,8 +254,7 @@ exports.bookAppointment = async (req, res) => {
       'appointment',
       { appointmentId: appt._id, patientName: populatedAppt.patientId.name, date, timeSlot }
     );
-    
-    // Notify the patient about successful booking
+
     await createNotification(
       req.user.id,
       `Your appointment with Dr. ${populatedAppt.doctorId.name} for ${new Date(date).toLocaleDateString()} is confirmed`,
@@ -271,7 +262,7 @@ exports.bookAppointment = async (req, res) => {
       'appointment',
       { appointmentId: appt._id, doctorName: populatedAppt.doctorId.name, date, timeSlot }
     );
-    
+
     res.status(201).json({ success: true, data: appt });
   } catch (e) {
     if (e.code === 11000) return res.status(400).json({ success: false, message: 'Duplicate slot' });
@@ -279,7 +270,6 @@ exports.bookAppointment = async (req, res) => {
   }
 };
 
-// GET /api/patients/appointments
 exports.getAppointments = async (req, res) => {
   try {
     const appts = await Appointment.find({ patientId: req.user.id })
@@ -300,13 +290,10 @@ exports.getPrescriptions = async (req, res) => {
   }
 };
 
-// DELETE /api/patients/appointments/:appointmentId
-// Cancel an appointment
 exports.cancelAppointment = async (req, res) => {
   try {
     const { appointmentId } = req.params;
 
-    // Find the appointment and verify ownership
     const appointment = await Appointment.findById(appointmentId)
       .populate('patientId', 'name')
       .populate('doctorId', 'name');
@@ -315,12 +302,10 @@ exports.cancelAppointment = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Appointment not found' });
     }
 
-    // Verify the user is the patient who owns this appointment
     if (appointment.patientId._id.toString() !== req.user.id) {
       return res.status(403).json({ success: false, message: 'Unauthorized to cancel this appointment' });
     }
 
-    // Check if appointment is already cancelled or completed
     if (appointment.status === 'Cancelled') {
       return res.status(400).json({ success: false, message: 'Appointment is already cancelled' });
     }
@@ -329,11 +314,9 @@ exports.cancelAppointment = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Cannot cancel a completed appointment' });
     }
 
-    // Check time-based business rule: must be at least 1 hour before appointment
     try {
       const now = new Date();
       
-      // Parse appointment date properly
       let appointmentDate;
       if (typeof appointment.date === 'string') {
         appointmentDate = new Date(appointment.date + 'T00:00:00');
@@ -341,98 +324,81 @@ exports.cancelAppointment = async (req, res) => {
         appointmentDate = new Date(appointment.date);
       }
       
-      // Parse time slot intelligently
       let timeSlot = appointment.timeSlot || '';
       
-      // Extract start time from time slot (handle ranges like "09:00-10:00")
       let startTime = timeSlot;
       if (timeSlot.includes('-')) {
         startTime = timeSlot.split('-')[0].trim();
       }
       
-      // Normalize time format
       if (!startTime.includes(':')) {
         startTime = startTime + ':00';
       }
       
-      // Create full datetime for appointment
       const appointmentDateTime = new Date(appointmentDate);
       const [hours, minutes] = startTime.split(':').map(Number);
       appointmentDateTime.setHours(hours, minutes, 0, 0);
       
-      // Calculate time difference
       const timeDiffMs = appointmentDateTime.getTime() - now.getTime();
       const timeDiffHours = timeDiffMs / (1000 * 60 * 60);
-      
-      console.log('Backend cancellation check:', {
-        appointmentDate: appointment.date,
-        timeSlot: appointment.timeSlot,
-        appointmentDateTime: appointmentDateTime.toISOString(),
-        currentTime: now.toISOString(),
-        timeDiffHours: timeDiffHours,
-        canCancel: timeDiffHours >= 1
-      });
 
       if (timeDiffMs < 0) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Cannot cancel a past appointment' 
+        return res.status(400).json({
+          success: false,
+          message: 'Cannot cancel a past appointment'
         });
       }
 
       if (timeDiffHours < 1) {
         const minutesRemaining = Math.max(0, Math.floor(timeDiffMs / (1000 * 60)));
-        return res.status(400).json({ 
-          success: false, 
-          message: `Cannot cancel appointment. Only ${minutesRemaining} minutes remaining.` 
+        return res.status(400).json({
+          success: false,
+          message: `Cannot cancel appointment. Only ${minutesRemaining} minutes remaining.`
         });
       }
     } catch (error) {
       console.error('Error checking appointment cancellation eligibility in backend:', error);
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Error validating appointment cancellation time' 
+      return res.status(500).json({
+        success: false,
+        message: 'Error validating appointment cancellation time'
       });
     }
 
-    // Update appointment status to cancelled
     appointment.status = 'Cancelled';
     await appointment.save();
 
-    // Notify the doctor about the cancellation
     await createNotification(
       appointment.doctorId._id,
       `Appointment with ${appointment.patientId.name} on ${new Date(appointment.date).toLocaleDateString()} at ${appointment.timeSlot} has been cancelled`,
       '/doctor/appointments',
       'appointment',
-      { 
-        appointmentId: appointment._id, 
-        patientName: appointment.patientId.name, 
-        date: appointment.date, 
+      {
+        appointmentId: appointment._id,
+        patientName: appointment.patientId.name,
+        date: appointment.date,
         timeSlot: appointment.timeSlot,
         action: 'cancelled'
       }
     );
 
-    // Notify the patient about successful cancellation
     await createNotification(
       req.user.id,
       `Your appointment with Dr. ${appointment.doctorId.name} for ${new Date(appointment.date).toLocaleDateString()} has been cancelled`,
       '/patient/appointments',
       'appointment',
-      { 
-        appointmentId: appointment._id, 
-        doctorName: appointment.doctorId.name, 
-        date: appointment.date, 
+      {
+        appointmentId: appointment._id,
+        doctorName: appointment.doctorId.name,
+        date: appointment.date,
         timeSlot: appointment.timeSlot,
         action: 'cancelled'
       }
     );
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: 'Appointment cancelled successfully',
-      data: appointment 
+      data: appointment
     });
   } catch (error) {
     console.error('Error cancelling appointment:', error);
@@ -440,20 +406,17 @@ exports.cancelAppointment = async (req, res) => {
   }
 };
 
-// POST /api/patients/appointments/:appointmentId/rate
-// Rate a completed appointment's doctor
 exports.rateAppointment = async (req, res) => {
   try {
     const { appointmentId } = req.params;
     let { rating } = req.body;
     rating = Number(rating);
 
-    // Validate user role
     if (req.user.role !== 'patient') {
       return res.status(403).json({ success: false, message: 'Only patients can rate appointments' });
     }
 
-    if (!rating || rating < 1 || rating > 5) {
+    if (!rating || rating < 1 || 5 < rating) {
       return res.status(400).json({ success: false, message: 'Rating must be a number between 1 and 5' });
     }
 

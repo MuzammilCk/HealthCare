@@ -74,7 +74,7 @@ function NavigationLinks({ role, isSidebarOpen }) {
 export default function MainLayout({ role: roleProp }) {
   const { user } = useAuth();
   const role = roleProp || user?.role;
-  const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
