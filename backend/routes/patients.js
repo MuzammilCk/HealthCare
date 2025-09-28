@@ -8,6 +8,7 @@ const {
   getAppointments,
   getPrescriptions,
   rateAppointment,
+  cancelAppointment,
 } = require('../controllers/patients');
 
 const router = express.Router();
@@ -18,6 +19,7 @@ router.use(authorize('patient'));
 router.route('/me/medical-history').get(getMedicalHistory).put(updateMedicalHistory);
 router.get('/doctors', getDoctors);
 router.route('/appointments').get(getAppointments).post(bookAppointment);
+router.delete('/appointments/:appointmentId', cancelAppointment);
 router.post('/appointments/:appointmentId/rate', rateAppointment);
 router.get('/prescriptions', getPrescriptions);
 
