@@ -32,6 +32,7 @@ import KycRequests from './pages/admin/KycRequests'
 import ManageDoctors from './pages/admin/ManageDoctors'
 import AboutUs from './pages/AboutUs';
 import Contact from './pages/Contact';
+import Profile from './pages/Profile';
 
 const router = createBrowserRouter([
   {
@@ -103,6 +104,7 @@ const router = createBrowserRouter([
       </PrivateRoute>
     ),
     children: [
+      { path: 'profile', element: <Profile /> },
       { path: 'about', element: <AboutUs /> },
       { path: 'contact', element: <Contact /> },
     ]

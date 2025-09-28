@@ -89,6 +89,9 @@ global.sendNotification = sendNotification;
 // Body parser
 app.use(express.json());
 
+// Serve static files for uploaded images
+app.use('/uploads', express.static('uploads'));
+
 // Mongo connection
 mongoose
   .connect(process.env.MONGODB_URI, {
@@ -101,6 +104,7 @@ mongoose
 // Routes
 app.get('/', (req, res) => res.json({ message: 'Healthcare System API' }));
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/profile', require('./routes/profile'));
 app.use('/api/patients', require('./routes/patients'));
 app.use('/api/doctors', require('./routes/doctors'));
 app.use('/api/specializations', require('./routes/specializations'));

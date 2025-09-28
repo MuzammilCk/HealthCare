@@ -78,6 +78,10 @@
   text-overflow: ellipsis;
 }
 
+.profile-menu-items {
+  padding: 0.5rem 0;
+}
+
 .profile-menu-item {
   display: flex;
   justify-content: space-between;
@@ -90,6 +94,13 @@
   cursor: pointer;
   font-size: 0.95rem;
   transition: background-color 0.2s ease;
+  text-decoration: none;
+  color: #1e293b;
+  gap: 0.75rem;
+}
+
+.profile-menu-item span {
+  flex: 1;
 }
 
 .profile-menu-item.logout-button {
@@ -98,6 +109,12 @@
 
 .profile-menu-item:hover {
   background-color: #f8fafc;
+}
+
+.profile-menu-divider {
+  height: 1px;
+  background-color: #f1f5f9;
+  margin: 0.5rem 0;
 }
 
 @keyframes fadeIn {

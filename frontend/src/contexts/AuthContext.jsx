@@ -42,7 +42,13 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
-  const value = useMemo(() => ({ user, loading, login, register, logout, isAuthenticated: () => !!user }), [user, loading]);
+  const updateUser = (updatedUserData) => {
+    const newUser = { ...user, ...updatedUserData };
+    setUser(newUser);
+    localStorage.setItem('user', JSON.stringify(newUser));
+  };
+
+  const value = useMemo(() => ({ user, loading, login, register, logout, updateUser, isAuthenticated: () => !!user }), [user, loading]);
 
   return (
     <AuthContext.Provider value={value}>

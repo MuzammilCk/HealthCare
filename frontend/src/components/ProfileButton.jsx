@@ -1,7 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { Avatar } from './ui';
 import './ProfileButton.css';
 import { GoArrowRight } from 'react-icons/go';
+import { FiUser, FiSettings } from 'react-icons/fi';
 
 
 export default function ProfileButton() {
@@ -21,24 +24,15 @@ export default function ProfileButton() {
 
   if (!user) return null;
 
-  const getInitials = (name = '') => {
-    const names = name.split(' ');
-    if (names.length > 1) {
-      return `${names[0].charAt(0)}${names[names.length - 1].charAt(0)}`;
-    }
-    return names[0].charAt(0);
-  };
-
   return (
     <div className="profile-container" ref={dropdownRef}>
       <button onClick={() => setIsOpen(!isOpen)} className="profile-avatar-button">
-        {user.photoUrl ? (
-          <img src={user.photoUrl} alt="Profile" className="profile-image" />
-        ) : (
-          <div className="profile-initials">
-            <span>{getInitials(user.name)}</span>
-          </div>
-        )}
+        <Avatar 
+          src={user.photoUrl} 
+          name={user.name} 
+          size="md"
+          className="w-full h-full"
+        />
       </button>
 
       {isOpen && (
@@ -47,6 +41,31 @@ export default function ProfileButton() {
             <p className="profile-menu-name">{user.name}</p>
             <p className="profile-menu-email">{user.email}</p>
           </div>
+          
+          <div className="profile-menu-items">
+            <Link 
+              to="/profile" 
+              className="profile-menu-item"
+              onClick={() => setIsOpen(false)}
+            >
+              <FiUser className="w-4 h-4" />
+              <span>Profile</span>
+              <GoArrowRight />
+            </Link>
+            
+            <Link 
+              to={`/${user.role}`} 
+              className="profile-menu-item"
+              onClick={() => setIsOpen(false)}
+            >
+              <FiSettings className="w-4 h-4" />
+              <span>Dashboard</span>
+              <GoArrowRight />
+            </Link>
+          </div>
+          
+          <div className="profile-menu-divider"></div>
+          
           <button onClick={logout} className="profile-menu-item logout-button">
             <span>Logout</span>
             <GoArrowRight />
