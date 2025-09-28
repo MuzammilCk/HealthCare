@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { FiSearch, FiCalendar, FiClock, FiX, FiMapPin } from 'react-icons/fi';
-import { AppSelect } from '../../components/ui';
+import { AppSelect, Calendar } from '../../components/ui';
 import { KERALA_DISTRICTS } from '../../constants';
 
 export default function BookAppointment() {
@@ -18,6 +18,11 @@ export default function BookAppointment() {
   const [booking, setBooking] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTimeout, setSearchTimeout] = useState(null);
+  
+  // Smart availability state
+  const [availableDates, setAvailableDates] = useState([]);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [loadingDates, setLoadingDates] = useState(false);
 
   const todayIsoDate = useMemo(() => new Date().toISOString().split('T')[0], []);
 
@@ -38,6 +43,40 @@ export default function BookAppointment() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Fetch available dates for a doctor in a specific month
+  const fetchAvailableDates = async (doctorId, date = currentMonth) => {
+    if (!doctorId) {
+      setAvailableDates([]);
+      return;
+    }
+
+    try {
+      setLoadingDates(true);
+      const month = date.getMonth() + 1; // JavaScript months are 0-indexed
+      const year = date.getFullYear();
+      
+      const response = await api.get(`/doctors/${doctorId}/available-dates?month=${month}&year=${year}`);
+      setAvailableDates(response.data.data || []);
+    } catch (error) {
+      console.error("Failed to fetch available dates:", error);
+      toast.error('Failed to load available dates');
+      setAvailableDates([]);
+    } finally {
+      setLoadingDates(false);
+    }
+  };
+
+  // Handle date selection from calendar
+  const handleDateSelect = (dateStr) => {
+    console.log('Date selected:', dateStr);
+    setForm({ ...form, date: dateStr, timeSlot: '' });
+  };
+
+  // Handle month change from calendar
+  const handleCalendarMonthChange = (newMonth) => {
+    setCurrentMonth(newMonth);
   };
 
   // Initial data fetch
@@ -78,14 +117,28 @@ export default function BookAppointment() {
   const onChange = (e) => {
     const { name, value } = e.target;
     if (name === 'date') {
+      // Check if the selected date is available
+      if (selectedDoctor && value && !availableDates.includes(value)) {
+        toast.error('This date is not available for the selected doctor. Please choose another date.');
+        return;
+      }
       setForm({ ...form, date: value, timeSlot: '' });
     } else {
       setForm({ ...form, [name]: value });
     }
   };
 
+  // Handle month navigation for the date picker
+  const handleMonthChange = (direction) => {
+    const newMonth = new Date(currentMonth);
+    newMonth.setMonth(currentMonth.getMonth() + direction);
+    setCurrentMonth(newMonth);
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
+    console.log('Form submitted with:', { date: form.date, timeSlot: form.timeSlot });
+    
     if (!selectedDoctor || !form.date || !form.timeSlot) {
       toast.error('Please complete all fields.');
       return;
@@ -123,6 +176,19 @@ export default function BookAppointment() {
     setSearchQuery('');
   }, [filterDistrict]);
 
+  // Fetch available dates when doctor is selected or month changes
+  useEffect(() => {
+    if (selectedDoctor) {
+      fetchAvailableDates(selectedDoctor.userId._id, currentMonth);
+    } else {
+      setAvailableDates([]);
+      // Clear selected date if no doctor is selected
+      if (form.date) {
+        setForm({ ...form, date: '', timeSlot: '' });
+      }
+    }
+  }, [selectedDoctor, currentMonth]);
+
   const [availableSlots, setAvailableSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
 
@@ -136,7 +202,7 @@ export default function BookAppointment() {
 
       setLoadingSlots(true);
       try {
-        const response = await api.get(`/patients/doctors/${selectedDoctor.userId._id}/available-slots?date=${form.date}`);
+        const response = await api.get(`/doctors/${selectedDoctor.userId._id}/available-slots?date=${form.date}`);
         setAvailableSlots(response.data.data || []);
       } catch (error) {
         console.error('Error fetching available slots:', error);
@@ -240,7 +306,7 @@ export default function BookAppointment() {
       {/* Booking Modal */}
       {selectedDoctor && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50 animate-fade-in-fast">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 relative">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 relative">
             <button onClick={() => setSelectedDoctor(null)} className="absolute top-4 right-4 text-text-secondary hover:text-text-primary">
               <FiX size={24} />
             </button>
@@ -251,11 +317,18 @@ export default function BookAppointment() {
                 <p className="text-primary font-medium">{selectedDoctor.specializationId?.name}</p>
               </div>
             </div>
-            <form onSubmit={onSubmit} className="space-y-4">
-              <div className="relative">
-                <FiCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
-                <input type="date" name="date" value={form.date} onChange={onChange} min={todayIsoDate} required
-                  className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            <form onSubmit={onSubmit} className="space-y-6">
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-text-secondary">Select Date</label>
+                <Calendar
+                  selectedDate={form.date}
+                  onDateSelect={handleDateSelect}
+                  availableDates={availableDates}
+                  minDate={todayIsoDate}
+                  loading={loadingDates}
+                  onMonthChange={handleCalendarMonthChange}
+                  className="w-full"
+                />
               </div>
               <AppSelect
                 label="Time Slot"
@@ -268,7 +341,30 @@ export default function BookAppointment() {
                 disabled={!form.date || loadingSlots}
                 searchPlaceholder="Search time slots..."
               />
-              <button disabled={booking} className="w-full bg-primary text-white font-bold h-12 rounded-lg disabled:opacity-50 hover:bg-primary-light transition-all">
+              
+              {/* Appointment Summary */}
+              {form.date && form.timeSlot && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-blue-900 mb-2">Appointment Summary</h4>
+                  <div className="space-y-1 text-sm text-blue-800">
+                    <p><span className="font-medium">Doctor:</span> {selectedDoctor.userId.name}</p>
+                    <p><span className="font-medium">Specialization:</span> {selectedDoctor.specializationId?.name}</p>
+                    <p><span className="font-medium">Date:</span> {new Date(form.date).toLocaleDateString('en-US', { 
+                      weekday: 'long', 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}</p>
+                    <p><span className="font-medium">Time:</span> {form.timeSlot}</p>
+                  </div>
+                </div>
+              )}
+              
+              <button 
+                type="submit"
+                disabled={booking || !form.date || !form.timeSlot} 
+                className="w-full bg-primary text-white font-bold h-12 rounded-lg disabled:opacity-50 hover:bg-primary-light transition-all"
+              >
                 {booking ? 'Booking...' : 'Confirm Appointment'}
               </button>
             </form>

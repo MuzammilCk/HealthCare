@@ -1,9 +1,14 @@
 const express = require('express');
 const { protect, authorize } = require('../middleware/auth');
-const { getDoctorProfile, getDoctorAppointments, updateAppointment, updateAvailability, createPrescription, submitKyc, scheduleFollowUp } = require('../controllers/doctors');
+const { getDoctorProfile, getDoctorAppointments, updateAppointment, updateAvailability, createPrescription, submitKyc, scheduleFollowUp, getAvailableSlots, getAvailableDates } = require('../controllers/doctors');
 
 const router = express.Router();
 
+// Public routes for appointment booking (no auth required)
+router.get('/:id/available-slots', getAvailableSlots);
+router.get('/:id/available-dates', getAvailableDates);
+
+// Protected routes for doctors only
 router.use(protect);
 router.use(authorize('doctor'));
 
