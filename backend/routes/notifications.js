@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   getNotifications,
   getUnreadCount,
+  getUnreadKycCount,
   markAsRead,
   markAllAsRead,
   deleteNotification,
@@ -18,6 +19,9 @@ router.get('/', getNotifications);
 
 // GET /api/notifications/unread-count - Get unread notifications count
 router.get('/unread-count', getUnreadCount);
+
+// GET /api/notifications/unread-kyc-count - Get unread KYC notifications count
+router.get('/unread-kyc-count', getUnreadKycCount);
 
 // PUT /api/notifications/:id/read - Mark a specific notification as read
 router.put('/:id/read', markAsRead);

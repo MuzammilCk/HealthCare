@@ -17,6 +17,7 @@ export default function BookAppointment() {
   const [form, setForm] = useState({ date: '', timeSlot: '' });
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const todayIsoDate = useMemo(() => new Date().toISOString().split('T')[0], []);
 
@@ -82,9 +83,27 @@ export default function BookAppointment() {
   };
 
   const filteredDoctors = useMemo(() => {
-    if (!selectedSpecId) return doctors;
-    return doctors.filter(doc => doc.specializationId?._id === selectedSpecId);
-  }, [doctors, selectedSpecId]);
+    let filtered = doctors;
+    
+    // Filter by specialization
+    if (selectedSpecId) {
+      filtered = filtered.filter(doc => doc.specializationId?._id === selectedSpecId);
+    }
+    
+    // Filter by search query (case-insensitive)
+    if (searchQuery.trim()) {
+      filtered = filtered.filter(doc => 
+        doc.userId.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    return filtered;
+  }, [doctors, selectedSpecId, searchQuery]);
+
+  // Clear search when district changes
+  useEffect(() => {
+    setSearchQuery('');
+  }, [filterDistrict]);
 
   const availableSlotsForSelectedDate = useMemo(() => {
     if (!form.date || !selectedDoctor?.availability) return [];
@@ -133,6 +152,20 @@ export default function BookAppointment() {
 
         {/* Doctor List */}
         <div className="md:col-span-3 space-y-4">
+          {/* Search Bar */}
+          <div className="bg-white p-4 rounded-xl shadow-card">
+            <div className="relative">
+              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
+              <input
+                type="text"
+                placeholder="Search doctors by name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+            </div>
+          </div>
+          
           {loading ? (
             <div className="text-center p-6">Loading doctors...</div>
           ) : filteredDoctors.length > 0 ? (
@@ -155,7 +188,15 @@ export default function BookAppointment() {
           ) : (
             <div className="bg-white p-6 rounded-xl shadow-card text-center text-text-secondary">
               <FiSearch className="mx-auto text-4xl mb-2" />
-              <p>No doctors found for your selected filters.</p>
+              <p>
+                {searchQuery.trim() 
+                  ? `No doctors found matching "${searchQuery}".` 
+                  : "No doctors found for your selected filters."
+                }
+              </p>
+              {searchQuery.trim() && (
+                <p className="text-sm mt-2">Try a different search term or clear your search.</p>
+              )}
             </div>
           )}
         </div>

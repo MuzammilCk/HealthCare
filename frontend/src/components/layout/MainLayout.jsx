@@ -1,9 +1,10 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 import { useState } from 'react';
 import CardNav from '../CardNav';
 
-function NavLink({ to, label, isSidebarOpen, icon }) {
+function NavLink({ to, label, isSidebarOpen, icon, showNotificationDot = false }) {
   const { pathname } = useLocation();
   const active = pathname === to;
   return (
@@ -12,13 +13,19 @@ function NavLink({ to, label, isSidebarOpen, icon }) {
         ? 'bg-gradient-to-r from-primary to-primary-light text-white shadow-lg shadow-primary/25 scale-105' 
         : 'text-text-secondary hover:bg-white/10 hover:text-text-primary hover:shadow-md hover:scale-105'
     }`}>
-      <span className={`${active ? 'text-white' : ''} flex-shrink-0`}>{icon}</span>
+      <span className={`${active ? 'text-white' : ''} flex-shrink-0 relative`}>
+        {icon}
+        {showNotificationDot && (
+          <span className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-white animate-pulse"></span>
+        )}
+      </span>
       <span className={`ml-3 whitespace-nowrap ${!isSidebarOpen && 'hidden'}`}>{label}</span>
     </Link>
   );
 }
 
 function NavigationLinks({ role, isSidebarOpen }) {
+  const { unreadKycCount } = useNotifications();
   const iconProps = {
     className: "h-6 w-6",
   };
@@ -50,7 +57,13 @@ function NavigationLinks({ role, isSidebarOpen }) {
       {role === 'admin' && (
         <>
           <NavLink to="/admin/specializations" label="Specializations" isSidebarOpen={isSidebarOpen} icon={<svg {...iconProps} viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5a2 2 0 012 2v5a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2zm0 14h.01M7 11h5a2 2 0 012 2v5a2 2 0 01-2 2H7a2 2 0 01-2-2v-5a2 2 0 012-2z" /></svg>} />
-          <NavLink to="/admin/kyc-requests" label="KYC Requests" isSidebarOpen={isSidebarOpen} icon={<svg {...iconProps} viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m2-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>} />
+          <NavLink 
+            to="/admin/kyc-requests" 
+            label="KYC Requests" 
+            isSidebarOpen={isSidebarOpen} 
+            showNotificationDot={unreadKycCount > 0}
+            icon={<svg {...iconProps} viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m2-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>} 
+          />
           <NavLink to="/admin/doctors" label="Manage Doctors" isSidebarOpen={isSidebarOpen} icon={<svg {...iconProps} viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a4 4 0 00-4-4h-1M7 20H2v-2a4 4 0 014-4h1m10-6a4 4 0 11-8 0 4 4 0 018 0zM9 8a4 4 0 11-8 0 4 4 0 018 0z" /></svg>} />
         </>
       )}

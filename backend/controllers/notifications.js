@@ -165,6 +165,34 @@ const deleteNotification = async (req, res) => {
 };
 
 /**
+ * Get unread KYC notifications count for the authenticated user
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const getUnreadKycCount = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const unreadKycCount = await Notification.countDocuments({
+      userId,
+      type: 'kyc',
+      read: false
+    });
+
+    res.json({
+      success: true,
+      data: { unreadKycCount }
+    });
+  } catch (error) {
+    console.error('Error fetching unread KYC count:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch unread KYC count'
+    });
+  }
+};
+
+/**
  * Delete all read notifications for the authenticated user
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
@@ -197,6 +225,7 @@ const deleteAllRead = async (req, res) => {
 module.exports = {
   getNotifications,
   getUnreadCount,
+  getUnreadKycCount,
   markAsRead,
   markAllAsRead,
   deleteNotification,

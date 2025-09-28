@@ -17,6 +17,7 @@ export const useNotifications = () => {
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadKycCount, setUnreadKycCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const { socket } = useSocket();
   const { isAuthenticated } = useAuth();
@@ -55,6 +56,20 @@ export const NotificationProvider = ({ children }) => {
     }
   };
 
+  // Fetch unread KYC count only
+  const fetchUnreadKycCount = async () => {
+    if (!isAuthenticated) return;
+    
+    try {
+      const response = await api.get('/notifications/unread-kyc-count');
+      if (response.data.success) {
+        setUnreadKycCount(response.data.data.unreadKycCount);
+      }
+    } catch (error) {
+      console.error('Error fetching unread KYC count:', error);
+    }
+  };
+
   // Mark all notifications as read
   const markAllAsRead = async () => {
     if (!isAuthenticated) return;
@@ -80,6 +95,9 @@ export const NotificationProvider = ({ children }) => {
     try {
       const response = await api.put(`/notifications/${notificationId}/read`);
       if (response.data.success) {
+        // Find the notification to check its type
+        const notification = notifications.find(n => n._id === notificationId);
+        
         // Update local state
         setNotifications(prev => 
           prev.map(notification => 
@@ -89,6 +107,11 @@ export const NotificationProvider = ({ children }) => {
           )
         );
         setUnreadCount(prev => Math.max(0, prev - 1));
+        
+        // If it's a KYC notification, update KYC count
+        if (notification && notification.type === 'kyc') {
+          setUnreadKycCount(prev => Math.max(0, prev - 1));
+        }
       }
     } catch (error) {
       console.error('Error marking notification as read:', error);
@@ -125,6 +148,11 @@ export const NotificationProvider = ({ children }) => {
         
         // Increment unread count
         setUnreadCount(prev => prev + 1);
+        
+        // If it's a KYC notification, increment KYC count
+        if (notification.type === 'kyc') {
+          setUnreadKycCount(prev => prev + 1);
+        }
         
         // Show toast notification
         toast(notification.message, { 
@@ -167,18 +195,22 @@ export const NotificationProvider = ({ children }) => {
   useEffect(() => {
     if (isAuthenticated) {
       fetchNotifications();
+      fetchUnreadKycCount();
     } else {
       setNotifications([]);
       setUnreadCount(0);
+      setUnreadKycCount(0);
     }
   }, [isAuthenticated]);
 
   const value = {
     notifications,
     unreadCount,
+    unreadKycCount,
     loading,
     fetchNotifications,
     fetchUnreadCount,
+    fetchUnreadKycCount,
     markAllAsRead,
     markAsRead,
     deleteNotification,
