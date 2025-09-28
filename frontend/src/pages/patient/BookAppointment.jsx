@@ -69,6 +69,7 @@ export default function BookAppointment() {
       toast.success('Appointment booked successfully!');
       setSelectedDoctor(null);
       setForm({ date: '', timeSlot: '' });
+      setAvailableSlots([]);
     } catch (error) {
       toast.dismiss(loadingToast);
       const errorMessage = error.response?.data?.message || 'Booking failed.';
@@ -99,21 +100,37 @@ export default function BookAppointment() {
     
     return filtered;
   }, [doctors, selectedSpecId, searchQuery]);
-
   // Clear search when district changes
   useEffect(() => {
     setSearchQuery('');
   }, [filterDistrict]);
 
-  const availableSlotsForSelectedDate = useMemo(() => {
-    if (!form.date || !selectedDoctor?.availability) return [];
-    const dateObj = new Date(`${form.date}T00:00:00`);
-    const dayIndex = dateObj.getDay();
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const dayName = dayNames[dayIndex];
-    const matched = selectedDoctor.availability.find(av => (av.day || '').toLowerCase() === dayName.toLowerCase());
-    return matched?.slots || [];
-  }, [form.date, selectedDoctor]);
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+
+  // Fetch available slots when doctor and date are selected
+  useEffect(() => {
+    const fetchAvailableSlots = async () => {
+      if (!selectedDoctor || !form.date) {
+        setAvailableSlots([]);
+        return;
+      }
+
+      setLoadingSlots(true);
+      try {
+        const response = await api.get(`/patients/doctors/${selectedDoctor.userId._id}/available-slots?date=${form.date}`);
+        setAvailableSlots(response.data.data || []);
+      } catch (error) {
+        console.error('Error fetching available slots:', error);
+        setAvailableSlots([]);
+        toast.error('Failed to load available time slots');
+      } finally {
+        setLoadingSlots(false);
+      }
+    };
+
+    fetchAvailableSlots();
+  }, [selectedDoctor, form.date]);
 
   return (
     <div className="space-y-6">
@@ -224,13 +241,13 @@ export default function BookAppointment() {
               </div>
               <AppSelect
                 label="Time Slot"
-                placeholder="Select a time"
+                placeholder={loadingSlots ? "Loading slots..." : availableSlots.length === 0 && form.date ? "No slots available" : "Select a time"}
                 value={form.timeSlot}
                 onChange={(value) => setForm({ ...form, timeSlot: value })}
-                options={availableSlotsForSelectedDate.map(slot => ({ value: slot, label: slot }))}
+                options={availableSlots.map(slot => ({ value: slot, label: slot }))}
                 icon={FiClock}
                 required
-                disabled={!form.date}
+                disabled={!form.date || loadingSlots}
                 searchPlaceholder="Search time slots..."
               />
               <button disabled={booking} className="w-full bg-primary text-white font-bold h-12 rounded-lg disabled:opacity-50 hover:bg-primary-light transition-all">

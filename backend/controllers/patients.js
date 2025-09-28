@@ -60,6 +60,67 @@ exports.getDoctors = async (req, res) => {
   }
 };
 
+// GET /api/patients/doctors/:doctorId/available-slots?date=YYYY-MM-DD
+exports.getAvailableSlots = async (req, res) => {
+  try {
+    const { doctorId } = req.params;
+    const { date } = req.query;
+
+    if (!date) {
+      return res.status(400).json({ success: false, message: 'Date is required' });
+    }
+
+    // Find the doctor
+    const doctor = await Doctor.findOne({ userId: doctorId });
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: 'Doctor not found' });
+    }
+
+    // Get the day of the week for the requested date
+    const dateObj = new Date(date + 'T00:00:00');
+    const dayIndex = dateObj.getDay();
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayName = dayNames[dayIndex];
+
+    // Find doctor's availability for this day
+    const dayAvailability = doctor.availability.find(av => 
+      (av.day || '').toLowerCase() === dayName.toLowerCase()
+    );
+
+    if (!dayAvailability || !dayAvailability.slots) {
+      return res.json({ success: true, data: [] });
+    }
+
+    // Get all scheduled appointments for this doctor on this date
+    const bookedAppointments = await Appointment.find({
+      doctorId: doctorId,
+      date: dateObj,
+      status: 'Scheduled' // Only consider scheduled appointments as blocking slots
+    }).select('timeSlot');
+
+    const bookedSlots = bookedAppointments.map(apt => apt.timeSlot);
+
+    // Filter out booked slots from available slots
+    const availableSlots = dayAvailability.slots.filter(slot => 
+      !bookedSlots.includes(slot)
+    );
+
+    res.json({ 
+      success: true, 
+      data: availableSlots,
+      debug: {
+        dayName,
+        totalSlots: dayAvailability.slots,
+        bookedSlots,
+        availableSlots
+      }
+    });
+  } catch (error) {
+    console.error('Error getting available slots:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
 // POST /api/patients/appointments
 exports.bookAppointment = async (req, res) => {
   const { doctorId, date, timeSlot } = req.body;

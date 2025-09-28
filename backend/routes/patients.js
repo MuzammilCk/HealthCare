@@ -4,6 +4,7 @@ const {
   getMedicalHistory,
   updateMedicalHistory,
   getDoctors,
+  getAvailableSlots,
   bookAppointment,
   getAppointments,
   getPrescriptions,
@@ -18,6 +19,7 @@ router.use(authorize('patient'));
 
 router.route('/me/medical-history').get(getMedicalHistory).put(updateMedicalHistory);
 router.get('/doctors', getDoctors);
+router.get('/doctors/:doctorId/available-slots', getAvailableSlots);
 router.route('/appointments').get(getAppointments).post(bookAppointment);
 router.delete('/appointments/:appointmentId', cancelAppointment);
 router.post('/appointments/:appointmentId/rate', rateAppointment);

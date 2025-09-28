@@ -66,16 +66,27 @@ export default function Appointments() {
       // Parse appointment date (handle both string and Date objects)
       let appointmentDate;
       if (typeof appointment.date === 'string') {
-        // Handle YYYY-MM-DD format
-        appointmentDate = new Date(appointment.date + 'T00:00:00');
+        // Handle YYYY-MM-DD format and ISO strings
+        appointmentDate = appointment.date.includes('T') 
+          ? new Date(appointment.date) 
+          : new Date(appointment.date + 'T00:00:00');
       } else {
         appointmentDate = new Date(appointment.date);
+      }
+      
+      // Validate the parsed date
+      if (isNaN(appointmentDate.getTime())) {
+        console.error('Invalid appointment date:', appointment.date);
+        return { 
+          canCancel: false, 
+          reason: 'Invalid appointment date', 
+          timeRemaining: null 
+        };
       }
       
       // Parse time slot intelligently
       let timeSlot = appointment.timeSlot || '';
       
-      // Extract start time from time slot (handle ranges like "09:00-10:00")
       let startTime = timeSlot;
       if (timeSlot.includes('-')) {
         startTime = timeSlot.split('-')[0].trim();
@@ -83,15 +94,15 @@ export default function Appointments() {
       
       // Convert startTime to 24h hours/minutes robustly (supports "HH:mm", "HH:mm:ss", "HH:mm AM/PM", "HH AM/PM")
       const toHoursMinutes = (timeStr) => {
-        if (!timeStr) return { hours: NaN, minutes: NaN };
+        if (!timeStr) return { hours: 0, minutes: 0 };
         let s = String(timeStr).trim();
         const hasAM = /\bAM\b/i.test(s);
         const hasPM = /\bPM\b/i.test(s);
         s = s.replace(/\bAM\b|\bPM\b/gi, '').trim();
         // If seconds are present, drop them
         const parts = s.split(':');
-        let h = Number(parts[0]);
-        let m = parts.length > 1 ? Number(parts[1]) : 0;
+        let h = parseInt(parts[0], 10);
+        let m = parts.length > 1 ? parseInt(parts[1], 10) : 0;
         if (Number.isNaN(h)) h = 0;
         if (Number.isNaN(m)) m = 0;
         if (hasPM && h < 12) h += 12;
@@ -101,12 +112,21 @@ export default function Appointments() {
 
       // Normalize time format if missing minutes
       if (!startTime.includes(':')) startTime = startTime + ':00';
-
       const { hours, minutes } = toHoursMinutes(startTime);
 
       // Create full datetime for appointment
       const appointmentDateTime = new Date(appointmentDate);
       appointmentDateTime.setHours(hours, minutes, 0, 0);
+      
+      // Validate the final appointment datetime
+      if (isNaN(appointmentDateTime.getTime())) {
+        console.error('Invalid appointment datetime created:', { appointmentDate, hours, minutes });
+        return { 
+          canCancel: false, 
+          reason: 'Invalid appointment time', 
+          timeRemaining: null 
+        };
+      }
       
       // Calculate time difference
       const timeDiffMs = appointmentDateTime.getTime() - now.getTime();
@@ -158,7 +178,11 @@ export default function Appointments() {
       };
       
     } catch (error) {
-      console.error('Error analyzing appointment cancellation:', error);
+      console.error('Error analyzing appointment cancellation:', error, {
+        appointmentDate: appointment.date,
+        timeSlot: appointment.timeSlot,
+        status: appointment.status
+      });
       return { 
         canCancel: false, 
         reason: 'Unable to determine cancellation eligibility', 

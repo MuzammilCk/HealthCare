@@ -28,7 +28,7 @@ export default function PatientDashboard() {
   const nextAppointment = useMemo(() => {
     const now = new Date();
     return [...appointments]
-      .filter((a) => new Date(a.date) >= now)
+      .filter((a) => new Date(a.date) >= now && a.status === 'Scheduled')
       .sort((a, b) => new Date(a.date) - new Date(b.date))[0];
   }, [appointments]);
 
@@ -40,7 +40,7 @@ export default function PatientDashboard() {
         type: 'appointment',
         date: d,
         title: `Appointment with ${a.doctorId?.name || 'Doctor'}`,
-        subtitle: `${d.toLocaleDateString()}${a.timeSlot ? ' • ' + a.timeSlot : ''}`,
+        subtitle: `${d.toLocaleDateString()}${a.timeSlot ? ' • ' + a.timeSlot : ''} • ${a.status}`,
       });
     }
     for (const p of (Array.isArray(prescriptions) ? prescriptions : [])) {
