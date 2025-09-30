@@ -12,7 +12,7 @@ router.use(sanitizeInput);
 
 router.post(
   '/register',
-  rateLimitSensitiveOps(15 * 60 * 1000, 3), // 3 attempts per 15 minutes
+  rateLimitSensitiveOps(15 * 60 * 1000, 50), // 3 attempts per 15 minutes
   [
     check('name', 'Name is required').not().isEmpty(),
     check('email', 'Valid email required').isEmail(),
