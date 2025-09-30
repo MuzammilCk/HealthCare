@@ -4,6 +4,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const http = require('http');
 const { Server } = require('socket.io');
 
@@ -88,6 +89,8 @@ global.sendNotification = sendNotification;
 
 // Body parser
 app.use(express.json());
+// Cookie parser (for httpOnly JWT cookies)
+app.use(cookieParser());
 
 // Serve static files for uploaded images
 app.use('/uploads', express.static('uploads'));

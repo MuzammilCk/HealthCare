@@ -8,44 +8,40 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
-    if (token && userStr) {
+    const init = async () => {
       try {
-        setUser(JSON.parse(userStr));
-      } catch {}
-    }
-    setLoading(false);
+        const res = await api.get('/auth/me');
+        setUser(res.data?.data || null);
+      } catch (e) {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    init();
   }, []);
 
   const login = async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
-    const { token, user } = res.data;
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
+    const { user } = res.data;
     setUser(user);
     return user;
   };
 
   const register = async (payload) => {
     const res = await api.post('/auth/register', payload);
-    const { token, user } = res.data;
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
+    const { user } = res.data;
     setUser(user);
     return user;
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
+    return api.post('/auth/logout').finally(() => setUser(null));
   };
 
   const updateUser = (updatedUserData) => {
     const newUser = { ...user, ...updatedUserData };
     setUser(newUser);
-    localStorage.setItem('user', JSON.stringify(newUser));
   };
 
   const value = useMemo(() => ({ user, loading, login, register, logout, updateUser, isAuthenticated: () => !!user }), [user, loading]);

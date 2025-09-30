@@ -3,6 +3,18 @@ const Doctor = require('../models/Doctor'); // Import the Doctor model
 const { validationResult } = require('express-validator');
 const { createRoleBasedNotifications } = require('../utils/createNotification');
 
+// Helper to send cookie
+const sendTokenCookie = (res, token) => {
+  const isProd = process.env.NODE_ENV === 'production';
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: isProd, // only over HTTPS in production
+    sameSite: isProd ? 'none' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    path: '/',
+  });
+};
+
 /**
  * @desc    Register a new user (patient or doctor)
  * @route   POST /api/auth/register
@@ -61,12 +73,12 @@ exports.register = async (req, res) => {
       );
     }
 
-    // Step 3: Return the authentication token and user info
+    // Step 3: Set cookie and return user info
     const token = user.getSignedJwtToken();
+    sendTokenCookie(res, token);
     res.status(201).json({ 
-      success: true, 
-      token, 
-      user: { id: user._id, name: user.name, email: user.email, role: user.role, district: user.district } 
+      success: true,
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, district: user.district }
     });
 
   } catch (e) {
@@ -103,10 +115,10 @@ exports.login = async (req, res) => {
     }
 
     const token = user.getSignedJwtToken();
+    sendTokenCookie(res, token);
     res.json({ 
-      success: true, 
-      token, 
-      user: { id: user._id, name: user.name, email: user.email, role: user.role, district: user.district } 
+      success: true,
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, district: user.district }
     });
   } catch (e) {
     console.error(e);
@@ -124,6 +136,21 @@ exports.getMe = async (req, res) => {
     // req.user is set by the 'protect' middleware
     const user = await User.findById(req.user.id).select('-password');
     res.json({ success: true, data: user });
+  } catch (e) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+/**
+ * @desc    Logout current user (clear cookie)
+ * @route   POST /api/auth/logout
+ * @access  Private
+ */
+exports.logout = async (req, res) => {
+  try {
+    const isProd = process.env.NODE_ENV === 'production';
+    res.clearCookie('token', { httpOnly: true, secure: isProd, sameSite: isProd ? 'none' : 'lax', path: '/' });
+    res.json({ success: true });
   } catch (e) {
     res.status(500).json({ success: false, message: 'Server error' });
   }

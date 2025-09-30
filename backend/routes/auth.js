@@ -1,6 +1,6 @@
 const express = require('express');
 const { check } = require('express-validator');
-const { register, login, getMe } = require('../controllers/auth');
+const { register, login, getMe, logout } = require('../controllers/auth');
 const { protect } = require('../middleware/auth');
 const { rateLimitSensitiveOps, sanitizeInput, securityHeaders } = require('../middleware/security');
 
@@ -33,5 +33,6 @@ router.post(
 );
 
 router.get('/me', protect, getMe);
+router.post('/logout', protect, logout);
 
 module.exports = router;
