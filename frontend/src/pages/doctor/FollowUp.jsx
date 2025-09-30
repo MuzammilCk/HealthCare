@@ -56,7 +56,11 @@ export default function FollowUp() {
     const loadingToast = toast.loading('Scheduling follow-up...');
     
     try {
-      const res = await api.post(`/doctors/appointments/${apptFromState._id}/follow-up`, { notes, date, timeSlot });
+      const res = await api.post(`/doctors/appointments/${apptFromState._id}/follow-up`, { 
+        notes, 
+        date, // Send as ISO date string (YYYY-MM-DD)
+        timeSlot 
+      });
       toast.dismiss(loadingToast);
       toast.success('Follow-up scheduled successfully!');
       const newApptId = res.data?.data?.followUp?._id;

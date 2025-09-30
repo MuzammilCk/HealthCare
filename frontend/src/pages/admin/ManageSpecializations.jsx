@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FiPlus, FiBriefcase, FiFileText } from 'react-icons/fi';
+import { FiPlus, FiBriefcase, FiFileText, FiEdit2, FiTrash2, FiX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 import {
@@ -19,6 +19,8 @@ export default function ManageSpecializations() {
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [editingSpec, setEditingSpec] = useState(null);
+  const [deletingSpec, setDeletingSpec] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -56,9 +58,61 @@ export default function ManageSpecializations() {
     }
   };
 
+  const handleEdit = (spec) => {
+    setEditingSpec({ ...spec });
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    if (!editingSpec.name) {
+      toast.error('Name is required');
+      return;
+    }
+
+    setSaving(true);
+    const loadingToast = toast.loading('Updating specialization...');
+
+    try {
+      await api.put(`/specializations/${editingSpec._id}`, {
+        name: editingSpec.name,
+        description: editingSpec.description
+      });
+      toast.dismiss(loadingToast);
+      toast.success('Specialization updated successfully!');
+      setEditingSpec(null);
+      await load();
+    } catch (e) {
+      toast.dismiss(loadingToast);
+      toast.error(e.response?.data?.message || 'Failed to update specialization.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deletingSpec) return;
+
+    setSaving(true);
+    const loadingToast = toast.loading('Deleting specialization...');
+
+    try {
+      await api.delete(`/specializations/${deletingSpec._id}`);
+      toast.dismiss(loadingToast);
+      toast.success('Specialization deleted successfully!');
+      setDeletingSpec(null);
+      await load();
+    } catch (e) {
+      toast.dismiss(loadingToast);
+      toast.error(e.response?.data?.message || 'Failed to delete specialization.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const columns = [
     { label: 'Specialization', icon: <FiBriefcase className="w-4 h-4 text-blue-500" /> },
-    { label: 'Description', icon: <FiFileText className="w-4 h-4 text-green-500" /> }
+    { label: 'Description', icon: <FiFileText className="w-4 h-4 text-green-500" /> },
+    { label: 'Actions', icon: null }
   ];
 
   return (
@@ -170,6 +224,29 @@ export default function ManageSpecializations() {
                         )}
                       </div>
                     </ModernTableCell>
+                    
+                    <ModernTableCell>
+                      <div className="flex items-center gap-2">
+                        <ActionButton
+                          variant="secondary"
+                          size="sm"
+                          icon={<FiEdit2 className="w-4 h-4" />}
+                          onClick={() => handleEdit(specialization)}
+                          title="Edit"
+                        >
+                          Edit
+                        </ActionButton>
+                        <ActionButton
+                          variant="danger"
+                          size="sm"
+                          icon={<FiTrash2 className="w-4 h-4" />}
+                          onClick={() => setDeletingSpec(specialization)}
+                          title="Delete"
+                        >
+                          Delete
+                        </ActionButton>
+                      </div>
+                    </ModernTableCell>
                   </ModernTableRow>
                 ))}
               </tbody>
@@ -224,11 +301,140 @@ export default function ManageSpecializations() {
                     <p className="mt-1 text-gray-700">{specialization.description}</p>
                   </div>
                 )}
+
+                <div className="flex gap-2 pt-3 border-t border-gray-100">
+                  <ActionButton
+                    variant="secondary"
+                    size="sm"
+                    icon={<FiEdit2 className="w-4 h-4" />}
+                    onClick={() => handleEdit(specialization)}
+                    className="flex-1"
+                  >
+                    Edit
+                  </ActionButton>
+                  <ActionButton
+                    variant="danger"
+                    size="sm"
+                    icon={<FiTrash2 className="w-4 h-4" />}
+                    onClick={() => setDeletingSpec(specialization)}
+                    className="flex-1"
+                  >
+                    Delete
+                  </ActionButton>
+                </div>
               </div>
             </MobileCard>
           ))
         )}
       </div>
+
+      {/* Edit Modal */}
+      {editingSpec && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900">Edit Specialization</h2>
+              <button
+                onClick={() => setEditingSpec(null)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <FiX className="w-6 h-6" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdate} className="space-y-4">
+              <div>
+                <label htmlFor="edit-name" className="block text-sm font-medium text-gray-700 mb-2">
+                  Specialization Name *
+                </label>
+                <input
+                  id="edit-name"
+                  type="text"
+                  value={editingSpec.name}
+                  onChange={(e) => setEditingSpec({ ...editingSpec, name: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="edit-description" className="block text-sm font-medium text-gray-700 mb-2">
+                  Description
+                </label>
+                <textarea
+                  id="edit-description"
+                  value={editingSpec.description || ''}
+                  onChange={(e) => setEditingSpec({ ...editingSpec, description: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none"
+                  rows="3"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setEditingSpec(null)}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  {saving ? 'Updating...' : 'Update'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingSpec && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900">Confirm Delete</h2>
+              <button
+                onClick={() => setDeletingSpec(null)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <FiX className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-gray-700">
+                Are you sure you want to delete the specialization{' '}
+                <span className="font-semibold">"{deletingSpec.name}"</span>?
+              </p>
+              <p className="text-sm text-red-600 mt-2">
+                This action cannot be undone.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setDeletingSpec(null)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={saving}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {saving ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

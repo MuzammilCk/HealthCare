@@ -151,7 +151,7 @@ export default function BookAppointment() {
     try {
       await api.post('/patients/appointments', {
         doctorId: selectedDoctor.userId._id,
-        date: new Date(form.date),
+        date: form.date, // Send as ISO date string (YYYY-MM-DD)
         timeSlot: form.timeSlot,
       });
       toast.dismiss(loadingToast);

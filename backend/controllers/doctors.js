@@ -3,6 +3,12 @@ const Prescription = require('../models/Prescription');
 const Doctor = require('../models/Doctor');
 const { createNotification, createRoleBasedNotifications } = require('../utils/createNotification');
 
+// Utility function to normalize date to UTC midnight
+const normalizeDateToUTC = (dateString) => {
+  const date = new Date(dateString);
+  return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0));
+};
+
 exports.getDoctorProfile = async (req, res) => {
   try {
     const doc = await Doctor.findOne({ userId: req.user.id })
@@ -206,7 +212,7 @@ exports.scheduleFollowUp = async (req, res) => {
     const followUpAppt = await Appointment.create({
       patientId: current.patientId._id || current.patientId,
       doctorId: req.user.id,
-      date: new Date(date),
+      date: normalizeDateToUTC(date),
       timeSlot,
       status: 'Scheduled',
       notes: notes || ''
@@ -233,7 +239,7 @@ exports.getAvailableSlots = async (req, res) => {
     }
 
     // Parse the date and get day of week
-    const dateObj = new Date(date);
+    const dateObj = normalizeDateToUTC(date);
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const dayName = dayNames[dateObj.getDay()];
 

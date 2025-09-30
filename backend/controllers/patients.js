@@ -5,6 +5,12 @@ const Appointment = require('../models/Appointment');
 const Prescription = require('../models/Prescription');
 const { createNotification } = require('../utils/createNotification');
 
+// Utility function to normalize date to UTC midnight
+const normalizeDateToUTC = (dateString) => {
+  const date = new Date(dateString);
+  return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0));
+};
+
 exports.getMedicalHistory = async (req, res) => {
   try {
     const mh = await MedicalHistory.findOne({ patientId: req.user.id });
@@ -168,7 +174,7 @@ exports.getAvailableSlots = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Doctor not found' });
     }
 
-    const dateObj = new Date(date + 'T00:00:00');
+    const dateObj = normalizeDateToUTC(date);
     const dayIndex = dateObj.getDay();
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const dayName = dayNames[dayIndex];
@@ -238,10 +244,13 @@ exports.getAvailableSlots = async (req, res) => {
 exports.bookAppointment = async (req, res) => {
   const { doctorId, date, timeSlot } = req.body;
   try {
-    const existing = await Appointment.findOne({ doctorId, date, timeSlot, status: 'Scheduled' });
+    // Normalize date to UTC midnight for consistent storage
+    const normalizedDate = normalizeDateToUTC(date);
+    
+    const existing = await Appointment.findOne({ doctorId, date: normalizedDate, timeSlot, status: 'Scheduled' });
     if (existing) return res.status(400).json({ success: false, message: 'Time slot not available' });
 
-    const appt = await Appointment.create({ patientId: req.user.id, doctorId, date, timeSlot });
+    const appt = await Appointment.create({ patientId: req.user.id, doctorId, date: normalizedDate, timeSlot });
 
     const populatedAppt = await Appointment.findById(appt._id)
       .populate('patientId', 'name')
