@@ -7,7 +7,7 @@ const notificationSchema = new mongoose.Schema(
     link: { type: String, default: '' },
     type: {
       type: String,
-      enum: ['appointment', 'prescription', 'kyc', 'system', 'reminder'],
+      enum: ['appointment', 'prescription', 'kyc', 'system', 'reminder', 'refund'],
       default: 'system',
     },
     metadata: { type: Object, default: {} },
