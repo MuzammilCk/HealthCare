@@ -449,3 +449,150 @@ exports.rateAppointment = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
+/**
+ * Cancel appointment with refund policy
+ * Policy: If cancelled more than 3 days in advance, 50% refund
+ */
+exports.cancelAppointment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const patientId = req.user.id;
+
+    // Fetch the appointment
+    const appointment = await Appointment.findById(id).populate('doctorId', 'name');
+    
+    if (!appointment) {
+      return res.status(404).json({ success: false, message: 'Appointment not found' });
+    }
+
+    // Verify ownership
+    if (appointment.patientId.toString() !== patientId) {
+      return res.status(403).json({ success: false, message: 'Unauthorized access' });
+    }
+
+    // Check if appointment can be cancelled
+    if (appointment.status === 'Completed') {
+      return res.status(400).json({ success: false, message: 'Cannot cancel completed appointment' });
+    }
+
+    if (appointment.status.includes('cancelled')) {
+      return res.status(400).json({ success: false, message: 'Appointment already cancelled' });
+    }
+
+    // Check if booking fee was paid
+    if (appointment.bookingFeeStatus !== 'paid') {
+      // No payment made, just cancel
+      appointment.status = 'cancelled_no_refund';
+      await appointment.save();
+
+      // Send notification to doctor
+      await createNotification(
+        appointment.doctorId._id,
+        `Appointment cancelled by patient`,
+        `/doctor/appointments`,
+        'appointment'
+      );
+
+      return res.json({ 
+        success: true, 
+        message: 'Appointment cancelled successfully',
+        refundEligible: false
+      });
+    }
+
+    // Calculate days until appointment
+    const now = new Date();
+    const appointmentDate = new Date(appointment.date);
+    const daysUntilAppointment = Math.ceil((appointmentDate - now) / (1000 * 60 * 60 * 24));
+
+    // Determine refund eligibility (more than 3 days in advance = 50% refund)
+    const isRefundEligible = daysUntilAppointment > 3;
+
+    if (isRefundEligible) {
+      // 50% refund
+      const Payment = require('../models/Payment');
+      const Doctor = require('../models/Doctor');
+      
+      // Get the doctor's consultation fee
+      const doctorProfile = await Doctor.findOne({ userId: appointment.doctorId });
+      const consultationFee = doctorProfile?.consultationFee || 25000;
+      const refundAmount = Math.floor(consultationFee * 0.5); // 50% refund
+
+      // Create mock refund payment record
+      const refundPayment = new Payment({
+        patientId: appointment.patientId,
+        doctorId: appointment.doctorId,
+        appointmentId: appointment._id,
+        amount: refundAmount,
+        paymentType: 'refund',
+        stripeSessionId: `refund_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        stripePaymentIntentId: `refund_pay_${Date.now()}`,
+        status: 'completed',
+        paymentDate: new Date(),
+        metadata: {
+          reason: 'Appointment cancelled more than 3 days in advance',
+          refundPercentage: 50,
+          originalAmount: consultationFee
+        }
+      });
+
+      await refundPayment.save();
+
+      appointment.status = 'cancelled_refunded';
+      await appointment.save();
+
+      // Send notifications
+      await createNotification(
+        patientId,
+        `50% refund processed for cancelled appointment`,
+        `/patient/bills`,
+        'refund'
+      );
+
+      await createNotification(
+        appointment.doctorId._id,
+        `Appointment cancelled by patient (refunded)`,
+        `/doctor/appointments`,
+        'appointment'
+      );
+
+      return res.json({ 
+        success: true, 
+        message: 'Appointment cancelled successfully. 50% refund processed.',
+        refundEligible: true,
+        refundAmount: refundAmount,
+        refundPercentage: 50
+      });
+    } else {
+      // No refund (less than 3 days notice)
+      appointment.status = 'cancelled_no_refund';
+      await appointment.save();
+
+      // Send notifications
+      await createNotification(
+        patientId,
+        `Appointment cancelled. No refund (less than 3 days notice)`,
+        `/patient/appointments`,
+        'appointment'
+      );
+
+      await createNotification(
+        appointment.doctorId._id,
+        `Appointment cancelled by patient (no refund)`,
+        `/doctor/appointments`,
+        'appointment'
+      );
+
+      return res.json({ 
+        success: true, 
+        message: 'Appointment cancelled. No refund eligible (less than 3 days notice).',
+        refundEligible: false,
+        daysUntilAppointment: daysUntilAppointment
+      });
+    }
+  } catch (error) {
+    console.error('Error cancelling appointment:', error);
+    res.status(500).json({ success: false, message: 'Failed to cancel appointment' });
+  }
+};

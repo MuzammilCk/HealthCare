@@ -36,6 +36,14 @@ const doctorSchema = new mongoose.Schema(
     },
     // Patient ratings (1-5)
     ratings: [{ type: Number, min: 1, max: 5 }],
+    // Consultation fee in paise (e.g., 25000 = ₹250)
+    consultationFee: { 
+      type: Number, 
+      required: true, 
+      default: 25000,
+      min: 0,
+      comment: 'Consultation fee in paise (smallest currency unit)'
+    },
   },
   { timestamps: true }
 );

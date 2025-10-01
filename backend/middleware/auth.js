@@ -37,3 +37,6 @@ exports.authorize = (...roles) => (req, res, next) => {
   
   next();
 };
+
+// Alias for authorize - more intuitive naming
+exports.restrictTo = (...roles) => exports.authorize(...roles);

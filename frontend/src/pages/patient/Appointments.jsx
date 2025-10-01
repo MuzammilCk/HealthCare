@@ -202,22 +202,40 @@ export default function Appointments() {
     setShowCancelModal(true);
   };
 
-  // Handle actual cancellation
+  // Handle actual cancellation with refund logic
   const handleCancelAppointment = async () => {
     if (!appointmentToCancel) return;
     
     setCancellingId(appointmentToCancel._id);
+    const loadingToast = toast.loading('Cancelling appointment...');
+    
     try {
-      await api.delete(`/patients/appointments/${appointmentToCancel._id}`);
+      const response = await api.post(`/patients/appointments/${appointmentToCancel._id}/cancel`);
+      
+      // Update appointment in list
       setList(prev => prev.map(x => 
         x._id === appointmentToCancel._id 
-          ? { ...x, status: 'Cancelled' } 
+          ? { ...x, status: response.data.refundEligible ? 'cancelled_refunded' : 'cancelled_no_refund' } 
           : x
       ));
-      toast.success('Appointment cancelled successfully!');
+      
+      toast.dismiss(loadingToast);
+      
+      // Show appropriate success message based on refund eligibility
+      if (response.data.refundEligible) {
+        const refundAmount = (response.data.refundAmount / 100).toFixed(2);
+        toast.success(
+          `Appointment cancelled successfully! ₹${refundAmount} (${response.data.refundPercentage}%) refund processed.`,
+          { duration: 5000 }
+        );
+      } else {
+        toast.success(response.data.message || 'Appointment cancelled successfully!');
+      }
+      
       setShowCancelModal(false);
       setAppointmentToCancel(null);
     } catch (error) {
+      toast.dismiss(loadingToast);
       toast.error(error?.response?.data?.message || 'Failed to cancel appointment');
     } finally {
       setCancellingId(null);

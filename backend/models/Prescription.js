@@ -9,6 +9,12 @@ const prescriptionSchema = new mongoose.Schema(
     dosage: { type: String, required: true },
     instructions: { type: String, required: true },
     dateIssued: { type: Date, default: Date.now },
+    price: { 
+      type: Number, 
+      default: 0,
+      min: 0,
+      comment: 'Price in paise (smallest currency unit)'
+    },
   },
   { timestamps: false }
 );

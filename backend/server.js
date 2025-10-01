@@ -114,6 +114,9 @@ app.use('/api/specializations', require('./routes/specializations'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/ai/check-symptoms', require('./routes/aiSymptomChecker'));
+app.use('/api/mock-payments', require('./routes/mockPayments'));
+app.use('/api/bills', require('./routes/bills'));
+app.use('/api/medical-history', require('./routes/medicalHistory'));
 
 // Error handler
 app.use((err, req, res, next) => {

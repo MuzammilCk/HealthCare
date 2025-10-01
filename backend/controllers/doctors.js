@@ -445,3 +445,52 @@ exports.getAvailableDates = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
+/**
+ * Update doctor profile including consultation fee
+ */
+exports.updateDoctorProfile = async (req, res) => {
+  try {
+    const doctorId = req.user.id;
+    const updateData = req.body;
+
+    // Find doctor profile
+    const doctorProfile = await Doctor.findOne({ userId: doctorId });
+    if (!doctorProfile) {
+      return res.status(404).json({ success: false, message: 'Doctor profile not found' });
+    }
+
+    // Update allowed fields
+    const allowedFields = [
+      'bio', 
+      'qualifications', 
+      'languages', 
+      'experienceYears', 
+      'location', 
+      'district',
+      'consultationFee' // Allow updating consultation fee
+    ];
+
+    allowedFields.forEach(field => {
+      if (updateData[field] !== undefined) {
+        doctorProfile[field] = updateData[field];
+      }
+    });
+
+    await doctorProfile.save();
+
+    // Populate and return updated profile
+    const updatedProfile = await Doctor.findById(doctorProfile._id)
+      .populate('userId', 'name email')
+      .populate('specializationId', 'name description');
+
+    res.json({ 
+      success: true, 
+      message: 'Profile updated successfully',
+      data: updatedProfile 
+    });
+  } catch (error) {
+    console.error('Error updating doctor profile:', error);
+    res.status(500).json({ success: false, message: 'Failed to update profile' });
+  }
+};

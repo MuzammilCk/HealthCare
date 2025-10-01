@@ -24,7 +24,7 @@ router.post(
 
 router.post(
   '/login',
-  rateLimitSensitiveOps(15 * 60 * 1000, 5), // 5 attempts per 15 minutes
+  rateLimitSensitiveOps(15 * 60 * 1000, 50), // 5 attempts per 15 minutes
   [
     check('email', 'Valid email required').isEmail(),
     check('password', 'Password required').exists(),

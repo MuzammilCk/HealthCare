@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiCalendar, FiUser, FiActivity, FiFileText, FiCheckCircle, FiClock, FiEdit3 } from 'react-icons/fi';
+import { FiCalendar, FiUser, FiActivity, FiFileText, FiCheckCircle, FiClock, FiEdit3, FiDollarSign } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 import { AppSelect } from '../../components/ui';
@@ -175,19 +175,31 @@ export default function DoctorAppointments() {
                           </>
                         )}
                         {appointment.status === 'Completed' && (
-                          <ActionButton
-                            variant="primary"
-                            size="xs"
-                            icon={<FiFileText className="w-3 h-3" />}
-                            onClick={() => navigate('/doctor/prescriptions/new', { 
-                              state: { 
-                                patientId: appointment.patientId?._id, 
-                                appointmentId: appointment._id 
-                              } 
-                            })}
-                          >
-                            Prescription
-                          </ActionButton>
+                          <>
+                            <ActionButton
+                              variant="primary"
+                              size="xs"
+                              icon={<FiFileText className="w-3 h-3" />}
+                              onClick={() => navigate('/doctor/prescriptions/new', { 
+                                state: { 
+                                  patientId: appointment.patientId?._id, 
+                                  appointmentId: appointment._id 
+                                } 
+                              })}
+                            >
+                              Prescription
+                            </ActionButton>
+                            <ActionButton
+                              variant="success"
+                              size="xs"
+                              icon={<FiDollarSign className="w-3 h-3" />}
+                              onClick={() => navigate('/doctor/generate-bill', { 
+                                state: { appointment } 
+                              })}
+                            >
+                              Bill
+                            </ActionButton>
+                          </>
                         )}
                       </div>
                     </ModernTableCell>
@@ -282,20 +294,33 @@ export default function DoctorAppointments() {
                     </>
                   )}
                   {appointment.status === 'Completed' && (
-                    <ActionButton
-                      variant="primary"
-                      size="sm"
-                      icon={<FiFileText className="w-4 h-4" />}
-                      onClick={() => navigate('/doctor/prescriptions/new', { 
-                        state: { 
-                          patientId: appointment.patientId?._id, 
-                          appointmentId: appointment._id 
-                        } 
-                      })}
-                      className="w-full justify-center"
-                    >
-                      Create Prescription
-                    </ActionButton>
+                    <>
+                      <ActionButton
+                        variant="primary"
+                        size="sm"
+                        icon={<FiFileText className="w-4 h-4" />}
+                        onClick={() => navigate('/doctor/prescriptions/new', { 
+                          state: { 
+                            patientId: appointment.patientId?._id, 
+                            appointmentId: appointment._id 
+                          } 
+                        })}
+                        className="flex-1 justify-center"
+                      >
+                        Prescription
+                      </ActionButton>
+                      <ActionButton
+                        variant="success"
+                        size="sm"
+                        icon={<FiDollarSign className="w-4 h-4" />}
+                        onClick={() => navigate('/doctor/generate-bill', { 
+                          state: { appointment } 
+                        })}
+                        className="flex-1 justify-center"
+                      >
+                        Generate Bill
+                      </ActionButton>
+                    </>
                   )}
                 </div>
               </div>

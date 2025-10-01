@@ -146,28 +146,65 @@ export default function BookAppointment() {
     }
     
     setBooking(true);
-    const loadingToast = toast.loading('Booking appointment...');
+    const loadingToast = toast.loading('Processing payment...');
     
     try {
-      await api.post('/patients/appointments', {
+      // Step 1: Create mock payment order (WITHOUT creating appointment yet)
+      const orderRes = await api.post('/mock-payments/create-booking-order', {
         doctorId: selectedDoctor.userId._id,
-        date: form.date, // Send as ISO date string (YYYY-MM-DD)
+        date: form.date,
         timeSlot: form.timeSlot,
       });
-      toast.dismiss(loadingToast);
-      toast.success('Appointment booked successfully!');
-      setSelectedDoctor(null);
-      setForm({ date: '', timeSlot: '' });
-      setAvailableSlots([]);
+      
+      const order = orderRes.data.order;
+      
+      // Step 2: Simulate payment processing with user choice
+      setTimeout(async () => {
+        // Ask user if they want to simulate success or failure
+        const wantsToSucceed = window.confirm(
+          `Simulate payment?\n\n` +
+          `Amount: ₹${(order.amount / 100).toFixed(2)}\n` +
+          `Doctor: ${selectedDoctor.userId.name}\n\n` +
+          `Click OK for SUCCESS\nClick Cancel for FAILURE`
+        );
+
+        if (!wantsToSucceed) {
+          // Simulate payment failure
+          toast.dismiss(loadingToast);
+          toast.error('Payment Failed! Please try again.');
+          setBooking(false);
+          return;
+        }
+
+        try {
+          // Step 3: Verify mock payment AND create appointment
+          const verifyRes = await api.post('/mock-payments/verify-payment', {
+            orderId: order.id,
+            paymentId: `pay_${Date.now()}`,
+            // Include appointment details for creation after payment
+            appointmentDetails: {
+              doctorId: selectedDoctor.userId._id,
+              date: form.date,
+              timeSlot: form.timeSlot,
+            }
+          });
+          
+          toast.dismiss(loadingToast);
+          toast.success('Payment successful! Appointment confirmed.');
+          
+          // Redirect to success page
+          window.location.href = `/payment-success?order_id=${order.id}`;
+        } catch (verifyError) {
+          toast.dismiss(loadingToast);
+          toast.error('Payment verification failed.');
+          setBooking(false);
+        }
+      }, 1500); // Simulate payment processing delay
+      
     } catch (error) {
       toast.dismiss(loadingToast);
       const errorMessage = error.response?.data?.message || 'Booking failed.';
-      if (errorMessage.includes('not available')) {
-        toast.error('This time slot is no longer available.');
-      } else {
-        toast.error(errorMessage);
-      }
-    } finally {
+      toast.error(errorMessage);
       setBooking(false);
     }
   };
@@ -357,11 +394,35 @@ export default function BookAppointment() {
                     <p><span className="font-medium">Specialization:</span> {selectedDoctor.specializationId?.name}</p>
                     <p><span className="font-medium">Date:</span> {new Date(form.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                     <p><span className="font-medium">Time:</span> {form.timeSlot}</p>
+                    <p className="pt-2 border-t border-blue-300 mt-2">
+                      <span className="font-medium">Consultation Fee:</span> 
+                      <span className="text-lg font-bold ml-2">
+                        ₹{((selectedDoctor.consultationFee || 25000) / 100).toFixed(2)}
+                      </span>
+                    </p>
                   </div>
                 </div>
               )}
+              
+              {/* Consultation Fee Display - Prominent */}
+              {form.date && form.timeSlot && (
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-green-700 font-medium">Consultation Fee</p>
+                      <p className="text-xs text-green-600">One-time booking charge</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-3xl font-bold text-green-700">
+                        ₹{((selectedDoctor.consultationFee || 25000) / 100).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <button type="submit" disabled={booking || !form.date || !form.timeSlot} className="w-full bg-primary text-white font-bold h-12 rounded-lg disabled:opacity-50 hover:bg-primary-light transition-all">
-                {booking ? 'Booking...' : 'Confirm Appointment'}
+                {booking ? 'Processing...' : `Proceed to Payment - ₹${((selectedDoctor.consultationFee || 25000) / 100).toFixed(2)}`}
               </button>
             </form>
           </div>
