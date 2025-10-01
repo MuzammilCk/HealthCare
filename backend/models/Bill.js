@@ -16,6 +16,11 @@ const billItemSchema = new mongoose.Schema({
     required: true,
     min: 0,
     comment: 'Amount per item in paise (smallest currency unit)'
+  },
+  inventoryItemId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Inventory',
+    comment: 'Reference to inventory item for stock reduction on payment'
   }
 }, { _id: true });
 

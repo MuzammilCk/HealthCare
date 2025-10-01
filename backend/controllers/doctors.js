@@ -138,42 +138,219 @@ exports.submitKyc = async (req, res) => {
   }
 };
 
-// Create a prescription for a completed appointment
+/**
+ * Create a smart prescription with inventory integration
+ * Supports both billed items (from inventory) and prescribed-only items
+ * Automatically generates bill after prescription is created
+ */
 exports.createPrescription = async (req, res) => {
-  const { appointmentId, medication, dosage, instructions } = req.body;
   try {
+    const { 
+      appointmentId, 
+      billedMedicines = [],      // Medicines from inventory to be billed
+      prescribedOnlyMedicines = [], // Medicines prescribed but not billed
+      diagnosis,
+      notes,
+      consultationFee,
+      generateBill = true         // Flag to auto-generate bill
+    } = req.body;
+    
+    const doctorId = req.user.id;
+
     // Validate user role
     if (req.user.role !== 'doctor') {
       return res.status(403).json({ success: false, message: 'Only doctors can create prescriptions' });
     }
 
     // Validate required fields
-    if (!appointmentId || !medication || !dosage || !instructions) {
-      return res.status(400).json({ success: false, message: 'All fields (appointmentId, medication, dosage, instructions) are required' });
+    if (!appointmentId) {
+      return res.status(400).json({ success: false, message: 'Appointment ID is required' });
     }
 
-    const appt = await Appointment.findOne({ _id: appointmentId, doctorId: req.user.id, status: { $in: ['Completed', 'Follow-up'] } })
+    // Find and validate appointment
+    const appt = await Appointment.findOne({ 
+      _id: appointmentId, 
+      doctorId: doctorId, 
+      status: { $in: ['Completed', 'Follow-up'] } 
+    })
       .populate('patientId', 'name')
       .populate('doctorId', 'name');
     
     if (!appt) {
-      return res.status(400).json({ success: false, message: 'Eligible appointment not found or you are not authorized to prescribe for this appointment' });
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Eligible appointment not found or you are not authorized to prescribe for this appointment' 
+      });
     }
+
+    // Check if prescription already generated (one-time action)
+    if (appt.prescriptionGenerated) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Prescription already generated for this appointment' 
+      });
+    }
+
+    // Get doctor's hospital for inventory validation
+    const Inventory = require('../models/Inventory');
+    const doctor = await Doctor.findOne({ userId: doctorId });
     
-    const pres = await Prescription.create({ appointmentId, patientId: appt.patientId, doctorId: req.user.id, medication, dosage, instructions });
+    // Validate and process billed medicines
+    const processedBilledMedicines = [];
+    if (billedMedicines && billedMedicines.length > 0) {
+      if (!doctor || !doctor.hospitalId) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Doctor not associated with any hospital. Cannot bill medicines from inventory.' 
+        });
+      }
+
+      for (const med of billedMedicines) {
+        // Find medicine in inventory
+        const inventoryItem = await Inventory.findOne({
+          hospitalId: doctor.hospitalId,
+          medicineName: { $regex: new RegExp(`^${med.medicineName}$`, 'i') },
+          isActive: true
+        });
+
+        if (!inventoryItem) {
+          return res.status(404).json({ 
+            success: false, 
+            message: `Medicine "${med.medicineName}" not found in hospital inventory` 
+          });
+        }
+
+        // Check stock availability (first check)
+        if (inventoryItem.stockQuantity < med.quantity) {
+          return res.status(400).json({ 
+            success: false, 
+            message: `Insufficient stock for "${med.medicineName}". Available: ${inventoryItem.stockQuantity}, Required: ${med.quantity}` 
+          });
+        }
+
+        processedBilledMedicines.push({
+          medicineName: med.medicineName,
+          dosage: med.dosage,
+          frequency: med.frequency,
+          duration: med.duration,
+          instructions: med.instructions || '',
+          quantity: med.quantity,
+          purchaseFromHospital: true,
+          inventoryItemId: inventoryItem._id
+        });
+      }
+    }
+
+    // Process prescribed-only medicines
+    const processedPrescribedOnly = prescribedOnlyMedicines.map(med => ({
+      medicineName: med.medicineName,
+      dosage: med.dosage,
+      frequency: med.frequency,
+      duration: med.duration,
+      instructions: med.instructions || '',
+      quantity: med.quantity || 1,
+      purchaseFromHospital: false
+    }));
+
+    // Combine all medicines
+    const allMedicines = [...processedBilledMedicines, ...processedPrescribedOnly];
+
+    if (allMedicines.length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'At least one medicine must be prescribed' 
+      });
+    }
+
+    // Get consultation fee (from request or doctor's default)
+    const finalConsultationFee = consultationFee !== undefined 
+      ? Math.round(consultationFee) 
+      : (doctor?.consultationFee || 25000);
+
+    // Create prescription
+    const prescription = new Prescription({
+      appointmentId,
+      patientId: appt.patientId._id || appt.patientId,
+      doctorId: doctorId,
+      medicines: allMedicines,
+      diagnosis: diagnosis || '',
+      notes: notes || '',
+      consultationFee: finalConsultationFee,
+      dateIssued: new Date()
+    });
+
+    await prescription.save();
+
+    // Always generate bill with doctor fee (and medicines if any)
+    let bill = null;
+    const Bill = require('../models/Bill');
     
-    // Notify the patient about the new prescription
+    const lineItems = [];
+    let totalAmount = 0;
+
+    // Add billed medicines to line items (if any)
+    for (const med of processedBilledMedicines) {
+      const inventoryItem = await Inventory.findById(med.inventoryItemId);
+      const itemTotal = inventoryItem.price * med.quantity;
+      
+      lineItems.push({
+        description: `${med.medicineName} - ${med.dosage} (${med.frequency} for ${med.duration})`,
+        quantity: med.quantity,
+        amount: inventoryItem.price,
+        inventoryItemId: inventoryItem._id
+      });
+      totalAmount += itemTotal;
+    }
+
+    // Always add doctor fee
+    lineItems.push({
+      description: 'Doctor Fee',
+      quantity: 1,
+      amount: finalConsultationFee
+    });
+    totalAmount += finalConsultationFee;
+
+    // Create bill
+    bill = new Bill({
+      appointmentId,
+      patientId: appt.patientId._id || appt.patientId,
+      doctorId: doctorId,
+      items: lineItems,
+      totalAmount: Math.round(totalAmount),
+      status: 'unpaid'
+    });
+
+    await bill.save();
+
+    // Mark appointment as both prescription and bill generated (atomic operation)
+    appt.prescriptionGenerated = true;
+    appt.finalBillGenerated = true;
+    await appt.save();
+
+    // Notify patient about prescription and bill
     await createNotification(
       appt.patientId._id || appt.patientId,
-      `Dr. ${appt.doctorId.name} has issued a new prescription for you`,
+      `Dr. ${appt.doctorId.name} has issued a new prescription and bill for you`,
       '/patient/prescriptions',
       'prescription',
-      { prescriptionId: pres._id, doctorName: appt.doctorId.name, medication }
+      { prescriptionId: prescription._id, billId: bill._id, doctorName: appt.doctorId.name }
     );
-    
-    res.status(201).json({ success: true, data: pres });
-  } catch (e) {
-    res.status(500).json({ success: false, message: 'Server error' });
+
+    res.status(201).json({ 
+      success: true, 
+      message: 'Prescription created successfully',
+      data: {
+        prescription,
+        bill: bill || null,
+        billGenerated: bill !== null
+      }
+    });
+  } catch (error) {
+    console.error('Error creating prescription:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message || 'Server error' 
+    });
   }
 };
 
@@ -442,6 +619,93 @@ exports.getAvailableDates = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching available dates:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+/**
+ * Get prescriptions created by doctor
+ */
+exports.getDoctorPrescriptions = async (req, res) => {
+  try {
+    const doctorId = req.user.id;
+    const { patientId, appointmentId } = req.query;
+
+    const query = { doctorId };
+    if (patientId) query.patientId = patientId;
+    if (appointmentId) query.appointmentId = appointmentId;
+
+    const prescriptions = await Prescription.find(query)
+      .populate('patientId', 'name email')
+      .populate('appointmentId', 'date timeSlot status')
+      .sort({ dateIssued: -1 });
+
+    res.json({ 
+      success: true, 
+      count: prescriptions.length,
+      data: prescriptions 
+    });
+  } catch (error) {
+    console.error('Error fetching prescriptions:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+/**
+ * Get single prescription by ID (read-only view)
+ */
+exports.getPrescriptionById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const doctorId = req.user.id;
+
+    const prescription = await Prescription.findById(id)
+      .populate('patientId', 'name email district')
+      .populate('doctorId', 'name')
+      .populate('appointmentId', 'date timeSlot status');
+
+    if (!prescription) {
+      return res.status(404).json({ success: false, message: 'Prescription not found' });
+    }
+
+    // Verify doctor owns this prescription
+    if (prescription.doctorId._id.toString() !== doctorId) {
+      return res.status(403).json({ success: false, message: 'Unauthorized access' });
+    }
+
+    res.json({ success: true, data: prescription });
+  } catch (error) {
+    console.error('Error fetching prescription:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+/**
+ * Get single bill by ID (read-only view)
+ */
+exports.getBillById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const doctorId = req.user.id;
+    const Bill = require('../models/Bill');
+
+    const bill = await Bill.findById(id)
+      .populate('patientId', 'name email district')
+      .populate('doctorId', 'name')
+      .populate('appointmentId', 'date timeSlot status');
+
+    if (!bill) {
+      return res.status(404).json({ success: false, message: 'Bill not found' });
+    }
+
+    // Verify doctor owns this bill
+    if (bill.doctorId._id.toString() !== doctorId) {
+      return res.status(403).json({ success: false, message: 'Unauthorized access' });
+    }
+
+    res.json({ success: true, data: bill });
+  } catch (error) {
+    console.error('Error fetching bill:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };

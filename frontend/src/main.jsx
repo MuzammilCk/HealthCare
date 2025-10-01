@@ -28,11 +28,16 @@ import DoctorDashboard from './pages/doctor/Dashboard'
 import DoctorAppointments from './pages/doctor/Appointments'
 import DoctorAvailability from './pages/doctor/Availability'
 import CreatePrescription from './pages/doctor/CreatePrescription'
+import CreatePrescriptionNew from './pages/doctor/CreatePrescriptionNew'
+import ViewPrescription from './pages/doctor/ViewPrescription'
+import ViewBill from './pages/doctor/ViewBill'
+import PatientFile from './pages/doctor/PatientFile'
 import FollowUp from './pages/doctor/FollowUp'
 import DoctorKyc from './pages/doctor/Kyc'
 import GenerateBill from './pages/doctor/GenerateBill'
 import EditMedicalHistory from './pages/doctor/EditMedicalHistory'
 import DoctorSettings from './pages/doctor/Settings'
+import Inventory from './pages/doctor/Inventory'
 import AdminDashboard from './pages/admin/Dashboard'
 import ManageSpecializations from './pages/admin/ManageSpecializations'
 import KycRequests from './pages/admin/KycRequests'
@@ -88,9 +93,11 @@ const router = createBrowserRouter([
       { index: true, element: <DoctorDashboard /> },
       { path: 'appointments', element: <DoctorAppointments /> },
       { path: 'availability', element: <DoctorAvailability /> },
-      { path: 'prescriptions/new', element: <CreatePrescription /> },
+      { path: 'prescriptions/new', element: <CreatePrescriptionNew /> },
+      { path: 'prescriptions/:id', element: <ViewPrescription /> },
+      { path: 'bills/:id', element: <ViewBill /> },
+      { path: 'patient-file', element: <PatientFile /> },
       { path: 'follow-up', element: <FollowUp /> },
-      { path: 'generate-bill', element: <GenerateBill /> },
       { path: 'edit-medical-history', element: <EditMedicalHistory /> },
       { path: 'settings', element: <DoctorSettings /> },
     ],

@@ -174,31 +174,67 @@ export default function DoctorAppointments() {
                             </ActionButton>
                           </>
                         )}
-                        {appointment.status === 'Completed' && (
+                        {(appointment.status === 'Completed' || appointment.status === 'Follow-up') && (
                           <>
-                            <ActionButton
-                              variant="primary"
-                              size="xs"
-                              icon={<FiFileText className="w-3 h-3" />}
-                              onClick={() => navigate('/doctor/prescriptions/new', { 
-                                state: { 
-                                  patientId: appointment.patientId?._id, 
-                                  appointmentId: appointment._id 
-                                } 
-                              })}
-                            >
-                              Prescription
-                            </ActionButton>
-                            <ActionButton
-                              variant="success"
-                              size="xs"
-                              icon={<FiDollarSign className="w-3 h-3" />}
-                              onClick={() => navigate('/doctor/generate-bill', { 
-                                state: { appointment } 
-                              })}
-                            >
-                              Bill
-                            </ActionButton>
+                            {!appointment.prescriptionGenerated ? (
+                              <ActionButton
+                                variant="primary"
+                                size="xs"
+                                icon={<FiFileText className="w-3 h-3" />}
+                                onClick={() => navigate('/doctor/prescriptions/new', { 
+                                  state: { 
+                                    patientId: appointment.patientId?._id, 
+                                    appointmentId: appointment._id 
+                                  } 
+                                })}
+                              >
+                                Prescribe
+                              </ActionButton>
+                            ) : (
+                              <ActionButton
+                                variant="success"
+                                size="xs"
+                                icon={<FiFileText className="w-3 h-3" />}
+                                onClick={async () => {
+                                  try {
+                                    const res = await api.get('/doctors/prescriptions', { 
+                                      params: { appointmentId: appointment._id } 
+                                    });
+                                    if (res.data.data && res.data.data.length > 0) {
+                                      navigate(`/doctor/prescriptions/${res.data.data[0]._id}`);
+                                    }
+                                  } catch (err) {
+                                    toast.error('Failed to load prescription');
+                                  }
+                                }}
+                                className="bg-green-600 hover:bg-green-700"
+                              >
+                                View Prescription
+                              </ActionButton>
+                            )}
+                            {appointment.finalBillGenerated && (
+                              <ActionButton
+                                variant="info"
+                                size="xs"
+                                icon={<FiDollarSign className="w-3 h-3" />}
+                                onClick={async () => {
+                                  try {
+                                    const res = await api.get('/bills/doctor', { 
+                                      params: { appointmentId: appointment._id } 
+                                    });
+                                    if (res.data.data && res.data.data.length > 0) {
+                                      navigate(`/doctor/bills/${res.data.data[0]._id}`);
+                                    } else {
+                                      toast.error('Bill not found');
+                                    }
+                                  } catch (err) {
+                                    toast.error('Failed to load bill');
+                                  }
+                                }}
+                              >
+                                View Bill
+                              </ActionButton>
+                            )}
                           </>
                         )}
                       </div>
@@ -293,33 +329,69 @@ export default function DoctorAppointments() {
                       </ActionButton>
                     </>
                   )}
-                  {appointment.status === 'Completed' && (
+                  {(appointment.status === 'Completed' || appointment.status === 'Follow-up') && (
                     <>
-                      <ActionButton
-                        variant="primary"
-                        size="sm"
-                        icon={<FiFileText className="w-4 h-4" />}
-                        onClick={() => navigate('/doctor/prescriptions/new', { 
-                          state: { 
-                            patientId: appointment.patientId?._id, 
-                            appointmentId: appointment._id 
-                          } 
-                        })}
-                        className="flex-1 justify-center"
-                      >
-                        Prescription
-                      </ActionButton>
-                      <ActionButton
-                        variant="success"
-                        size="sm"
-                        icon={<FiDollarSign className="w-4 h-4" />}
-                        onClick={() => navigate('/doctor/generate-bill', { 
-                          state: { appointment } 
-                        })}
-                        className="flex-1 justify-center"
-                      >
-                        Generate Bill
-                      </ActionButton>
+                      {!appointment.prescriptionGenerated ? (
+                        <ActionButton
+                          variant="primary"
+                          size="sm"
+                          icon={<FiFileText className="w-4 h-4" />}
+                          onClick={() => navigate('/doctor/prescriptions/new', { 
+                            state: { 
+                              patientId: appointment.patientId?._id, 
+                              appointmentId: appointment._id 
+                            } 
+                          })}
+                          className="flex-1 justify-center"
+                        >
+                          Prescribe
+                        </ActionButton>
+                      ) : (
+                        <ActionButton
+                          variant="success"
+                          size="sm"
+                          icon={<FiFileText className="w-4 h-4" />}
+                          onClick={async () => {
+                            try {
+                              const res = await api.get('/doctors/prescriptions', { 
+                                params: { appointmentId: appointment._id } 
+                              });
+                              if (res.data.data && res.data.data.length > 0) {
+                                navigate(`/doctor/prescriptions/${res.data.data[0]._id}`);
+                              }
+                            } catch (err) {
+                              toast.error('Failed to load prescription');
+                            }
+                          }}
+                          className="flex-1 justify-center bg-green-600 hover:bg-green-700"
+                        >
+                          View Prescription
+                        </ActionButton>
+                      )}
+                      {appointment.finalBillGenerated && (
+                        <ActionButton
+                          variant="info"
+                          size="sm"
+                          icon={<FiDollarSign className="w-4 h-4" />}
+                          onClick={async () => {
+                            try {
+                              const res = await api.get('/bills/doctor', { 
+                                params: { appointmentId: appointment._id } 
+                              });
+                              if (res.data.data && res.data.data.length > 0) {
+                                navigate(`/doctor/bills/${res.data.data[0]._id}`);
+                              } else {
+                                toast.error('Bill not found');
+                              }
+                            } catch (err) {
+                              toast.error('Failed to load bill');
+                            }
+                          }}
+                          className="flex-1 justify-center"
+                        >
+                          View Bill
+                        </ActionButton>
+                      )}
                     </>
                   )}
                 </div>

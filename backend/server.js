@@ -117,6 +117,7 @@ app.use('/api/ai/check-symptoms', require('./routes/aiSymptomChecker'));
 app.use('/api/mock-payments', require('./routes/mockPayments'));
 app.use('/api/bills', require('./routes/bills'));
 app.use('/api/medical-history', require('./routes/medicalHistory'));
+app.use('/api/inventory', require('./routes/inventory'));
 
 // Error handler
 app.use((err, req, res, next) => {

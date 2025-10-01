@@ -3,6 +3,8 @@ const MedicalHistory = require('../models/MedicalHistory');
 const Doctor = require('../models/Doctor');
 const Appointment = require('../models/Appointment');
 const Prescription = require('../models/Prescription');
+const Bill = require('../models/Bill');
+const User = require('../models/User');
 const { createNotification } = require('../utils/createNotification');
 
 // Utility function to normalize date to UTC midnight
@@ -594,5 +596,158 @@ exports.cancelAppointment = async (req, res) => {
   } catch (error) {
     console.error('Error cancelling appointment:', error);
     res.status(500).json({ success: false, message: 'Failed to cancel appointment' });
+  }
+};
+
+/**
+ * Get comprehensive patient file (for doctors)
+ * Includes: patient details, medical history, appointments, prescriptions, bills
+ * GET /api/patients/:patientId/file
+ */
+exports.getPatientFile = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+    const doctorId = req.user.id;
+
+    // Validate that requester is a doctor
+    if (req.user.role !== 'doctor') {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Only doctors can access patient files' 
+      });
+    }
+
+    // Verify patient exists
+    const patient = await User.findById(patientId).select('-password');
+    if (!patient || patient.role !== 'patient') {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Patient not found' 
+      });
+    }
+
+    // Get medical history
+    const medicalHistory = await MedicalHistory.findOne({ patientId })
+      .populate('createdBy', 'name')
+      .populate('lastUpdatedBy', 'name');
+
+    // Get all appointments (sorted by date, most recent first)
+    const appointments = await Appointment.find({ patientId })
+      .populate('doctorId', 'name email')
+      .sort({ date: -1, timeSlot: -1 });
+
+    // Get all prescriptions (sorted by date issued, most recent first)
+    const prescriptions = await Prescription.find({ patientId })
+      .populate('doctorId', 'name')
+      .populate('appointmentId', 'date timeSlot')
+      .sort({ dateIssued: -1 });
+
+    // Get all bills (sorted by creation date, most recent first)
+    const bills = await Bill.find({ patientId })
+      .populate('doctorId', 'name')
+      .populate('appointmentId', 'date timeSlot')
+      .sort({ createdAt: -1 });
+
+    // Compile patient file
+    const patientFile = {
+      patient: {
+        id: patient._id,
+        name: patient.name,
+        email: patient.email,
+        district: patient.district,
+        photoUrl: patient.photoUrl,
+        createdAt: patient.createdAt
+      },
+      medicalHistory: medicalHistory || null,
+      appointments: {
+        total: appointments.length,
+        upcoming: appointments.filter(a => 
+          new Date(a.date) >= new Date() && a.status === 'Scheduled'
+        ).length,
+        completed: appointments.filter(a => a.status === 'Completed').length,
+        cancelled: appointments.filter(a => 
+          a.status.includes('cancelled') || a.status === 'Cancelled'
+        ).length,
+        data: appointments
+      },
+      prescriptions: {
+        total: prescriptions.length,
+        data: prescriptions
+      },
+      bills: {
+        total: bills.length,
+        unpaid: bills.filter(b => b.status === 'unpaid').length,
+        paid: bills.filter(b => b.status === 'paid').length,
+        totalUnpaidAmount: bills
+          .filter(b => b.status === 'unpaid')
+          .reduce((sum, b) => sum + b.totalAmount, 0),
+        data: bills
+      }
+    };
+
+    res.json({ 
+      success: true, 
+      data: patientFile 
+    });
+  } catch (error) {
+    console.error('Error fetching patient file:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch patient file' 
+    });
+  }
+};
+
+/**
+ * Search patients (for doctors to find patient files)
+ * GET /api/patients/search?query=name
+ */
+exports.searchPatients = async (req, res) => {
+  try {
+    const { query } = req.query;
+    const doctorId = req.user.id;
+
+    // Validate that requester is a doctor
+    if (req.user.role !== 'doctor') {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Only doctors can search patients' 
+      });
+    }
+
+    if (!query || query.trim().length < 2) {
+      return res.json({ 
+        success: true, 
+        data: [] 
+      });
+    }
+
+    // Search for patients by name or email
+    // Only return patients who have had appointments with this doctor
+    const appointments = await Appointment.find({ doctorId })
+      .distinct('patientId');
+
+    const patients = await User.find({
+      _id: { $in: appointments },
+      role: 'patient',
+      $or: [
+        { name: { $regex: query, $options: 'i' } },
+        { email: { $regex: query, $options: 'i' } }
+      ]
+    })
+    .select('name email district photoUrl')
+    .limit(20);
+
+    res.json({ 
+      success: true, 
+      count: patients.length,
+      data: patients 
+    });
+  } catch (error) {
+    console.error('Error searching patients:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to search patients' 
+    });
   }
 };

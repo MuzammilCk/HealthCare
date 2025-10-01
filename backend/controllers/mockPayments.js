@@ -277,17 +277,59 @@ exports.verifyMockPayment = async (req, res) => {
     const { paymentType, billId } = payment;
 
     if (paymentType === 'bill_payment') {
-      // Update bill status
+      // Get bill with items
       const Bill = require('../models/Bill');
-      const bill = await Bill.findByIdAndUpdate(
-        billId,
-        {
-          status: 'paid',
-          paidAt: new Date(),
-          paymentId: payment._id,
-        },
-        { new: true }
-      ).populate('doctorId', 'name');
+      const bill = await Bill.findById(billId).populate('doctorId', 'name');
+      
+      if (!bill) {
+        return res.status(404).json({ success: false, message: 'Bill not found' });
+      }
+
+      // CHECK 2: Re-verify inventory stock before payment (Two-Step Check)
+      const Inventory = require('../models/Inventory');
+      const itemsToReduce = bill.items.filter(item => item.inventoryItemId);
+      
+      if (itemsToReduce.length > 0) {
+        // Verify all items are still in stock
+        for (const item of itemsToReduce) {
+          const inventoryItem = await Inventory.findById(item.inventoryItemId);
+          
+          if (!inventoryItem) {
+            return res.status(404).json({ 
+              success: false, 
+              message: `Inventory item for "${item.description}" not found` 
+            });
+          }
+
+          if (!inventoryItem.isActive) {
+            return res.status(400).json({ 
+              success: false, 
+              message: `Medicine "${item.description}" is no longer available` 
+            });
+          }
+
+          // Second check: Verify stock is still sufficient
+          if (inventoryItem.stockQuantity < item.quantity) {
+            return res.status(400).json({ 
+              success: false, 
+              message: `Insufficient stock for "${item.description}". Available: ${inventoryItem.stockQuantity}, Required: ${item.quantity}. Please contact the hospital.` 
+            });
+          }
+        }
+
+        // All checks passed - reduce stock for each item
+        for (const item of itemsToReduce) {
+          const inventoryItem = await Inventory.findById(item.inventoryItemId);
+          await inventoryItem.reduceStock(item.quantity);
+          console.log(`Stock reduced for ${inventoryItem.medicineName}: ${item.quantity} units`);
+        }
+      }
+
+      // Update bill status
+      bill.status = 'paid';
+      bill.paidAt = new Date();
+      bill.paymentId = payment._id;
+      await bill.save();
 
       // Send notification to patient
       if (global.sendNotification) {

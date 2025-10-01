@@ -13,11 +13,20 @@ const appointmentSchema = new mongoose.Schema(
     },
     notes: { type: String, default: '' },
     isRated: { type: Boolean, default: false },
-    bookingFeeStatus: { 
-      type: String, 
-      enum: ['unpaid', 'paid'], 
+    bookingFeeStatus: {
+      type: String,
+      enum: ['unpaid', 'paid'],
       default: 'unpaid',
-      comment: 'Payment status for the consultation booking fee'
+    },
+    finalBillGenerated: {
+      type: Boolean,
+      default: false,
+      comment: 'Flag to prevent duplicate bill generation',
+    },
+    prescriptionGenerated: {
+      type: Boolean,
+      default: false,
+      comment: 'Flag to prevent duplicate prescription generation',
     },
   },
   { timestamps: true }
