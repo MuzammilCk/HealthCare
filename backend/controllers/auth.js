@@ -26,32 +26,52 @@ exports.register = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  // Destructure all required fields from the request body, including the new 'district'
+  // Destructure all required fields from the request body
   const { name, email, password, role, specializationId, district } = req.body;
 
   try {
+    // SECURITY: Define whitelist of roles that users can self-register as
+    const selfRegisterRoles = ['patient', 'doctor'];
+    
+    // Validate the role against the whitelist
+    if (role && !selfRegisterRoles.includes(role)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid role specified. Only patient and doctor roles are allowed for registration.' 
+      });
+    }
+
     // Check if a user with the given email already exists
     let existing = await User.findOne({ email });
     if (existing) {
       return res.status(400).json({ success: false, message: 'User already exists' });
     }
 
-    // Step 1: Create the new user with their district
+    // Determine the final role and status based on secure logic
+    const finalRole = role || 'patient'; // Default to patient if no role provided
+    const finalStatus = finalRole === 'doctor' ? 'pending_approval' : 'active';
+
+    // Step 1: Create the new user with validated role and appropriate status
     const user = await User.create({
       name,
       email,
       password,
-      role: role || 'patient',
-      district, // Save the district to the user model
+      role: finalRole,
+      status: finalStatus,
+      district,
     });
 
     // Step 2: If the user is a doctor, create their professional Doctor profile
     if (user.role === 'doctor') {
       // Validate that specialization and district are provided for doctors
       if (!specializationId) {
+        // Rollback user creation
+        await User.findByIdAndDelete(user._id);
         return res.status(400).json({ success: false, message: 'Specialization is required for doctors.' });
       }
       if (!district) {
+        // Rollback user creation
+        await User.findByIdAndDelete(user._id);
         return res.status(400).json({ success: false, message: 'District is required for doctors.' });
       }
       
@@ -59,15 +79,16 @@ exports.register = async (req, res) => {
       await Doctor.create({
         userId: user._id,
         specializationId: specializationId,
-        availability: [], // Doctors can set their availability later
-        district: district, // Save the district to the doctor model
+        availability: [],
+        district: district,
+        verificationStatus: 'Pending', // Doctors start as pending
       });
 
       // Notify all admins about new doctor registration
       await createRoleBasedNotifications(
         'admin',
-        `A new doctor, ${user.name}, has registered`,
-        '/admin/manage-doctors',
+        `A new doctor, ${user.name}, has registered and is awaiting approval`,
+        '/admin/doctors',
         'system',
         { doctorId: user._id, doctorName: user.name, district }
       );
@@ -78,14 +99,26 @@ exports.register = async (req, res) => {
     sendTokenCookie(res, token);
     res.status(201).json({ 
       success: true,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role, district: user.district }
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        role: user.role, 
+        status: user.status,
+        district: user.district 
+      }
     });
 
   } catch (e) {
-    console.error(e);
-    // If any part of the process fails, delete the user that might have been created
-    // This prevents having an orphaned user account.
-    await User.findOneAndDelete({ email });
+    console.error('Registration error:', e);
+    // If any part of the process fails, clean up
+    if (e.code === 11000) {
+      // Duplicate key error (email already exists)
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Registration failed. The email might already be in use.' 
+      });
+    }
     res.status(500).json({ success: false, message: 'Server error during registration' });
   }
 };

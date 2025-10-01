@@ -15,8 +15,9 @@ const userSchema = new mongoose.Schema(
     },
     password: { type: String, required: true, minlength: 6, select: false },
     role: { type: String, enum: ['patient', 'doctor', 'admin'], default: 'patient' },
+    status: { type: String, enum: ['active', 'pending_approval'], default: 'active' },
     district: { type: String, trim: true },
-    photoUrl: { type: String, default: '' }, // Add this line
+    photoUrl: { type: String, default: '' }
   },
   { timestamps: true }
 );
