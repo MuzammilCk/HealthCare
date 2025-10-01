@@ -60,6 +60,7 @@ export default function ManageDoctors() {
     { label: 'Doctor', icon: <FiUser className="w-4 h-4 text-blue-500" /> },
     { label: 'Contact', icon: <FiMail className="w-4 h-4 text-green-500" /> },
     { label: 'Specialization', icon: <FiBriefcase className="w-4 h-4 text-purple-500" /> },
+    { label: 'Hospital', icon: <FiMapPin className="w-4 h-4 text-teal-500" /> },
     { label: 'Location', icon: <FiMapPin className="w-4 h-4 text-orange-500" /> },
     { label: 'Rating', icon: <FiStar className="w-4 h-4 text-yellow-500" /> },
     { label: 'Actions', icon: <FiTrash2 className="w-4 h-4 text-red-500" /> }
@@ -147,6 +148,19 @@ export default function ManageDoctors() {
                         <span className="text-gray-700">
                           {doctor.specializationId?.name || 'Not specified'}
                         </span>
+                      </div>
+                    </ModernTableCell>
+                    
+                    <ModernTableCell>
+                      <div className="flex flex-col">
+                        <span className="text-gray-900 font-medium text-sm">
+                          {doctor.hospitalId?.name || 'Not assigned'}
+                        </span>
+                        {doctor.hospitalId?.district && (
+                          <span className="text-xs text-gray-500">
+                            {doctor.hospitalId.district}
+                          </span>
+                        )}
                       </div>
                     </ModernTableCell>
                     

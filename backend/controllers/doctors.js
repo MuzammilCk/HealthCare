@@ -13,7 +13,8 @@ exports.getDoctorProfile = async (req, res) => {
   try {
     const doc = await Doctor.findOne({ userId: req.user.id })
       .populate('userId', 'name email')
-      .populate('specializationId', 'name description');
+      .populate('specializationId', 'name description')
+      .populate('hospitalId', 'name address district city phone');
     if (!doc) return res.status(404).json({ success: false, message: 'Doctor profile not found' });
     res.json({ success: true, data: doc });
   } catch (e) {
@@ -746,7 +747,8 @@ exports.updateDoctorProfile = async (req, res) => {
     // Populate and return updated profile
     const updatedProfile = await Doctor.findById(doctorProfile._id)
       .populate('userId', 'name email')
-      .populate('specializationId', 'name description');
+      .populate('specializationId', 'name description')
+      .populate('hospitalId', 'name address district city phone');
 
     res.json({ 
       success: true, 

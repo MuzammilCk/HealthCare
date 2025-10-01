@@ -49,13 +49,54 @@ const seedDoctors = async () => {
             continue;
           }
 
+          // Find or assign a hospital based on district
+          const Hospital = require('./models/Hospital');
+          let hospital = await Hospital.findOne({ district: doc.district, isActive: true });
+          
+          if (!hospital) {
+            // If no hospital found for district, use any active hospital
+            hospital = await Hospital.findOne({ isActive: true });
+            if (!hospital) {
+              console.warn(`No active hospital found for Dr. ${doc.name}. Skipping.`);
+              continue;
+            }
+          }
+
           // 2. Check if a doctor profile already exists for this user
           const doctorProfileExists = await Doctor.findOne({ userId: user._id });
 
           if (!doctorProfileExists) {
-            // 3. Create the doctor profile
+            // 3. Parse and convert availability from JSON string in CSV
+            let parsedAvailability = [];
+            if (doc.availability) {
+              try {
+                const rawAvailability = JSON.parse(doc.availability);
+                // Convert startTime/endTime objects to time slot strings
+                parsedAvailability = rawAvailability.map(daySlot => ({
+                  day: daySlot.day,
+                  slots: daySlot.slots.map(slot => {
+                    // Generate hourly slots from startTime to endTime
+                    const start = parseInt(slot.startTime.split(':')[0]);
+                    const end = parseInt(slot.endTime.split(':')[0]);
+                    const timeSlots = [];
+                    for (let hour = start; hour < end; hour++) {
+                      const startTime = `${hour.toString().padStart(2, '0')}:00`;
+                      const endTime = `${(hour + 1).toString().padStart(2, '0')}:00`;
+                      timeSlots.push(`${startTime}-${endTime}`);
+                    }
+                    return timeSlots;
+                  }).flat()
+                }));
+              } catch (e) {
+                console.warn(`Failed to parse availability for ${doc.name}:`, e.message);
+                parsedAvailability = [];
+              }
+            }
+
+            // Create the doctor profile with hospital assignment
             await Doctor.create({
               userId: user._id,
+              hospitalId: hospital._id,
               specializationId: specialization._id,
               district: doc.district,
               bio: doc.bio,
@@ -64,19 +105,48 @@ const seedDoctors = async () => {
               experienceYears: doc.experienceYears ? parseInt(doc.experienceYears, 10) : 0,
               location: doc.location,
               photoUrl: doc.photoUrl || '',
-              availability: doc.availability ? [{ day: "Monday-Friday", slots: [doc.availability] }] : [],
-              // --- THIS IS THE CHANGE ---
-              // Read the verification status from the CSV, default to 'Pending' if not present
-              verificationStatus: doc.verificationStatus || 'Pending',
+              availability: parsedAvailability,
+              verificationStatus: doc.verificationStatus || 'Approved',
             });
-            console.log(`Doctor profile created for ${doc.name}`);
+            console.log(`✓ Doctor profile created for ${doc.name} at ${hospital.name}`);
           } else {
-            // --- OPTIONAL: Update existing doctors' verification status ---
+            // Update existing doctor's hospital and availability
+            let parsedAvailability = [];
+            if (doc.availability) {
+              try {
+                const rawAvailability = JSON.parse(doc.availability);
+                // Convert startTime/endTime objects to time slot strings
+                parsedAvailability = rawAvailability.map(daySlot => ({
+                  day: daySlot.day,
+                  slots: daySlot.slots.map(slot => {
+                    // Generate hourly slots from startTime to endTime
+                    const start = parseInt(slot.startTime.split(':')[0]);
+                    const end = parseInt(slot.endTime.split(':')[0]);
+                    const timeSlots = [];
+                    for (let hour = start; hour < end; hour++) {
+                      const startTime = `${hour.toString().padStart(2, '0')}:00`;
+                      const endTime = `${(hour + 1).toString().padStart(2, '0')}:00`;
+                      timeSlots.push(`${startTime}-${endTime}`);
+                    }
+                    return timeSlots;
+                  }).flat()
+                }));
+              } catch (e) {
+                console.warn(`Failed to parse availability for ${doc.name}:`, e.message);
+              }
+            }
+
             await Doctor.updateOne(
               { userId: user._id },
-              { $set: { verificationStatus: doc.verificationStatus || 'Pending' } }
+              { 
+                $set: { 
+                  hospitalId: hospital._id,
+                  availability: parsedAvailability,
+                  verificationStatus: doc.verificationStatus || 'Approved'
+                } 
+              }
             );
-            console.log(`Doctor profile for ${doc.name} already exists. Updated verification status.`);
+            console.log(`✓ Updated ${doc.name} - assigned to ${hospital.name}`);
           }
         }
         console.log('--- Doctor data seeding complete! ---');

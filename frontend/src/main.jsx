@@ -42,6 +42,8 @@ import AdminDashboard from './pages/admin/Dashboard'
 import ManageSpecializations from './pages/admin/ManageSpecializations'
 import KycRequests from './pages/admin/KycRequests'
 import ManageDoctors from './pages/admin/ManageDoctors'
+import ManageHospitals from './pages/admin/ManageHospitals'
+import ManageInventory from './pages/admin/ManageInventory'
 import AboutUs from './pages/AboutUs';
 import Contact from './pages/Contact';
 import Profile from './pages/Profile';
@@ -113,6 +115,8 @@ const router = createBrowserRouter([
       { index: true, element: <AdminDashboard /> },
       { path: 'specializations', element: <ManageSpecializations /> },
       { path: 'doctors', element: <ManageDoctors /> },
+      { path: 'hospitals', element: <ManageHospitals /> },
+      { path: 'inventory', element: <ManageInventory /> },
     ],
   },
   // New parent route for generic pages
