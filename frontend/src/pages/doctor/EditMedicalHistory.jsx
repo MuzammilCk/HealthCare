@@ -1,8 +1,31 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FiSave, FiArrowLeft, FiPlus, FiTrash2, FiAlertCircle } from 'react-icons/fi';
+import { FiSave, FiArrowLeft, FiPlus, FiTrash2, FiAlertCircle, FiCheck } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
+
+// Move these components outside to prevent re-creation on every render
+const FormSection = ({ title, children }) => (
+  <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <h3 className="text-lg font-semibold text-text-primary mb-4">{title}</h3>
+    {children}
+  </div>
+);
+
+const SelectField = ({ label, value, onChange, options }) => (
+  <div>
+    <label className="block text-sm font-medium text-text-secondary mb-1">{label}</label>
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+    >
+      {options.map(opt => (
+        <option key={opt.value} value={opt.value}>{opt.label}</option>
+      ))}
+    </select>
+  </div>
+);
 
 export default function EditMedicalHistory() {
   const navigate = useNavigate();
@@ -11,6 +34,8 @@ export default function EditMedicalHistory() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [approving, setApproving] = useState(false);
+  const [medicalHistory, setMedicalHistory] = useState(null);
   const [formData, setFormData] = useState({
     bloodType: 'Unknown',
     height: '',
@@ -39,6 +64,7 @@ export default function EditMedicalHistory() {
     try {
       const response = await api.get(`/medical-history/patient/${patientId}`);
       const data = response.data.data;
+      setMedicalHistory(data);
       
       setFormData({
         bloodType: data.bloodType || 'Unknown',
@@ -65,13 +91,45 @@ export default function EditMedicalHistory() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await api.put(`/medical-history/patient/${patientId}`, formData);
+      // Remove temporary _id fields used for React keys before sending to backend
+      const cleanArray = (arr) => arr.map(item => {
+        const { _id, ...rest } = item;
+        return rest;
+      });
+
+      // Prepare data with proper types and clean arrays
+      const dataToSend = {
+        ...formData,
+        height: formData.height ? Number(formData.height) : null,
+        weight: formData.weight ? Number(formData.weight) : null,
+        allergies: cleanArray(formData.allergies),
+        pastConditions: cleanArray(formData.pastConditions),
+        currentMedications: cleanArray(formData.currentMedications),
+        surgeries: cleanArray(formData.surgeries),
+        familyHistory: cleanArray(formData.familyHistory)
+      };
+      
+      await api.put(`/medical-history/patient/${patientId}`, dataToSend);
       toast.success('Medical history updated successfully!');
-      navigate('/doctor/appointments');
+      loadMedicalHistory(); // Reload to show updated status
     } catch (error) {
+      console.error('Save error:', error);
       toast.error(error?.response?.data?.message || 'Failed to update medical history');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleApprove = async () => {
+    setApproving(true);
+    try {
+      await api.post(`/medical-history/patient/${patientId}/approve`);
+      toast.success('Medical history approved successfully!');
+      loadMedicalHistory(); // Reload to show approval stamp
+    } catch (error) {
+      toast.error(error?.response?.data?.message || 'Failed to approve medical history');
+    } finally {
+      setApproving(false);
     }
   };
 
@@ -79,7 +137,7 @@ export default function EditMedicalHistory() {
   const addAllergy = () => {
     setFormData(prev => ({
       ...prev,
-      allergies: [...prev.allergies, { name: '', severity: 'moderate', reaction: '', diagnosedDate: '' }]
+      allergies: [...prev.allergies, { _id: Date.now(), name: '', severity: 'moderate', reaction: '', diagnosedDate: '' }]
     }));
   };
 
@@ -102,7 +160,7 @@ export default function EditMedicalHistory() {
   const addCondition = () => {
     setFormData(prev => ({
       ...prev,
-      pastConditions: [...prev.pastConditions, { name: '', diagnosedDate: '', status: 'active', notes: '' }]
+      pastConditions: [...prev.pastConditions, { _id: Date.now(), name: '', diagnosedDate: '', status: 'active', notes: '' }]
     }));
   };
 
@@ -125,7 +183,7 @@ export default function EditMedicalHistory() {
   const addMedication = () => {
     setFormData(prev => ({
       ...prev,
-      currentMedications: [...prev.currentMedications, { name: '', dosage: '', frequency: '', startDate: '', endDate: '', prescribedBy: '' }]
+      currentMedications: [...prev.currentMedications, { _id: Date.now(), name: '', dosage: '', frequency: '', startDate: '', endDate: '', prescribedBy: '' }]
     }));
   };
 
@@ -148,7 +206,7 @@ export default function EditMedicalHistory() {
   const addSurgery = () => {
     setFormData(prev => ({
       ...prev,
-      surgeries: [...prev.surgeries, { name: '', date: '', hospital: '', notes: '' }]
+      surgeries: [...prev.surgeries, { _id: Date.now(), name: '', date: '', hospital: '', notes: '' }]
     }));
   };
 
@@ -171,7 +229,7 @@ export default function EditMedicalHistory() {
   const addFamilyHistory = () => {
     setFormData(prev => ({
       ...prev,
-      familyHistory: [...prev.familyHistory, { condition: '', relationship: '', notes: '' }]
+      familyHistory: [...prev.familyHistory, { _id: Date.now(), condition: '', relationship: '', notes: '' }]
     }));
   };
 
@@ -202,41 +260,6 @@ export default function EditMedicalHistory() {
     );
   }
 
-  const FormSection = ({ title, children }) => (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-text-primary mb-4">{title}</h3>
-      {children}
-    </div>
-  );
-
-  const InputField = ({ label, value, onChange, type = 'text', ...props }) => (
-    <div>
-      <label className="block text-sm font-medium text-text-secondary mb-1">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
-        {...props}
-      />
-    </div>
-  );
-
-  const SelectField = ({ label, value, onChange, options }) => (
-    <div>
-      <label className="block text-sm font-medium text-text-secondary mb-1">{label}</label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
-      >
-        {options.map(opt => (
-          <option key={opt.value} value={opt.value}>{opt.label}</option>
-        ))}
-      </select>
-    </div>
-  );
-
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between">
@@ -252,24 +275,82 @@ export default function EditMedicalHistory() {
             <p className="text-text-secondary">Patient: {patientName || 'Unknown'}</p>
           </div>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors disabled:opacity-50"
-        >
-          {saving ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              Saving...
-            </>
-          ) : (
-            <>
-              <FiSave className="w-4 h-4" />
-              Save Changes
-            </>
-          )}
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={handleSave}
+            disabled={saving || approving}
+            className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors disabled:opacity-50"
+          >
+            {saving ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Saving...
+              </>
+            ) : (
+              <>
+                <FiSave className="w-4 h-4" />
+                Save Changes
+              </>
+            )}
+          </button>
+          <button
+            onClick={handleApprove}
+            disabled={saving || approving || medicalHistory?.approvalStatus === 'approved'}
+            className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+            title={medicalHistory?.approvalStatus === 'approved' ? 'Already approved' : 'Approve medical history'}
+          >
+            {approving ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Approving...
+              </>
+            ) : (
+              <>
+                <FiCheck className="w-4 h-4" />
+                Approve
+              </>
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* Approval Status Banner */}
+      {medicalHistory?.approvalStatus === 'approved' && medicalHistory?.approvedBy && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <FiCheck className="w-5 h-5 text-green-600 mt-0.5" />
+            <div>
+              <p className="font-semibold text-green-900">Medical History Approved</p>
+              <p className="text-sm text-green-700 mt-1">
+                Approved by <span className="font-semibold">Dr. {medicalHistory.approvedBy.name}</span> on {new Date(medicalHistory.approvedAt).toLocaleDateString()}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Correction Request Banner */}
+      {medicalHistory?.correctionRequested && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <FiAlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
+            <div>
+              <p className="font-semibold text-yellow-900">Patient Requested Correction</p>
+              <p className="text-sm text-yellow-700 mt-1">
+                Requested on {new Date(medicalHistory.correctionRequestDate).toLocaleDateString()}
+              </p>
+              {medicalHistory.correctionRequestMessage && (
+                <div className="mt-2 p-3 bg-white rounded border border-yellow-300">
+                  <p className="text-sm font-medium text-gray-700">Patient's Message:</p>
+                  <p className="text-sm text-gray-900 mt-1 italic">
+                    "{medicalHistory.correctionRequestMessage}"
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Basic Information */}
       <FormSection title="Basic Information">
@@ -290,18 +371,26 @@ export default function EditMedicalHistory() {
               { value: 'O-', label: 'O-' }
             ]}
           />
-          <InputField
-            label="Height (cm)"
-            type="number"
-            value={formData.height}
-            onChange={(value) => setFormData(prev => ({ ...prev, height: value }))}
-          />
-          <InputField
-            label="Weight (kg)"
-            type="number"
-            value={formData.weight}
-            onChange={(value) => setFormData(prev => ({ ...prev, weight: value }))}
-          />
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-1">Height (cm)</label>
+            <input
+              type="number"
+              value={formData.height}
+              onChange={(e) => setFormData(prev => ({ ...prev, height: e.target.value }))}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+              placeholder="170"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-1">Weight (kg)</label>
+            <input
+              type="number"
+              value={formData.weight}
+              onChange={(e) => setFormData(prev => ({ ...prev, weight: e.target.value }))}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+              placeholder="70"
+            />
+          </div>
         </div>
       </FormSection>
 
@@ -350,7 +439,7 @@ export default function EditMedicalHistory() {
       <FormSection title="Allergies">
         <div className="space-y-3">
           {formData.allergies.map((allergy, index) => (
-            <div key={index} className="flex gap-3 items-start p-4 bg-red-50 rounded-lg">
+            <div key={allergy._id || `allergy-${index}`} className="flex gap-3 items-start p-4 bg-red-50 rounded-lg">
               <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-3">
                 <input
                   type="text"
@@ -404,7 +493,7 @@ export default function EditMedicalHistory() {
       <FormSection title="Past Medical Conditions">
         <div className="space-y-3">
           {formData.pastConditions.map((condition, index) => (
-            <div key={index} className="flex gap-3 items-start p-4 bg-blue-50 rounded-lg">
+            <div key={condition._id || `condition-${index}`} className="flex gap-3 items-start p-4 bg-blue-50 rounded-lg">
               <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-3">
                 <input
                   type="text"
@@ -458,7 +547,7 @@ export default function EditMedicalHistory() {
       <FormSection title="Current Medications">
         <div className="space-y-3">
           {formData.currentMedications.map((medication, index) => (
-            <div key={index} className="flex gap-3 items-start p-4 bg-purple-50 rounded-lg">
+            <div key={medication._id || `medication-${index}`} className="flex gap-3 items-start p-4 bg-purple-50 rounded-lg">
               <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
                 <input
                   type="text"
@@ -504,7 +593,7 @@ export default function EditMedicalHistory() {
       <FormSection title="Surgical History">
         <div className="space-y-3">
           {formData.surgeries.map((surgery, index) => (
-            <div key={index} className="flex gap-3 items-start p-4 bg-gray-50 rounded-lg">
+            <div key={surgery._id || `surgery-${index}`} className="flex gap-3 items-start p-4 bg-gray-50 rounded-lg">
               <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
                 <input
                   type="text"
@@ -549,7 +638,7 @@ export default function EditMedicalHistory() {
       <FormSection title="Family Medical History">
         <div className="space-y-3">
           {formData.familyHistory.map((item, index) => (
-            <div key={index} className="flex gap-3 items-start p-4 bg-green-50 rounded-lg">
+            <div key={item._id || `family-${index}`} className="flex gap-3 items-start p-4 bg-green-50 rounded-lg">
               <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
                 <input
                   type="text"
@@ -601,33 +690,6 @@ export default function EditMedicalHistory() {
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
         />
       </FormSection>
-
-      {/* Save Button (Bottom) */}
-      <div className="flex justify-end gap-3">
-        <button
-          onClick={() => navigate('/doctor/appointments')}
-          className="px-6 py-3 border border-gray-300 text-text-primary rounded-lg hover:bg-gray-50 transition-colors"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors disabled:opacity-50"
-        >
-          {saving ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              Saving...
-            </>
-          ) : (
-            <>
-              <FiSave className="w-4 h-4" />
-              Save Changes
-            </>
-          )}
-        </button>
-      </div>
     </div>
   );
 }

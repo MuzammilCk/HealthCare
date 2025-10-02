@@ -5,7 +5,8 @@ const {
   getPatientMedicalHistory,
   updatePatientMedicalHistory,
   requestCorrection,
-  getOwnMedicalHistory
+  getOwnMedicalHistory,
+  approveMedicalHistory
 } = require('../controllers/medicalHistory');
 
 // All routes require authentication
@@ -18,5 +19,6 @@ router.post('/me/request-correction', restrictTo('patient'), requestCorrection);
 // Doctor/Admin routes - Full access
 router.get('/patient/:patientId', restrictTo('doctor', 'admin'), getPatientMedicalHistory);
 router.put('/patient/:patientId', restrictTo('doctor', 'admin'), updatePatientMedicalHistory);
+router.post('/patient/:patientId/approve', restrictTo('doctor', 'admin'), approveMedicalHistory);
 
 module.exports = router;

@@ -17,7 +17,8 @@ exports.getPatientMedicalHistory = async (req, res) => {
 
     let medicalHistory = await MedicalHistory.findOne({ patientId })
       .populate('createdBy', 'name role')
-      .populate('lastUpdatedBy', 'name role');
+      .populate('lastUpdatedBy', 'name role')
+      .populate('approvedBy', 'name role');
 
     // If no medical history exists, create a basic one
     if (!medicalHistory) {
@@ -74,18 +75,24 @@ exports.updatePatientMedicalHistory = async (req, res) => {
         medicalHistory.correctionRequestMessage = null;
         medicalHistory.correctionRequestDate = null;
       }
+      
+      // Mark as needs review after update (will need re-approval)
+      medicalHistory.approvalStatus = 'needs_review';
     }
 
     await medicalHistory.save();
+    
+    // Populate for response
+    await medicalHistory.populate('approvedBy', 'name role');
 
     // Send notification to patient
-    await createNotification({
-      userId: patientId,
-      type: 'medical_history_updated',
-      message: `Your medical history has been updated by Dr. ${req.user.name}`,
-      relatedId: medicalHistory._id,
-      relatedModel: 'MedicalHistory'
-    });
+    await createNotification(
+      patientId,
+      `Your medical history has been updated by Dr. ${req.user.name}`,
+      '/patient/medical-history',
+      'system',
+      { medicalHistoryId: medicalHistory._id }
+    );
 
     res.json({ 
       success: true, 
@@ -128,15 +135,16 @@ exports.requestCorrection = async (req, res) => {
 
     await medicalHistory.save();
 
-    // Notify admin or assigned doctor
-    // For now, we'll create a general notification
-    await createNotification({
-      userId: medicalHistory.lastUpdatedBy || medicalHistory.createdBy,
-      type: 'correction_requested',
-      message: `Patient has requested a correction to their medical history`,
-      relatedId: medicalHistory._id,
-      relatedModel: 'MedicalHistory'
-    });
+    // Notify admin or assigned doctor if they exist
+    if (medicalHistory.lastUpdatedBy || medicalHistory.createdBy) {
+      await createNotification(
+        medicalHistory.lastUpdatedBy || medicalHistory.createdBy,
+        `Patient has requested a correction to their medical history`,
+        '/doctor/patient-file',
+        'system',
+        { medicalHistoryId: medicalHistory._id, patientId }
+      );
+    }
 
     res.json({ 
       success: true, 
@@ -157,7 +165,8 @@ exports.getOwnMedicalHistory = async (req, res) => {
 
     let medicalHistory = await MedicalHistory.findOne({ patientId })
       .populate('createdBy', 'name role')
-      .populate('lastUpdatedBy', 'name role');
+      .populate('lastUpdatedBy', 'name role')
+      .populate('approvedBy', 'name role');
 
     if (!medicalHistory) {
       // Create a basic medical history if it doesn't exist
@@ -170,6 +179,66 @@ exports.getOwnMedicalHistory = async (req, res) => {
     res.json({ success: true, data: medicalHistory });
   } catch (error) {
     console.error('Error fetching medical history:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+/**
+ * Approve medical history (Doctor only)
+ */
+exports.approveMedicalHistory = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+    const doctorId = req.user.id;
+
+    // Verify patient exists
+    const patient = await User.findById(patientId);
+    if (!patient || patient.role !== 'patient') {
+      return res.status(404).json({ success: false, message: 'Patient not found' });
+    }
+
+    let medicalHistory = await MedicalHistory.findOne({ patientId });
+
+    if (!medicalHistory) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Medical history not found' 
+      });
+    }
+
+    // Approve the medical history
+    medicalHistory.approvalStatus = 'approved';
+    medicalHistory.approvedBy = doctorId;
+    medicalHistory.approvedAt = new Date();
+    
+    // Clear correction request if exists
+    if (medicalHistory.correctionRequested) {
+      medicalHistory.correctionRequested = false;
+      medicalHistory.correctionRequestMessage = null;
+      medicalHistory.correctionRequestDate = null;
+    }
+
+    await medicalHistory.save();
+
+    // Populate doctor name for response
+    await medicalHistory.populate('approvedBy', 'name role');
+
+    // Notify patient
+    await createNotification(
+      patientId,
+      `Your medical history has been approved by Dr. ${req.user.name}`,
+      '/patient/medical-history',
+      'system',
+      { medicalHistoryId: medicalHistory._id }
+    );
+
+    res.json({ 
+      success: true, 
+      message: 'Medical history approved successfully',
+      data: medicalHistory 
+    });
+  } catch (error) {
+    console.error('Error approving medical history:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };

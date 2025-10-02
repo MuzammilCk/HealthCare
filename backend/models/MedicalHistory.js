@@ -97,7 +97,20 @@ const medicalHistorySchema = new mongoose.Schema(
     // Correction Request
     correctionRequested: { type: Boolean, default: false },
     correctionRequestMessage: { type: String },
-    correctionRequestDate: { type: Date }
+    correctionRequestDate: { type: Date },
+    
+    // Approval Stamp
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      comment: 'Doctor who approved/verified this medical history'
+    },
+    approvedAt: { type: Date },
+    approvalStatus: {
+      type: String,
+      enum: ['pending', 'approved', 'needs_review'],
+      default: 'pending'
+    }
   },
   { timestamps: true }
 );

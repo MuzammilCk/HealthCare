@@ -73,7 +73,7 @@ router.delete(
 // @access  Private
 router.put(
   '/change-password',
-  rateLimitSensitiveOps(15 * 60 * 1000, 3), // 3 password changes per 15 minutes
+  rateLimitSensitiveOps(60 * 60 * 1000, 10), // 10 password changes per hour (more lenient)
   [
     check('currentPassword')
       .notEmpty()
@@ -81,8 +81,6 @@ router.put(
     check('newPassword')
       .isLength({ min: 6 })
       .withMessage('New password must be at least 6 characters long')
-      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-      .withMessage('New password must contain at least one lowercase letter, one uppercase letter, and one number')
   ],
   changePassword
 );
