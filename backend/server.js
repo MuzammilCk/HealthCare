@@ -119,6 +119,9 @@ app.use(cookieParser());
 // Serve static files for uploaded images
 app.use('/uploads', express.static('uploads'));
 
+// Serve static files for doctor photos
+app.use('/doctor-photos', express.static('public/doctor-photos'));
+
 // Mongo connection with proper error handling
 mongoose
   .connect(process.env.MONGODB_URI, {

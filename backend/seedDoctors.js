@@ -2,9 +2,11 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const fs = require('fs');
 const csv = require('csv-parser');
+const bcrypt = require('bcryptjs');
 const User = require('./models/User');
 const Doctor = require('./models/Doctor');
 const Specialization = require('./models/Specialization');
+const { DoctorImageAssigner } = require('./utils/assignDoctorImages');
 
 dotenv.config();
 
@@ -32,6 +34,10 @@ const seedDoctors = async () => {
       throw new Error('doctor.csv file not found');
     }
 
+    // Initialize image assigner
+    const imageAssigner = new DoctorImageAssigner();
+    log.info(`Image assigner initialized with ${imageAssigner.getStats().totalMaleImages} male and ${imageAssigner.getStats().totalFemaleImages} female images`);
+
     const doctors = [];
     fs.createReadStream('./doctor.csv')
       .pipe(csv())
@@ -57,19 +63,29 @@ const seedDoctors = async () => {
               // Check if user already exists
               let user = await User.findOne({ email: doc.email });
 
+              // Assign local doctor image based on gender
+              log.info(`Assigning profile image for ${doc.name}...`);
+              const profileImageUrl = imageAssigner.assignImage(doc.name);
+              log.success(`Profile image assigned for ${doc.name}: ${profileImageUrl}`);
+
               if (!user) {
-                // 1. Create a new user for the doctor
+                // 1. Create a new user for the doctor with hashed password
+                const hashedPassword = await bcrypt.hash(doc.password || 'password123', 10);
+                
                 user = await User.create({
                   name: doc.name,
                   email: doc.email,
-                  password: doc.password || 'password123',
+                  password: hashedPassword,
                   role: 'doctor',
                   district: doc.district,
-                  photoUrl: doc.photoUrl || '',
+                  photoUrl: profileImageUrl,
                 });
-                log.success(`User created for ${doc.name}`);
+                log.success(`User created for ${doc.name} with secure password`);
               } else {
-                log.info(`User for ${doc.name} already exists`);
+                // Update existing user's photo
+                user.photoUrl = profileImageUrl;
+                await user.save();
+                log.info(`User for ${doc.name} already exists, photo updated`);
               }
           
               // Find the specialization ID
@@ -123,7 +139,7 @@ const seedDoctors = async () => {
                   }
                 }
 
-                // Create the doctor profile with hospital assignment
+                // Create the doctor profile with hospital assignment and generated image
                 await Doctor.create({
                   userId: user._id,
                   hospitalId: hospital._id,
@@ -134,11 +150,11 @@ const seedDoctors = async () => {
                   languages: doc.languages ? doc.languages.split(',').map(lang => lang.trim()) : [],
                   experienceYears: doc.experienceYears ? parseInt(doc.experienceYears, 10) : 0,
                   location: doc.location,
-                  photoUrl: doc.photoUrl || '',
+                  photoUrl: profileImageUrl,
                   availability: parsedAvailability,
                   verificationStatus: doc.verificationStatus || 'Approved',
                 });
-                log.success(`Doctor profile created for ${doc.name} at ${hospital.name}`);
+                log.success(`Doctor profile created for ${doc.name} at ${hospital.name} with AI-generated photo`);
               } else {
                 // Update existing doctor's hospital and availability
                 let parsedAvailability = [];
@@ -171,19 +187,26 @@ const seedDoctors = async () => {
                   { 
                     $set: { 
                       hospitalId: hospital._id,
+                      photoUrl: profileImageUrl,
                       availability: parsedAvailability,
                       verificationStatus: doc.verificationStatus || 'Approved'
                     } 
                   }
                 );
-                log.success(`Updated ${doc.name} - assigned to ${hospital.name}`);
+                log.success(`Updated ${doc.name} - assigned to ${hospital.name} with AI-generated photo`);
               }
             } catch (docError) {
               log.error(`Error processing doctor ${doc.name}:`, docError);
             }
           }
           
+          // Log final statistics
+          const stats = imageAssigner.getStats();
           log.success('Doctor data seeding complete!');
+          log.info(`Image assignment statistics:`);
+          log.info(`  - Male images used: ${stats.usedMaleImages}/${stats.totalMaleImages}`);
+          log.info(`  - Female images used: ${stats.usedFemaleImages}/${stats.totalFemaleImages}`);
+          
           await mongoose.connection.close();
           log.info('MongoDB connection closed');
         } catch (processingError) {

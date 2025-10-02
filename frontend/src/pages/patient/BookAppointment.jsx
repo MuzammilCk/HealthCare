@@ -311,7 +311,12 @@ export default function BookAppointment() {
             doctors.map(doc => (
               <div key={doc.userId._id} className="bg-white p-4 rounded-xl shadow-card flex items-center justify-between transition-shadow hover:shadow-lg">
                 <div className="flex items-center">
-                  <img src={doc.photoUrl || 'https://i.pravatar.cc/150'} alt={doc.userId.name} className="w-16 h-16 rounded-full mr-4 object-cover" />
+                  <img 
+                    src={doc.photoUrl ? `http://localhost:5000${doc.photoUrl}` : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(doc.userId.name) + '&size=150&background=0D8ABC&color=fff'} 
+                    alt={doc.userId.name} 
+                    className="w-16 h-16 rounded-full mr-4 object-cover border-2 border-gray-200" 
+                    onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(doc.userId.name) + '&size=150&background=0D8ABC&color=fff'; }}
+                  />
                   <div>
                     <h3 className="font-bold text-lg text-text-primary">{doc.userId.name}</h3>
                     <p className="text-sm text-primary font-medium">{doc.specializationId?.name}</p>
@@ -356,7 +361,12 @@ export default function BookAppointment() {
               <FiX size={24} />
             </button>
             <div className="flex items-center mb-6">
-              <img src={selectedDoctor.photoUrl || 'https://i.pravatar.cc/150'} alt={selectedDoctor.userId.name} className="w-20 h-20 rounded-full mr-4" />
+              <img 
+                src={selectedDoctor.photoUrl ? `http://localhost:5000${selectedDoctor.photoUrl}` : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(selectedDoctor.userId.name) + '&size=200&background=0D8ABC&color=fff'} 
+                alt={selectedDoctor.userId.name} 
+                className="w-20 h-20 rounded-full mr-4 object-cover border-2 border-gray-200" 
+                onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(selectedDoctor.userId.name) + '&size=200&background=0D8ABC&color=fff'; }}
+              />
               <div>
                 <h2 className="text-2xl font-bold text-text-primary">{selectedDoctor.userId.name}</h2>
                 <p className="text-primary font-medium">{selectedDoctor.specializationId?.name}</p>

@@ -28,7 +28,7 @@ export default function ProfileButton() {
     <div className="profile-container" ref={dropdownRef}>
       <button onClick={() => setIsOpen(!isOpen)} className="profile-avatar-button">
         <Avatar 
-          src={user.photoUrl} 
+          src={user.photoUrl ? `http://localhost:5000${user.photoUrl}` : null}
           name={user.name} 
           size="md"
           className="w-full h-full"
@@ -42,7 +42,7 @@ export default function ProfileButton() {
             {/* Part 1: Avatar */}
             <div className="flex-shrink-0">
               <Avatar 
-                src={user.photoUrl} 
+                src={user.photoUrl ? `http://localhost:5000${user.photoUrl}` : null}
                 name={user.name} 
                 size="xl"
               />

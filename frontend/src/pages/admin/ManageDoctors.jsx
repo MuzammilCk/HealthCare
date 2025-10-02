@@ -119,6 +119,7 @@ export default function ManageDoctors() {
                     <ModernTableCell>
                       <div className="flex items-center gap-3">
                         <Avatar 
+                          src={doctor.photoUrl ? `http://localhost:5000${doctor.photoUrl}` : null}
                           name={doctor.userId?.name || 'Unknown Doctor'} 
                           size="sm"
                         />
@@ -236,6 +237,7 @@ export default function ManageDoctors() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Avatar 
+                      src={doctor.photoUrl ? `http://localhost:5000${doctor.photoUrl}` : null}
                       name={doctor.userId?.name || 'Unknown Doctor'} 
                       size="md"
                     />

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Doctor Images</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .doctor-card {
+            display: inline-block;
+            margin: 20px;
+            text-align: center;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .doctor-card img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #0D8ABC;
+        }
+        .doctor-name {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .image-url {
+            font-size: 10px;
+            color: #666;
+            word-break: break-all;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Doctor Profile Images Test</h1>
+    <p>Testing if the generated image URLs are accessible...</p>
+
+    <div id="doctors-container"></div>
+
+    <script>
+        // Sample doctors with generated image URLs
+        const doctors = [
+            {
+                name: 'Dr. Anjali Nair',
+                photoUrl: 'https://ui-avatars.com/api/?name=Dr.%20Anjali%20Nair&size=400&background=0D8ABC&color=fff&bold=true&format=png'
+            },
+            {
+                name: 'Dr. Biju Menon',
+                photoUrl: 'https://ui-avatars.com/api/?name=Dr.%20Biju%20Menon&size=400&background=0D8ABC&color=fff&bold=true&format=png'
+            },
+            {
+                name: 'Dr. Priya Varma',
+                photoUrl: 'https://ui-avatars.com/api/?name=Dr.%20Priya%20Varma&size=400&background=0D8ABC&color=fff&bold=true&format=png'
+            },
+            {
+                name: 'Dr. Suresh Kumar',
+                photoUrl: 'https://ui-avatars.com/api/?name=Dr.%20Suresh%20Kumar&size=400&background=0D8ABC&color=fff&bold=true&format=png'
+            }
+        ];
+
+        const container = document.getElementById('doctors-container');
+
+        doctors.forEach(doctor => {
+            const card = document.createElement('div');
+            card.className = 'doctor-card';
+            
+            const img = document.createElement('img');
+            img.src = doctor.photoUrl;
+            img.alt = doctor.name;
+            img.onerror = function() {
+                this.style.border = '3px solid red';
+                this.alt = 'Failed to load';
+            };
+            img.onload = function() {
+                console.log(`✅ Image loaded for ${doctor.name}`);
+            };
+            
+            const name = document.createElement('div');
+            name.className = 'doctor-name';
+            name.textContent = doctor.name;
+            
+            const url = document.createElement('div');
+            url.className = 'image-url';
+            url.textContent = doctor.photoUrl;
+            
+            card.appendChild(img);
+            card.appendChild(name);
+            card.appendChild(url);
+            container.appendChild(card);
+        });
+    </script>
+</body>
+</html>
