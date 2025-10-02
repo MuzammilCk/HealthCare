@@ -17,7 +17,8 @@ const userSchema = new mongoose.Schema(
     role: { type: String, enum: ['patient', 'doctor', 'admin'], default: 'patient' },
     status: { type: String, enum: ['active', 'pending_approval'], default: 'active' },
     district: { type: String, trim: true },
-    photoUrl: { type: String, default: '' }
+    photoUrl: { type: String, default: '' },
+    missedAppointments: { type: Number, default: 0, comment: 'Count of appointments marked as missed by doctors' }
   },
   { timestamps: true }
 );

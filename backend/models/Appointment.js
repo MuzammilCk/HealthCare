@@ -8,9 +8,11 @@ const appointmentSchema = new mongoose.Schema(
     timeSlot: { type: String, required: true },
     status: { 
       type: String, 
-      enum: ['Scheduled', 'Completed', 'Cancelled', 'Follow-up', 'cancelled_refunded', 'cancelled_no_refund'], 
+      enum: ['Scheduled', 'Completed', 'Cancelled', 'Missed', 'Rejected', 'cancelled_refunded', 'cancelled_no_refund'], 
       default: 'Scheduled' 
     },
+    rejectionReason: { type: String, default: '' },
+    rescheduledTo: { type: mongoose.Schema.Types.ObjectId, ref: 'Appointment' },
     notes: { type: String, default: '' },
     isRated: { type: Boolean, default: false },
     bookingFeeStatus: {

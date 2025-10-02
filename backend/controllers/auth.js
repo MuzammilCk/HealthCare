@@ -27,7 +27,7 @@ exports.register = async (req, res) => {
   }
 
   // Destructure all required fields from the request body
-  const { name, email, password, role, specializationId, district } = req.body;
+  const { name, email, password, role, specializationId, district, hospitalId } = req.body;
 
   try {
     // SECURITY: Define whitelist of roles that users can self-register as
@@ -63,7 +63,7 @@ exports.register = async (req, res) => {
 
     // Step 2: If the user is a doctor, create their professional Doctor profile
     if (user.role === 'doctor') {
-      // Validate that specialization and district are provided for doctors
+      // Validate that specialization, district, and hospital are provided for doctors
       if (!specializationId) {
         // Rollback user creation
         await User.findByIdAndDelete(user._id);
@@ -74,11 +74,17 @@ exports.register = async (req, res) => {
         await User.findByIdAndDelete(user._id);
         return res.status(400).json({ success: false, message: 'District is required for doctors.' });
       }
+      if (!hospitalId) {
+        // Rollback user creation
+        await User.findByIdAndDelete(user._id);
+        return res.status(400).json({ success: false, message: 'Hospital is required for doctors.' });
+      }
       
-      // Create the corresponding doctor document with their district
+      // Create the corresponding doctor document with their district and hospital
       await Doctor.create({
         userId: user._id,
         specializationId: specializationId,
+        hospitalId: hospitalId,
         availability: [],
         district: district,
         verificationStatus: 'Pending', // Doctors start as pending
@@ -90,7 +96,7 @@ exports.register = async (req, res) => {
         `A new doctor, ${user.name}, has registered and is awaiting approval`,
         '/admin/doctors',
         'system',
-        { doctorId: user._id, doctorName: user.name, district }
+        { doctorId: user._id, doctorName: user.name, district, hospitalId }
       );
     }
 

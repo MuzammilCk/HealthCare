@@ -1,6 +1,7 @@
 const Appointment = require('../models/Appointment');
 const Prescription = require('../models/Prescription');
 const Doctor = require('../models/Doctor');
+const User = require('../models/User');
 const { createNotification, createRoleBasedNotifications } = require('../utils/createNotification');
 
 // Utility function to normalize date to UTC midnight
@@ -48,7 +49,7 @@ exports.updateAppointment = async (req, res) => {
     }
 
     // Validate status transitions
-    const validStatuses = ['Scheduled', 'Completed', 'Cancelled', 'Follow-up'];
+    const validStatuses = ['Scheduled', 'Completed', 'Cancelled', 'Missed', 'Rejected'];
     if (status && !validStatuses.includes(status)) {
       return res.status(400).json({ success: false, message: 'Invalid appointment status' });
     }
@@ -209,7 +210,7 @@ exports.createPrescription = async (req, res) => {
     const appt = await Appointment.findOne({ 
       _id: appointmentId, 
       doctorId: doctorId, 
-      status: { $in: ['Completed', 'Follow-up'] } 
+      status: 'Completed'
     })
       .populate('patientId', 'name')
       .populate('doctorId', 'name');
@@ -392,56 +393,6 @@ exports.createPrescription = async (req, res) => {
   }
 };
 
-// Schedule a follow-up: update current appointment status, and create a new future appointment slot
-exports.scheduleFollowUp = async (req, res) => {
-  try {
-    // Validate user role
-    if (req.user.role !== 'doctor') {
-      return res.status(403).json({ success: false, message: 'Only doctors can schedule follow-ups' });
-    }
-
-    const { date, timeSlot, notes } = req.body;
-    const current = await Appointment.findById(req.params.id).populate('patientId', 'name email');
-    if (!current) return res.status(404).json({ success: false, message: 'Appointment not found' });
-    
-    // Ensure only the assigned doctor can schedule follow-up
-    if (current.doctorId.toString() !== req.user.id) {
-      return res.status(403).json({ success: false, message: 'You can only schedule follow-ups for your own appointments' });
-    }
-
-    if (!date || !timeSlot) {
-      return res.status(400).json({ success: false, message: 'date and timeSlot are required' });
-    }
-
-    // Validate that the appointment is in a state that allows follow-up
-    if (!['Completed', 'Scheduled'].includes(current.status)) {
-      return res.status(400).json({ success: false, message: 'Follow-up can only be scheduled for completed or scheduled appointments' });
-    }
-
-    // Mark current appointment as Follow-up planned and persist optional notes
-    current.status = 'Follow-up';
-    if (notes) current.notes = notes;
-    await current.save();
-
-    // Create new appointment for the selected future slot
-    const followUpAppt = await Appointment.create({
-      patientId: current.patientId._id || current.patientId,
-      doctorId: req.user.id,
-      date: normalizeDateToUTC(date),
-      timeSlot,
-      status: 'Scheduled',
-      notes: notes || ''
-    });
-
-    res.json({ success: true, data: { current, followUp: followUpAppt } });
-  } catch (e) {
-    // Handle uniqueness conflicts (same slot) gracefully
-    if (e && e.code === 11000) {
-      return res.status(400).json({ success: false, message: 'Selected slot is no longer available' });
-    }
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-};
 
 // GET /api/doctors/:id/available-slots?date=YYYY-MM-DD
 exports.getAvailableSlots = async (req, res) => {
@@ -795,5 +746,237 @@ exports.updateDoctorProfile = async (req, res) => {
   } catch (error) {
     console.error('Error updating doctor profile:', error);
     res.status(500).json({ success: false, message: 'Failed to update profile' });
+  }
+};
+
+/**
+ * Mark appointment as missed (patient didn't show up)
+ * Can only be done after appointment time has passed
+ */
+exports.markAppointmentMissed = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const doctorId = req.user.id;
+
+    // Validate user role
+    if (req.user.role !== 'doctor') {
+      return res.status(403).json({ success: false, message: 'Only doctors can mark appointments as missed' });
+    }
+
+    const appointment = await Appointment.findById(id)
+      .populate('patientId', 'name email missedAppointments')
+      .populate('doctorId', 'name');
+
+    if (!appointment) {
+      return res.status(404).json({ success: false, message: 'Appointment not found' });
+    }
+
+    // Ensure only the assigned doctor can mark as missed
+    if (appointment.doctorId._id.toString() !== doctorId) {
+      return res.status(403).json({ success: false, message: 'You can only mark your own appointments as missed' });
+    }
+
+    // Check if appointment is scheduled
+    if (appointment.status !== 'Scheduled') {
+      return res.status(400).json({ success: false, message: 'Only scheduled appointments can be marked as missed' });
+    }
+
+    // Verify that appointment time has passed
+    const now = new Date();
+    const appointmentDate = new Date(appointment.date);
+    
+    if (appointment.timeSlot) {
+      const endTimeString = appointment.timeSlot.split('-')[1]; // e.g., "10:00"
+      const [hours, minutes] = endTimeString.split(':').map(Number);
+      
+      const appointmentEndTime = new Date(appointmentDate);
+      appointmentEndTime.setHours(hours, minutes, 0, 0);
+      
+      if (appointmentEndTime > now) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Cannot mark appointment as missed before the appointment time has passed' 
+        });
+      }
+    }
+
+    // Mark appointment as missed
+    appointment.status = 'Missed';
+    await appointment.save();
+
+    // Increment patient's missed appointments count
+    await User.findByIdAndUpdate(
+      appointment.patientId._id,
+      { $inc: { missedAppointments: 1 } }
+    );
+
+    // Notify patient
+    await createNotification(
+      appointment.patientId._id,
+      `Your appointment with Dr. ${appointment.doctorId.name} on ${new Date(appointment.date).toLocaleDateString()} was marked as missed. Please cancel appointments in advance to avoid this.`,
+      '/patient/appointments',
+      'appointment',
+      { appointmentId: appointment._id, action: 'missed' }
+    );
+
+    res.json({ 
+      success: true, 
+      message: 'Appointment marked as missed',
+      data: appointment 
+    });
+  } catch (error) {
+    console.error('Error marking appointment as missed:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+/**
+ * Reject an appointment (doctor emergency or unavailability)
+ */
+exports.rejectAppointment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    const doctorId = req.user.id;
+
+    // Validate user role
+    if (req.user.role !== 'doctor') {
+      return res.status(403).json({ success: false, message: 'Only doctors can reject appointments' });
+    }
+
+    if (!reason || reason.trim().length === 0) {
+      return res.status(400).json({ success: false, message: 'Rejection reason is required' });
+    }
+
+    const appointment = await Appointment.findById(id)
+      .populate('patientId', 'name email')
+      .populate('doctorId', 'name');
+
+    if (!appointment) {
+      return res.status(404).json({ success: false, message: 'Appointment not found' });
+    }
+
+    // Ensure only the assigned doctor can reject
+    if (appointment.doctorId._id.toString() !== doctorId) {
+      return res.status(403).json({ success: false, message: 'You can only reject your own appointments' });
+    }
+
+    // Check if appointment is scheduled
+    if (appointment.status !== 'Scheduled') {
+      return res.status(400).json({ success: false, message: 'Only scheduled appointments can be rejected' });
+    }
+
+    // Mark appointment as rejected
+    appointment.status = 'Rejected';
+    appointment.rejectionReason = reason;
+    await appointment.save();
+
+    // Notify patient
+    await createNotification(
+      appointment.patientId._id,
+      `Your appointment with Dr. ${appointment.doctorId.name} on ${new Date(appointment.date).toLocaleDateString()} at ${appointment.timeSlot} has been rejected. Reason: ${reason}`,
+      '/patient/appointments',
+      'appointment',
+      { appointmentId: appointment._id, action: 'rejected', reason }
+    );
+
+    res.json({ 
+      success: true, 
+      message: 'Appointment rejected successfully',
+      data: appointment 
+    });
+  } catch (error) {
+    console.error('Error rejecting appointment:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+/**
+ * Reschedule an appointment to a new date/time
+ */
+exports.rescheduleAppointment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { newDate, newTimeSlot, reason } = req.body;
+    const doctorId = req.user.id;
+
+    // Validate user role
+    if (req.user.role !== 'doctor') {
+      return res.status(403).json({ success: false, message: 'Only doctors can reschedule appointments' });
+    }
+
+    if (!newDate || !newTimeSlot) {
+      return res.status(400).json({ success: false, message: 'New date and time slot are required' });
+    }
+
+    const appointment = await Appointment.findById(id)
+      .populate('patientId', 'name email')
+      .populate('doctorId', 'name');
+
+    if (!appointment) {
+      return res.status(404).json({ success: false, message: 'Appointment not found' });
+    }
+
+    // Ensure only the assigned doctor can reschedule
+    if (appointment.doctorId._id.toString() !== doctorId) {
+      return res.status(403).json({ success: false, message: 'You can only reschedule your own appointments' });
+    }
+
+    // Check if appointment is scheduled
+    if (appointment.status !== 'Scheduled') {
+      return res.status(400).json({ success: false, message: 'Only scheduled appointments can be rescheduled' });
+    }
+
+    // Check if new slot is available
+    const normalizedNewDate = normalizeDateToUTC(newDate);
+    const existingAppt = await Appointment.findOne({
+      doctorId: doctorId,
+      date: normalizedNewDate,
+      timeSlot: newTimeSlot,
+      status: 'Scheduled',
+      _id: { $ne: id } // Exclude current appointment
+    });
+
+    if (existingAppt) {
+      return res.status(400).json({ success: false, message: 'Selected time slot is not available' });
+    }
+
+    // Store old details for notification
+    const oldDate = appointment.date;
+    const oldTimeSlot = appointment.timeSlot;
+
+    // Update appointment
+    appointment.date = normalizedNewDate;
+    appointment.timeSlot = newTimeSlot;
+    if (reason) {
+      appointment.notes = `Rescheduled by doctor. Reason: ${reason}`;
+    }
+    await appointment.save();
+
+    // Notify patient
+    await createNotification(
+      appointment.patientId._id,
+      `Your appointment with Dr. ${appointment.doctorId.name} has been rescheduled from ${new Date(oldDate).toLocaleDateString()} at ${oldTimeSlot} to ${new Date(newDate).toLocaleDateString()} at ${newTimeSlot}${reason ? `. Reason: ${reason}` : ''}`,
+      '/patient/appointments',
+      'appointment',
+      { 
+        appointmentId: appointment._id, 
+        action: 'rescheduled',
+        oldDate,
+        oldTimeSlot,
+        newDate,
+        newTimeSlot,
+        reason 
+      }
+    );
+
+    res.json({ 
+      success: true, 
+      message: 'Appointment rescheduled successfully',
+      data: appointment 
+    });
+  } catch (error) {
+    console.error('Error rescheduling appointment:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };

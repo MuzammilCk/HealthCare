@@ -18,7 +18,7 @@ export default function CreatePrescription() {
     (async () => {
       try {
         const res = await api.get('/doctors/appointments');
-        const eligibleAppts = (res.data.data || []).filter(a => ['Completed', 'Follow-up'].includes(a.status));
+        const eligibleAppts = (res.data.data || []).filter(a => a.status === 'Completed');
         setAppointments(eligibleAppts);
 
         // Pre-select if navigated from another page

@@ -12,6 +12,7 @@ export default function Register() {
   const { role, setRole } = useOutletContext(); // Get context from layout
   const [loading, setLoading] = useState(false);
   const [specializations, setSpecializations] = useState([]);
+  const [hospitals, setHospitals] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [form, setForm] = useState({
@@ -20,7 +21,8 @@ export default function Register() {
     password: '',
     role: role || 'patient',
     district: '',
-    specializationId: ''
+    specializationId: '',
+    hospitalId: ''
   });
 
   // Sync the form's role with the role from the layout context
@@ -28,15 +30,19 @@ export default function Register() {
     setForm(f => ({ ...f, role }));
   }, [role]);
 
-  // Fetch specializations for the dropdown
+  // Fetch specializations and hospitals for the dropdown
   useEffect(() => {
     (async () => {
       try {
-        const res = await api.get('/specializations');
-        setSpecializations(res.data.data || []);
+        const [specRes, hospRes] = await Promise.all([
+          api.get('/specializations'),
+          api.get('/admin/hospitals/public')
+        ]);
+        setSpecializations(specRes.data.data || []);
+        setHospitals(hospRes.data.data || []);
       } catch (err) {
-        console.error("Failed to fetch specializations", err);
-        setError("Could not load specializations. Please try again later.");
+        console.error("Failed to fetch data", err);
+        setError("Could not load required data. Please try again later.");
       }
     })();
   }, []);
@@ -50,6 +56,9 @@ export default function Register() {
     e.preventDefault();
     if (form.role === 'doctor' && !form.specializationId) {
       return setError('Please select a specialization.');
+    }
+    if (form.role === 'doctor' && !form.hospitalId) {
+      return setError('Please select a hospital.');
     }
     if (!form.district) {
       return setError('Please select your district.');
@@ -116,18 +125,37 @@ export default function Register() {
         />
 
         {role === 'doctor' && (
-          <AppSelect
-            label="Specialization"
-            placeholder="Select your specialization"
-            value={form.specializationId}
-            onChange={(value) => setForm({ ...form, specializationId: value })}
-            options={specializations.map(spec => ({ value: spec._id, label: spec.name }))}
-            icon={FiBriefcase}
-            required
-            searchable
-            searchPlaceholder="Search specializations..."
-            loading={specializations.length === 0}
-          />
+          <>
+            <AppSelect
+              label="Specialization"
+              placeholder="Select your specialization"
+              value={form.specializationId}
+              onChange={(value) => setForm({ ...form, specializationId: value })}
+              options={specializations.map(spec => ({ value: spec._id, label: spec.name }))}
+              icon={FiBriefcase}
+              required
+              searchable
+              searchPlaceholder="Search specializations..."
+              loading={specializations.length === 0}
+            />
+            <AppSelect
+              label="Hospital"
+              placeholder="Select your hospital"
+              value={form.hospitalId}
+              onChange={(value) => setForm({ ...form, hospitalId: value })}
+              options={hospitals
+                .filter(h => !form.district || h.district === form.district)
+                .map(hosp => ({ 
+                  value: hosp._id, 
+                  label: `${hosp.name} - ${hosp.district}` 
+                }))}
+              icon={FiBriefcase}
+              required
+              searchable
+              searchPlaceholder="Search hospitals..."
+              loading={hospitals.length === 0}
+            />
+          </>
         )}
 
         <button disabled={loading} className="w-full bg-primary text-white font-bold px-4 py-2 rounded-lg h-12 transition-all duration-300 ease-in-out hover:bg-primary-light hover:shadow-lg hover:-translate-y-px disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0">

@@ -11,7 +11,7 @@ const availabilitySchema = new mongoose.Schema(
 const doctorSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
-    hospitalId: { type: mongoose.Schema.Types.ObjectId, ref: 'Hospital', required: false }, // Made optional for existing doctors
+    hospitalId: { type: mongoose.Schema.Types.ObjectId, ref: 'Hospital', required: true },
     specializationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Specialization', required: true },
     availability: [availabilitySchema],
     bio: { type: String },

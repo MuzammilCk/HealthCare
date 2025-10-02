@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiCalendar, FiUser, FiActivity, FiFileText, FiCheckCircle, FiClock, FiEdit3, FiDollarSign } from 'react-icons/fi';
+import { FiCalendar, FiUser, FiActivity, FiFileText, FiCheckCircle, FiClock, FiEdit3, FiDollarSign, FiXCircle, FiAlertCircle, FiRefreshCw } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 import { AppSelect } from '../../components/ui';
@@ -22,6 +22,11 @@ export default function DoctorAppointments() {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [rescheduleData, setRescheduleData] = useState({ newDate: '', newTimeSlot: '', reason: '' });
   const navigate = useNavigate();
 
   const load = async () => {
@@ -42,12 +47,68 @@ export default function DoctorAppointments() {
       await load();
       toast.success('Appointment updated successfully!');
       const newStatus = payload.status;
-      if (newStatus === 'Completed' || newStatus === 'Follow-up') {
+      if (newStatus === 'Completed') {
         const appt = res.data?.data || list.find(a => a._id === id);
         navigate('/doctor/prescriptions/new', { state: { patientId: appt?.patientId?._id || appt?.patientId, appointmentId: id } });
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to update appointment.');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const markAsMissed = async (id) => {
+    if (!confirm('Are you sure you want to mark this appointment as missed? This will be recorded in the patient\'s file.')) {
+      return;
+    }
+    setUpdatingId(id);
+    try {
+      await api.post(`/doctors/appointments/${id}/mark-missed`);
+      await load();
+      toast.success('Appointment marked as missed');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to mark appointment as missed');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const rejectAppointment = async () => {
+    if (!rejectionReason.trim()) {
+      toast.error('Please provide a reason for rejection');
+      return;
+    }
+    setUpdatingId(selectedAppointment._id);
+    try {
+      await api.post(`/doctors/appointments/${selectedAppointment._id}/reject`, { reason: rejectionReason });
+      await load();
+      toast.success('Appointment rejected successfully');
+      setShowRejectModal(false);
+      setRejectionReason('');
+      setSelectedAppointment(null);
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to reject appointment');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const rescheduleAppointment = async () => {
+    if (!rescheduleData.newDate || !rescheduleData.newTimeSlot) {
+      toast.error('Please select a new date and time slot');
+      return;
+    }
+    setUpdatingId(selectedAppointment._id);
+    try {
+      await api.put(`/doctors/appointments/${selectedAppointment._id}/reschedule`, rescheduleData);
+      await load();
+      toast.success('Appointment rescheduled successfully');
+      setShowRescheduleModal(false);
+      setRescheduleData({ newDate: '', newTimeSlot: '', reason: '' });
+      setSelectedAppointment(null);
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to reschedule appointment');
     } finally {
       setUpdatingId(null);
     }
@@ -198,7 +259,7 @@ export default function DoctorAppointments() {
                             </ActionButton>
                           </>
                         )}
-                        {(appointment.status === 'Completed' || appointment.status === 'Follow-up') && (
+                        {appointment.status === 'Completed' && (
                           <>
                             {!appointment.prescriptionGenerated ? (
                               <ActionButton
@@ -355,7 +416,7 @@ export default function DoctorAppointments() {
                       </ActionButton>
                     </>
                   )}
-                  {(appointment.status === 'Completed' || appointment.status === 'Follow-up') && (
+                  {appointment.status === 'Completed' && (
                     <>
                       {!appointment.prescriptionGenerated ? (
                         <ActionButton
@@ -426,6 +487,109 @@ export default function DoctorAppointments() {
           ))
         )}
       </div>
+
+      {/* Reject Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Reject Appointment</h3>
+            <p className="text-gray-600 mb-4">
+              Please provide a reason for rejecting this appointment. The patient will be notified.
+            </p>
+            <textarea
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 resize-none"
+              rows={4}
+              placeholder="e.g., Emergency surgery scheduled, Personal emergency, etc."
+            />
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowRejectModal(false);
+                  setRejectionReason('');
+                  setSelectedAppointment(null);
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                disabled={updatingId}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={rejectAppointment}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                disabled={updatingId || !rejectionReason.trim()}
+              >
+                {updatingId ? 'Rejecting...' : 'Reject Appointment'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reschedule Modal */}
+      {showRescheduleModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Reschedule Appointment</h3>
+            <p className="text-gray-600 mb-4">
+              Select a new date and time for this appointment. The patient will be notified.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">New Date</label>
+                <input
+                  type="date"
+                  value={rescheduleData.newDate}
+                  onChange={(e) => setRescheduleData({ ...rescheduleData, newDate: e.target.value })}
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-4 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">New Time Slot</label>
+                <input
+                  type="text"
+                  value={rescheduleData.newTimeSlot}
+                  onChange={(e) => setRescheduleData({ ...rescheduleData, newTimeSlot: e.target.value })}
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-4 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  placeholder="e.g., 09:00-10:00"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Reason (Optional)</label>
+                <textarea
+                  value={rescheduleData.reason}
+                  onChange={(e) => setRescheduleData({ ...rescheduleData, reason: e.target.value })}
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-4 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none"
+                  rows={3}
+                  placeholder="Reason for rescheduling..."
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowRescheduleModal(false);
+                  setRescheduleData({ newDate: '', newTimeSlot: '', reason: '' });
+                  setSelectedAppointment(null);
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                disabled={updatingId}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={rescheduleAppointment}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                disabled={updatingId || !rescheduleData.newDate || !rescheduleData.newTimeSlot}
+              >
+                {updatingId ? 'Rescheduling...' : 'Reschedule'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

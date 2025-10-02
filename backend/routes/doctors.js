@@ -11,9 +11,11 @@ const {
   getPrescriptionById,
   getBillById,
   submitKyc, 
-  scheduleFollowUp, 
   getAvailableSlots, 
-  getAvailableDates 
+  getAvailableDates,
+  markAppointmentMissed,
+  rejectAppointment,
+  rescheduleAppointment
 } = require('../controllers/doctors');
 
 const router = express.Router();
@@ -30,7 +32,9 @@ router.get('/profile', getDoctorProfile);
 router.put('/profile', updateDoctorProfile);
 router.get('/appointments', getDoctorAppointments);
 router.put('/appointments/:id', updateAppointment);
-router.post('/appointments/:id/follow-up', scheduleFollowUp);
+router.post('/appointments/:id/mark-missed', markAppointmentMissed);
+router.post('/appointments/:id/reject', rejectAppointment);
+router.put('/appointments/:id/reschedule', rescheduleAppointment);
 router.put('/availability', updateAvailability);
 router.post('/prescriptions', createPrescription);
 router.get('/prescriptions', getDoctorPrescriptions);

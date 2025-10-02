@@ -28,11 +28,29 @@ export const StatusBadge = ({ status, type = 'appointment' }) => {
           border: 'border-red-200',
           icon: <FiX className="w-3 h-3" />
         },
-        'Follow-up': { 
-          bg: 'bg-gradient-to-r from-purple-50 to-purple-100', 
-          text: 'text-purple-700', 
-          border: 'border-purple-200',
-          icon: <FiActivity className="w-3 h-3" />
+        'Missed': { 
+          bg: 'bg-gradient-to-r from-orange-50 to-orange-100', 
+          text: 'text-orange-700', 
+          border: 'border-orange-200',
+          icon: <FiAlertCircle className="w-3 h-3" />
+        },
+        'Rejected': { 
+          bg: 'bg-gradient-to-r from-red-50 to-red-100', 
+          text: 'text-red-700', 
+          border: 'border-red-200',
+          icon: <FiX className="w-3 h-3" />
+        },
+        'cancelled_refunded': { 
+          bg: 'bg-gradient-to-r from-yellow-50 to-yellow-100', 
+          text: 'text-yellow-700', 
+          border: 'border-yellow-200',
+          icon: <FiX className="w-3 h-3" />
+        },
+        'cancelled_no_refund': { 
+          bg: 'bg-gradient-to-r from-red-50 to-red-100', 
+          text: 'text-red-700', 
+          border: 'border-red-200',
+          icon: <FiX className="w-3 h-3" />
         }
       },
       kyc: {

@@ -48,7 +48,7 @@ export default function CreatePrescriptionNew() {
     try {
       const res = await api.get('/doctors/appointments');
       const eligibleAppts = (res.data.data || []).filter(
-        a => ['Completed', 'Follow-up'].includes(a.status) && !a.prescriptionGenerated
+        a => a.status === 'Completed' && !a.prescriptionGenerated
       );
       setAppointments(eligibleAppts);
 

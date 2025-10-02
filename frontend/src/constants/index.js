@@ -30,7 +30,10 @@ export const APPOINTMENT_STATUS = {
   SCHEDULED: 'Scheduled',
   COMPLETED: 'Completed',
   CANCELLED: 'Cancelled',
-  FOLLOW_UP: 'Follow-up'
+  MISSED: 'Missed',
+  REJECTED: 'Rejected',
+  CANCELLED_REFUNDED: 'cancelled_refunded',
+  CANCELLED_NO_REFUND: 'cancelled_no_refund'
 };
 
 // Notification types

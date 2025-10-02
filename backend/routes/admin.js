@@ -17,6 +17,11 @@ const {
 
 const router = express.Router();
 
+// Public routes (no auth required)
+// Hospital list for registration
+router.get('/hospitals/public', getAllHospitals);
+
+// Protected admin routes
 router.use(protect);
 router.use(authorize('admin'));
 
