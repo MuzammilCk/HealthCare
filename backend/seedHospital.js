@@ -4,10 +4,20 @@ const Hospital = require('./models/Hospital');
 const Doctor = require('./models/Doctor');
 const Inventory = require('./models/Inventory');
 
+// Simple logger for seed script
+const log = {
+  info: (msg) => console.log(`[INFO] ${new Date().toISOString()} - ${msg}`),
+  success: (msg) => console.log(`[SUCCESS] ${new Date().toISOString()} - ${msg}`),
+  warn: (msg) => console.warn(`[WARN] ${new Date().toISOString()} - ${msg}`),
+  error: (msg, err) => console.error(`[ERROR] ${new Date().toISOString()} - ${msg}`, err || '')
+};
+
 const seedData = async () => {
   try {
+    log.info('Starting hospital and inventory seeding...');
+    
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ Connected to MongoDB');
+    log.success('Connected to MongoDB');
 
     // Create Hospital
     const hospital = await Hospital.create({
@@ -22,7 +32,7 @@ const seedData = async () => {
       registrationNumber: 'KL-TVM-001'
     });
 
-    console.log('✅ Hospital created:', hospital.name);
+    log.success(`Hospital created: ${hospital.name}`);
 
     // Update all doctors to link to this hospital
     const result = await Doctor.updateMany(
@@ -30,7 +40,7 @@ const seedData = async () => {
       { hospitalId: hospital._id }
     );
 
-    console.log(`✅ Updated ${result.modifiedCount} doctors with hospital link`);
+    log.success(`Updated ${result.modifiedCount} doctors with hospital link`);
 
     // Add sample inventory
     const medicines = [
@@ -157,18 +167,23 @@ const seedData = async () => {
     ];
 
     await Inventory.insertMany(medicines);
-    console.log(`✅ Added ${medicines.length} medicines to inventory`);
+    log.success(`Added ${medicines.length} medicines to inventory`);
 
-    console.log('\n🎉 Seed data created successfully!');
-    console.log('\nHospital Details:');
-    console.log(`- Name: ${hospital.name}`);
-    console.log(`- ID: ${hospital._id}`);
-    console.log(`- Doctors linked: ${result.modifiedCount}`);
-    console.log(`- Medicines in inventory: ${medicines.length}`);
+    log.success('Seed data created successfully!');
+    log.info('Hospital Details:');
+    log.info(`- Name: ${hospital.name}`);
+    log.info(`- ID: ${hospital._id}`);
+    log.info(`- Doctors linked: ${result.modifiedCount}`);
+    log.info(`- Medicines in inventory: ${medicines.length}`);
     
+    await mongoose.connection.close();
+    log.info('MongoDB connection closed');
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error seeding data:', error);
+    log.error('Fatal error seeding data:', error);
+    if (mongoose.connection.readyState === 1) {
+      await mongoose.connection.close();
+    }
     process.exit(1);
   }
 };

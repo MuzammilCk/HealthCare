@@ -7,6 +7,9 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const http = require('http');
 const { Server } = require('socket.io');
+const morgan = require('morgan');
+const logger = require('./config/logger');
+const { errorHandler, notFound } = require('./middleware/errorHandler');
 
 const app = express();
 const server = http.createServer(app);
@@ -57,29 +60,45 @@ const removeUser = (socketId) => {
   });
 };
 
-// Socket.IO connection handling
+// Socket.IO connection handling with error handling
 io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+  logger.info(`Socket.IO: User connected - ${socket.id}`);
 
   socket.on('newUser', (userId) => {
-    addUser(userId, socket.id);
-    console.log('User added to online list:', userId);
+    try {
+      addUser(userId, socket.id);
+      logger.info(`Socket.IO: User ${userId} added to online list`);
+    } catch (error) {
+      logger.error('Socket.IO: Error adding user', { error: error.message, userId, socketId: socket.id });
+    }
   });
 
   socket.on('disconnect', () => {
-    removeUser(socket.id);
-    console.log('User disconnected:', socket.id);
+    try {
+      removeUser(socket.id);
+      logger.info(`Socket.IO: User disconnected - ${socket.id}`);
+    } catch (error) {
+      logger.error('Socket.IO: Error removing user', { error: error.message, socketId: socket.id });
+    }
+  });
+
+  socket.on('error', (error) => {
+    logger.error('Socket.IO: Socket error', { error: error.message, socketId: socket.id });
   });
 });
 
-// Global notification sender function
+// Global notification sender function with error handling
 const sendNotification = (userId, notification) => {
-  const receiverSocketId = onlineUsers[userId];
-  if (receiverSocketId) {
-    io.to(receiverSocketId).emit('getNotification', notification);
-    console.log('Notification sent to user:', userId);
-  } else {
-    console.log('User not online, notification will be shown on next login:', userId);
+  try {
+    const receiverSocketId = onlineUsers[userId];
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit('getNotification', notification);
+      logger.info(`Notification sent to user: ${userId}`);
+    } else {
+      logger.debug(`User ${userId} not online, notification will be shown on next login`);
+    }
+  } catch (error) {
+    logger.error('Error sending notification', { error: error.message, userId });
   }
 };
 
@@ -87,22 +106,45 @@ const sendNotification = (userId, notification) => {
 app.set('sendNotification', sendNotification);
 global.sendNotification = sendNotification;
 
+// HTTP Request Logging with Morgan
+app.use(morgan('combined', { stream: logger.stream }));
+
 // Body parser
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
 // Cookie parser (for httpOnly JWT cookies)
 app.use(cookieParser());
 
 // Serve static files for uploaded images
 app.use('/uploads', express.static('uploads'));
 
-// Mongo connection
+// Mongo connection with proper error handling
 mongoose
   .connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log('MongoDB connected'))
-  .catch((err) => console.error('MongoDB connection error:', err.message));
+  .then(() => {
+    logger.info('MongoDB connected successfully');
+  })
+  .catch((err) => {
+    logger.error('MongoDB connection error:', { error: err.message, stack: err.stack });
+    process.exit(1); // Exit if cannot connect to database
+  });
+
+// Handle MongoDB connection events
+mongoose.connection.on('error', (err) => {
+  logger.error('MongoDB connection error:', { error: err.message });
+});
+
+mongoose.connection.on('disconnected', () => {
+  logger.warn('MongoDB disconnected');
+});
+
+mongoose.connection.on('reconnected', () => {
+  logger.info('MongoDB reconnected');
+});
 
 // Routes
 app.get('/', (req, res) => res.json({ message: 'Healthcare System API' }));
@@ -119,11 +161,43 @@ app.use('/api/bills', require('./routes/bills'));
 app.use('/api/medical-history', require('./routes/medicalHistory'));
 app.use('/api/inventory', require('./routes/inventory'));
 
-// Error handler
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(err.status || 500).json({ success: false, message: err.message || 'Server error' });
+// 404 Handler - Must be after all routes
+app.use(notFound);
+
+// Global Error Handler - Must be last
+app.use(errorHandler);
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  logger.error('Unhandled Promise Rejection:', { error: err.message, stack: err.stack });
+  // Close server & exit process
+  server.close(() => {
+    process.exit(1);
+  });
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  logger.error('Uncaught Exception:', { error: err.message, stack: err.stack });
+  // Close server & exit process
+  server.close(() => {
+    process.exit(1);
+  });
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM signal received: closing HTTP server');
+  server.close(() => {
+    logger.info('HTTP server closed');
+    mongoose.connection.close(false, () => {
+      logger.info('MongoDB connection closed');
+      process.exit(0);
+    });
+  });
 });
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => {
+  logger.info(`Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+});
