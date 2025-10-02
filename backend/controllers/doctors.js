@@ -53,6 +53,43 @@ exports.updateAppointment = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid appointment status' });
     }
 
+    // CRITICAL FIX: Prevent marking future appointments as completed
+    if (status === 'Completed') {
+      const now = new Date();
+      
+      // Parse the appointment date and time
+      const appointmentDate = new Date(appt.date);
+      
+      // Extract end time from timeSlot (format: "09:00-10:00")
+      if (appt.timeSlot) {
+        const endTimeString = appt.timeSlot.split('-')[1]; // e.g., "10:00"
+        const [hours, minutes] = endTimeString.split(':').map(Number);
+        
+        // Create appointment end datetime
+        const appointmentEndTime = new Date(appointmentDate);
+        appointmentEndTime.setHours(hours, minutes, 0, 0);
+        
+        // Check if appointment end time is in the future
+        if (appointmentEndTime > now) {
+          return res.status(400).json({ 
+            success: false, 
+            message: 'Cannot mark a future appointment as completed. Please wait until the appointment time has passed.' 
+          });
+        }
+      } else {
+        // If no timeSlot, just check the date
+        const appointmentDateOnly = new Date(appointmentDate);
+        appointmentDateOnly.setHours(23, 59, 59, 999); // End of day
+        
+        if (appointmentDateOnly > now) {
+          return res.status(400).json({ 
+            success: false, 
+            message: 'Cannot mark a future appointment as completed.' 
+          });
+        }
+      }
+    }
+
     // Update appointment
     if (status) appt.status = status;
     if (notes) appt.notes = notes;

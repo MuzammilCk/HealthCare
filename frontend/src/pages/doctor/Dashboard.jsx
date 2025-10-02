@@ -9,6 +9,8 @@ export default function DoctorDashboard() {
   const [appointments, setAppointments] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [scheduledIndex, setScheduledIndex] = useState(0);
+  const [completedIndex, setCompletedIndex] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -65,6 +67,49 @@ export default function DoctorDashboard() {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
   };
 
+  // Handle stat card clicks - Cycle through appointments
+  const handleTodayClick = () => {
+    const today = new Date();
+    setSelectedDate(today);
+    setCurrentMonth(today);
+  };
+
+  const handleScheduledClick = () => {
+    // Get all scheduled appointments sorted by date
+    const scheduledApts = appointments
+      .filter(a => a.status === 'Scheduled')
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    if (scheduledApts.length > 0) {
+      // Cycle through scheduled appointments
+      const nextIndex = scheduledIndex % scheduledApts.length;
+      const selectedApt = scheduledApts[nextIndex];
+      const aptDate = new Date(selectedApt.date);
+      
+      setSelectedDate(aptDate);
+      setCurrentMonth(aptDate);
+      setScheduledIndex(nextIndex + 1); // Move to next for next click
+    }
+  };
+
+  const handleCompletedClick = () => {
+    // Get all completed appointments sorted by date (most recent first)
+    const completedApts = appointments
+      .filter(a => a.status === 'Completed')
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    if (completedApts.length > 0) {
+      // Cycle through completed appointments
+      const nextIndex = completedIndex % completedApts.length;
+      const selectedApt = completedApts[nextIndex];
+      const aptDate = new Date(selectedApt.date);
+      
+      setSelectedDate(aptDate);
+      setCurrentMonth(aptDate);
+      setCompletedIndex(nextIndex + 1); // Move to next for next click
+    }
+  };
+
   const isToday = (day) => {
     const today = new Date();
     return day === today.getDate() && 
@@ -111,11 +156,44 @@ export default function DoctorDashboard() {
         </div>
       )}
       
-      {/* Stats Cards */}
+      {/* Stats Cards - Clickable */}
       <div className="grid sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-xl shadow-card"><div className="text-medium-gray">Today</div><div className="text-3xl font-bold">{stats.today}</div></div>
-        <div className="bg-white p-4 rounded-xl shadow-card"><div className="text-medium-gray">Scheduled</div><div className="text-3xl font-bold">{stats.scheduled}</div></div>
-        <div className="bg-white p-4 rounded-xl shadow-card"><div className="text-medium-gray">Completed</div><div className="text-3xl font-bold">{stats.completed}</div></div>
+        <button
+          onClick={handleTodayClick}
+          className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-105 text-left group"
+        >
+          <div className="text-blue-100 text-sm font-medium mb-1">Today's Appointments</div>
+          <div className="text-4xl font-bold text-white mb-2">{stats.today}</div>
+          <div className="text-blue-100 text-xs flex items-center gap-1">
+            <span>Click to view</span>
+          </div>
+        </button>
+        
+        <button
+          onClick={handleScheduledClick}
+          disabled={stats.scheduled === 0}
+          className="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-105 text-left group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+        >
+          <div className="text-orange-100 text-sm font-medium mb-1">Scheduled</div>
+          <div className="text-4xl font-bold text-white mb-2">{stats.scheduled}</div>
+          <div className="text-orange-100 text-xs flex items-center gap-1">
+            <span>{stats.scheduled > 0 ? 'Click to view' : 'No appointments'}</span>
+            {stats.scheduled > 0 && <span className="group-hover:translate-x-1 transition-transform">→</span>}
+          </div>
+        </button>
+        
+        <button
+          onClick={handleCompletedClick}
+          disabled={stats.completed === 0}
+          className="bg-gradient-to-br from-green-500 to-emerald-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-105 text-left group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+        >
+          <div className="text-green-100 text-sm font-medium mb-1">Completed</div>
+          <div className="text-4xl font-bold text-white mb-2">{stats.completed}</div>
+          <div className="text-green-100 text-xs flex items-center gap-1">
+            <span>{stats.completed > 0 ? 'Click to view' : 'No appointments'}</span>
+            {stats.completed > 0 && <span className="group-hover:translate-x-1 transition-transform">→</span>}
+          </div>
+        </button>
       </div>
 
       {/* Calendar and Appointments */}

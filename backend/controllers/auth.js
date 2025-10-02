@@ -147,11 +147,27 @@ exports.login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
+    // Fetch photoUrl from Doctor model if user is a doctor
+    let photoUrl = user.photoUrl;
+    if (user.role === 'doctor') {
+      const doctor = await Doctor.findOne({ userId: user._id }).select('photoUrl');
+      if (doctor && doctor.photoUrl) {
+        photoUrl = doctor.photoUrl;
+      }
+    }
+
     const token = user.getSignedJwtToken();
     sendTokenCookie(res, token);
     res.json({ 
       success: true,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role, district: user.district }
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        role: user.role, 
+        district: user.district,
+        photoUrl: photoUrl 
+      }
     });
   } catch (e) {
     console.error(e);
@@ -168,6 +184,15 @@ exports.getMe = async (req, res) => {
   try {
     // req.user is set by the 'protect' middleware
     const user = await User.findById(req.user.id).select('-password');
+    
+    // Fetch photoUrl from Doctor model if user is a doctor
+    if (user.role === 'doctor') {
+      const doctor = await Doctor.findOne({ userId: user._id }).select('photoUrl');
+      if (doctor && doctor.photoUrl) {
+        user.photoUrl = doctor.photoUrl;
+      }
+    }
+    
     res.json({ success: true, data: user });
   } catch (e) {
     res.status(500).json({ success: false, message: 'Server error' });

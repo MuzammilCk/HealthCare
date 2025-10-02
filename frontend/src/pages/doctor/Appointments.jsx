@@ -46,11 +46,33 @@ export default function DoctorAppointments() {
         const appt = res.data?.data || list.find(a => a._id === id);
         navigate('/doctor/prescriptions/new', { state: { patientId: appt?.patientId?._id || appt?.patientId, appointmentId: id } });
       }
-    } catch {
-      toast.error('Failed to update appointment.');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to update appointment.');
     } finally {
       setUpdatingId(null);
     }
+  };
+
+  // Helper function to check if appointment is in the future
+  const isFutureAppointment = (appointment) => {
+    const now = new Date();
+    const appointmentDate = new Date(appointment.date);
+    
+    if (appointment.timeSlot) {
+      // Extract end time from timeSlot (format: "09:00-10:00")
+      const endTimeString = appointment.timeSlot.split('-')[1];
+      const [hours, minutes] = endTimeString.split(':').map(Number);
+      
+      // Create appointment end datetime
+      const appointmentEndTime = new Date(appointmentDate);
+      appointmentEndTime.setHours(hours, minutes, 0, 0);
+      
+      return appointmentEndTime > now;
+    }
+    
+    // If no timeSlot, check if date is in the future
+    appointmentDate.setHours(23, 59, 59, 999);
+    return appointmentDate > now;
   };
 
   const columns = [
@@ -159,7 +181,8 @@ export default function DoctorAppointments() {
                               size="xs"
                               icon={<FiCheckCircle className="w-3 h-3" />}
                               onClick={() => updateAppt(appointment._id, { status: 'Completed' })}
-                              disabled={updatingId === appointment._id}
+                              disabled={updatingId === appointment._id || isFutureAppointment(appointment)}
+                              title={isFutureAppointment(appointment) ? "Cannot complete future appointments" : "Mark as completed"}
                             >
                               Complete
                             </ActionButton>
@@ -168,7 +191,8 @@ export default function DoctorAppointments() {
                               size="xs"
                               icon={<FiClock className="w-3 h-3" />}
                               onClick={() => navigate('/doctor/follow-up', { state: { appointment } })}
-                              disabled={updatingId === appointment._id}
+                              disabled={updatingId === appointment._id || isFutureAppointment(appointment)}
+                              title={isFutureAppointment(appointment) ? "Cannot schedule follow-up for future appointments" : "Schedule follow-up"}
                             >
                               Follow-up
                             </ActionButton>
@@ -312,7 +336,8 @@ export default function DoctorAppointments() {
                         size="sm"
                         icon={<FiCheckCircle className="w-4 h-4" />}
                         onClick={() => updateAppt(appointment._id, { status: 'Completed' })}
-                        disabled={updatingId === appointment._id}
+                        disabled={updatingId === appointment._id || isFutureAppointment(appointment)}
+                        title={isFutureAppointment(appointment) ? "Cannot complete future appointments" : "Mark as completed"}
                         className="flex-1"
                       >
                         Mark Complete
@@ -322,7 +347,8 @@ export default function DoctorAppointments() {
                         size="sm"
                         icon={<FiClock className="w-4 h-4" />}
                         onClick={() => navigate('/doctor/follow-up', { state: { appointment } })}
-                        disabled={updatingId === appointment._id}
+                        disabled={updatingId === appointment._id || isFutureAppointment(appointment)}
+                        title={isFutureAppointment(appointment) ? "Cannot schedule follow-up for future appointments" : "Schedule follow-up"}
                         className="flex-1"
                       >
                         Schedule Follow-up
