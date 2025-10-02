@@ -22,7 +22,7 @@ export default function Login() {
     setLoading(true);
     setError('');
     try {
-      const user = await login(form.email, form.password);
+      const user = await login(form.email, form.password, role);
       // The role from the server response is the source of truth
       navigate(`/${user.role}`);
     } catch (err) {

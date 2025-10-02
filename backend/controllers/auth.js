@@ -140,7 +140,7 @@ exports.login = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { email, password } = req.body;
+  const { email, password, role } = req.body;
 
   try {
     const user = await User.findOne({ email }).select('+password');
@@ -151,6 +151,16 @@ exports.login = async (req, res) => {
     const match = await user.matchPassword(password);
     if (!match) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+
+    // Validate role selection (admin can login from any role selection)
+    if (role && user.role !== 'admin') {
+      if (user.role !== role) {
+        return res.status(401).json({ 
+          success: false, 
+          message: `Please select "${user.role}" to login with this account` 
+        });
+      }
     }
 
     // Fetch photoUrl from Doctor model if user is a doctor
