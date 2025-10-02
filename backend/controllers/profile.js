@@ -37,18 +37,37 @@ exports.getProfile = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
+    const profileData = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      district: user.district,
+      photoUrl: user.photoUrl,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    };
+
+    // If user is a doctor, include hospital information
+    if (user.role === 'doctor') {
+      const Doctor = require('../models/Doctor');
+      const doctorProfile = await Doctor.findOne({ userId: user._id })
+        .populate('hospitalId', 'name address district city phone email')
+        .populate('specializationId', 'name');
+      
+      if (doctorProfile) {
+        profileData.doctorProfile = {
+          hospitalId: doctorProfile.hospitalId,
+          specializationId: doctorProfile.specializationId,
+          consultationFee: doctorProfile.consultationFee,
+          verificationStatus: doctorProfile.verificationStatus
+        };
+      }
+    }
+
     res.json({ 
       success: true, 
-      data: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        district: user.district,
-        photoUrl: user.photoUrl,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt
-      }
+      data: profileData
     });
   } catch (error) {
     console.error('Error fetching profile:', error);

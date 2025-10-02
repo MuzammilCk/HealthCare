@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FiSave, FiDollarSign, FiUser, FiMapPin, FiBook, FiAward } from 'react-icons/fi';
+import { FiSave, FiDollarSign, FiUser, FiMapPin, FiBook, FiAward, FiHome } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 
@@ -151,6 +151,34 @@ export default function DoctorSettings() {
             </div>
           </div>
         </div>
+
+        {/* Hospital Information - Read Only */}
+        {profile?.hospitalId && (
+          <div className="bg-blue-50 rounded-lg border border-blue-200 p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <FiHome className="w-5 h-5 text-primary" />
+              <h2 className="text-lg font-semibold text-text-primary">Hospital Information</h2>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-gray-600">
+                <span className="font-medium">Hospital:</span> {profile.hospitalId.name}
+              </p>
+              <p className="text-sm text-gray-600">
+                <span className="font-medium">Location:</span> {profile.hospitalId.district}, {profile.hospitalId.city || 'Kerala'}
+              </p>
+              {profile.hospitalId.address && (
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">Address:</span> {profile.hospitalId.address}
+                </p>
+              )}
+              {profile.hospitalId.phone && (
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">Phone:</span> {profile.hospitalId.phone}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Basic Information */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">

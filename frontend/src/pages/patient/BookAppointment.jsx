@@ -320,6 +320,12 @@ export default function BookAppointment() {
                   <div>
                     <h3 className="font-bold text-lg text-text-primary">{doc.userId.name}</h3>
                     <p className="text-sm text-primary font-medium">{doc.specializationId?.name}</p>
+                    {doc.hospitalId && (
+                      <p className="text-xs text-gray-600 mt-1 flex items-center gap-1">
+                        <FiMapPin className="w-3 h-3" />
+                        {doc.hospitalId.name}, {doc.hospitalId.district}
+                      </p>
+                    )}
                     <p className="text-xs text-text-secondary mt-1">{doc.qualifications}</p>
                     <p className="text-sm font-semibold mt-1 text-yellow-500">{typeof doc.averageRating === 'number' ? `${doc.averageRating} ★` : 'No rating'}</p>
                   </div>
@@ -370,6 +376,12 @@ export default function BookAppointment() {
               <div>
                 <h2 className="text-2xl font-bold text-text-primary">{selectedDoctor.userId.name}</h2>
                 <p className="text-primary font-medium">{selectedDoctor.specializationId?.name}</p>
+                {selectedDoctor.hospitalId && (
+                  <p className="text-sm text-gray-600 mt-1 flex items-center gap-1">
+                    <FiMapPin className="w-3 h-3" />
+                    {selectedDoctor.hospitalId.name}, {selectedDoctor.hospitalId.district}
+                  </p>
+                )}
               </div>
             </div>
             <form onSubmit={onSubmit} className="space-y-6">

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { FiUser, FiMail, FiMapPin, FiCamera, FiEdit2, FiSave, FiX, FiLock, FiCalendar, FiTrash2, FiUpload } from 'react-icons/fi';
+import { FiUser, FiMail, FiMapPin, FiCamera, FiEdit2, FiSave, FiX, FiLock, FiCalendar, FiTrash2, FiUpload, FiHome } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
@@ -305,24 +305,22 @@ export default function Profile() {
             )}
           </div>
 
-          {/* Email Field */}
+          {/* Email Field - Always Disabled */}
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
               <FiMail className="w-4 h-4" />
               Email Address
+              <span className="text-xs text-gray-500">(Cannot be changed)</span>
             </label>
-            {editing ? (
+            <div className="relative">
               <input
                 type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
-                placeholder="Enter your email address"
+                value={profile?.email || 'Not provided'}
+                disabled
+                className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-lg text-gray-600 cursor-not-allowed"
               />
-            ) : (
-              <p className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900">{profile?.email || 'Not provided'}</p>
-            )}
+              <FiLock className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+            </div>
           </div>
 
           {/* District Field */}
@@ -362,6 +360,72 @@ export default function Profile() {
           )}
         </div>
       </div>
+
+      {/* Hospital Information - For Doctors Only */}
+      {profile?.role === 'doctor' && profile?.doctorProfile?.hospitalId && (
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center gap-3">
+              <FiHome className="w-6 h-6 text-primary" />
+              <h2 className="text-2xl font-bold text-gray-900">Hospital Information</h2>
+            </div>
+          </div>
+
+          <div className="p-6 bg-gradient-to-br from-blue-50 to-white">
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <FiHome className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Hospital Name</p>
+                  <p className="text-lg font-semibold text-gray-900">{profile.doctorProfile.hospitalId.name}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <FiMapPin className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Location</p>
+                  <p className="text-gray-900">{profile.doctorProfile.hospitalId.district}, {profile.doctorProfile.hospitalId.city || 'Kerala'}</p>
+                  {profile.doctorProfile.hospitalId.address && (
+                    <p className="text-sm text-gray-600 mt-1">{profile.doctorProfile.hospitalId.address}</p>
+                  )}
+                </div>
+              </div>
+
+              {profile.doctorProfile.hospitalId.phone && (
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <FiUser className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Contact</p>
+                    <p className="text-gray-900">{profile.doctorProfile.hospitalId.phone}</p>
+                    {profile.doctorProfile.hospitalId.email && (
+                      <p className="text-sm text-gray-600">{profile.doctorProfile.hospitalId.email}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {profile.doctorProfile.specializationId && (
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <FiCalendar className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Specialization</p>
+                    <p className="text-gray-900 font-medium">{profile.doctorProfile.specializationId.name}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Security Section */}
       <div className="bg-white rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden">

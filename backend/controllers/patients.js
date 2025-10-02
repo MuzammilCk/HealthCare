@@ -76,7 +76,17 @@ exports.getDoctors = async (req, res) => {
           as: 'specializationId'
         }
       },
-      { $unwind: '$specializationId' }
+      { $unwind: '$specializationId' },
+      // 4. Join with 'hospitals' collection to get hospital details
+      {
+        $lookup: {
+          from: 'hospitals',
+          localField: 'hospitalId',
+          foreignField: '_id',
+          as: 'hospitalId'
+        }
+      },
+      { $unwind: { path: '$hospitalId', preserveNullAndEmptyArrays: true } }
     ];
 
     // 4. Build a dynamic and consolidated match stage for all filters
