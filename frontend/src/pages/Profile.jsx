@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import { KERALA_DISTRICTS } from '../constants';
 import { AppSelect, Avatar } from '../components/ui';
+import { ProfileSkeleton, FormSkeleton } from '../components/ui/SkeletonLoader';
 
 export default function Profile() {
   const { user, updateUser } = useAuth();
@@ -193,8 +194,16 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Profile</h1>
+          <p className="text-gray-600">Manage your personal information and settings</p>
+        </div>
+        <ProfileSkeleton />
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Profile Information</h2>
+          <FormSkeleton fields={4} />
+        </div>
       </div>
     );
   }

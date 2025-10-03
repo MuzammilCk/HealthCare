@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { Link, useNavigate } from 'react-router-dom';
+import { DashboardStatsSkeleton, AppointmentSkeleton } from '../../components/ui/SkeletonLoader';
 
 export default function DoctorDashboard() {
   const [stats, setStats] = useState({ today: 0, scheduled: 0, completed: 0 });
@@ -131,7 +132,27 @@ export default function DoctorDashboard() {
     });
   };
 
-  if (loading) return <div>Loading…</div>;
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Doctor Dashboard</h1>
+          <p className="text-gray-600">Manage your practice and patient care</p>
+        </div>
+        <DashboardStatsSkeleton />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Today's Appointments</h2>
+            <AppointmentSkeleton count={3} />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
+            <AppointmentSkeleton count={3} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

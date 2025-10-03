@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { FiDollarSign, FiFileText, FiCalendar, FiUser, FiCheckCircle, FiClock, FiX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
+import { BillSkeleton } from '../../components/ui/SkeletonLoader';
 
 export default function PatientBills() {
   const [bills, setBills] = useState([]);
@@ -291,10 +292,7 @@ export default function PatientBills() {
       {activeTab === 'bills' ? (
         // Bills List
         loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-text-secondary">Loading bills...</p>
-          </div>
+          <BillSkeleton count={5} />
         ) : bills.length === 0 ? (
         <div className="bg-white rounded-xl shadow-card p-12 text-center">
           <FiFileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -368,10 +366,7 @@ export default function PatientBills() {
       ) : (
         // Payment History
         loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-text-secondary">Loading payment history...</p>
-          </div>
+          <BillSkeleton count={5} />
         ) : payments.length === 0 ? (
           <div className="bg-white rounded-xl shadow-card p-12 text-center">
             <FiDollarSign className="w-16 h-16 text-gray-300 mx-auto mb-4" />

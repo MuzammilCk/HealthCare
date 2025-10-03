@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
+import { DashboardStatsSkeleton, AppointmentSkeleton } from '../../components/ui/SkeletonLoader';
 
 export default function PatientDashboard() {
   const { user } = useAuth();
@@ -55,7 +56,27 @@ export default function PatientDashboard() {
     return items.sort((a, b) => b.date - a.date).slice(0, 6);
   }, [appointments, prescriptions]);
 
-  if (loading) return <div>Loading…</div>;
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back!</h1>
+          <p className="text-gray-600">Here's what's happening with your health</p>
+        </div>
+        <DashboardStatsSkeleton />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Upcoming Appointments</h2>
+            <AppointmentSkeleton count={3} />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
+            <AppointmentSkeleton count={3} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const greet = (() => {
     const h = new Date().getHours();

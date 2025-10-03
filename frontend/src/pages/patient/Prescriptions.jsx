@@ -13,6 +13,7 @@ import {
   LoadingState,
   MobileCard
 } from '../../components/ui';
+import { PrescriptionSkeleton } from '../../components/ui/SkeletonLoader';
 
 export default function Prescriptions() {
   const [list, setList] = useState([]);
@@ -45,9 +46,14 @@ export default function Prescriptions() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">My Prescriptions</h1>
           <p className="text-gray-600">View and manage your prescribed medications</p>
         </div>
-        <ModernTableContainer>
-          <LoadingState rows={5} />
-        </ModernTableContainer>
+        <div className="hidden md:block">
+          <ModernTableContainer>
+            <PrescriptionSkeleton count={5} />
+          </ModernTableContainer>
+        </div>
+        <div className="md:hidden space-y-4">
+          <PrescriptionSkeleton count={3} />
+        </div>
       </div>
     );
   }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import { DashboardStatsSkeleton } from '../../components/ui/SkeletonLoader';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -75,6 +76,18 @@ export default function AdminDashboard() {
       color: 'bg-gradient-to-r from-green-500 to-teal-500'
     }
   ];
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
+          <p className="text-gray-600">Manage your healthcare platform efficiently</p>
+        </div>
+        <DashboardStatsSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

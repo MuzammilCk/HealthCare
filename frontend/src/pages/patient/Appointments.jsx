@@ -17,6 +17,8 @@ import {
   LoadingState,
   MobileCard
 } from '../../components/ui';
+import { AppointmentSkeleton, PageSkeleton } from '../../components/ui/SkeletonLoader';
+import { usePageLoading } from '../../hooks/useLoading';
 
 export default function Appointments() {
   const [list, setList] = useState([]);
@@ -258,9 +260,14 @@ export default function Appointments() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">My Appointments</h1>
           <p className="text-gray-600">Track and manage your medical appointments</p>
         </div>
-        <ModernTableContainer>
-          <LoadingState rows={5} />
-        </ModernTableContainer>
+        <div className="hidden md:block">
+          <ModernTableContainer>
+            <AppointmentSkeleton count={5} />
+          </ModernTableContainer>
+        </div>
+        <div className="md:hidden space-y-4">
+          <AppointmentSkeleton count={3} />
+        </div>
       </div>
     );
   }

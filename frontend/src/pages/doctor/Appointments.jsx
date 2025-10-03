@@ -17,6 +17,7 @@ import {
   LoadingState,
   MobileCard
 } from '../../components/ui';
+import { AppointmentSkeleton } from '../../components/ui/SkeletonLoader';
 
 export default function DoctorAppointments() {
   const [list, setList] = useState([]);
@@ -151,9 +152,14 @@ export default function DoctorAppointments() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">My Appointments</h1>
           <p className="text-gray-600">Manage your patient appointments and consultations</p>
         </div>
-        <ModernTableContainer>
-          <LoadingState rows={5} />
-        </ModernTableContainer>
+        <div className="hidden md:block">
+          <ModernTableContainer>
+            <AppointmentSkeleton count={5} />
+          </ModernTableContainer>
+        </div>
+        <div className="md:hidden space-y-4">
+          <AppointmentSkeleton count={3} />
+        </div>
       </div>
     );
   }

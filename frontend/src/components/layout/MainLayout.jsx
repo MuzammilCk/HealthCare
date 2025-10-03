@@ -2,16 +2,17 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useState } from 'react';
-import CardNav from '../CardNav';
+import ProfileButton from '../ProfileButton';
+import NotificationBell from '../NotificationBell';
 
 function NavLink({ to, label, isSidebarOpen, icon, showNotificationDot = false }) {
   const { pathname } = useLocation();
   const active = pathname === to;
   return (
-    <Link to={to} className={`flex items-center ${isSidebarOpen ? 'px-3' : 'px-2 justify-center'} py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
-      active 
-        ? 'bg-gradient-to-r from-primary to-primary-light text-white shadow-lg shadow-primary/25 scale-105' 
-        : 'text-text-secondary hover:bg-white/10 hover:text-text-primary hover:shadow-md hover:scale-105'
+    <Link to={to} className={`group relative flex items-center justify-center px-2 py-2.5 rounded-xl transition-all duration-200 ${
+      active
+        ? 'bg-white/15 text-white'
+        : 'text-white/80 hover:text-white hover:bg-white/10'
     }`}>
       <span className={`${active ? 'text-white' : ''} flex-shrink-0 relative`}>
         {icon}
@@ -19,7 +20,14 @@ function NavLink({ to, label, isSidebarOpen, icon, showNotificationDot = false }
           <span className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-white animate-pulse"></span>
         )}
       </span>
-      <span className={`ml-3 whitespace-nowrap ${!isSidebarOpen && 'hidden'}`}>{label}</span>
+      {/* Tooltip label - high z-index, only on hover */}
+      <span className={`
+        pointer-events-none absolute left-12 top-1/2 -translate-y-1/2 
+        whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium text-white 
+        bg-slate-900/90 shadow-xl border border-white/10 
+        opacity-0 translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 
+        transition-all duration-200 z-[9999]
+      `}>{label}</span>
     </Link>
   );
 }
@@ -81,34 +89,40 @@ export default function MainLayout({ role: roleProp }) {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Fixed Sidebar with Overlay Positioning */}
-      <aside className={`hidden md:flex md:flex-col bg-white/95 backdrop-blur-xl border-r border-slate-200/60 shadow-xl shadow-slate-900/5 p-6 transition-all duration-300 fixed inset-y-0 left-0 z-30 ${isSidebarOpen ? 'w-72' : 'w-24'}`}>
-        <div className="flex items-center justify-between mb-8 h-[60px]">
-          <span className={`font-bold text-xl text-slate-800 ${!isSidebarOpen && 'hidden'}`}>HealthCare</span>
-          <button 
-            onClick={() => setSidebarOpen(!isSidebarOpen)} 
-            className="p-2 rounded-lg hover:bg-slate-100 transition-colors duration-200"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 text-slate-600 transition-transform duration-300 ${isSidebarOpen ? '' : 'transform rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
+    <div className="min-h-screen">
+      {/* Notification - fixed top-right */}
+      <div className="fixed top-4 right-6 z-50">
+        <NotificationBell />
+      </div>
+
+      {/* Brand Title Pill - centered with sidebar gradient */}
+      <div className="hidden md:flex fixed top-4 left-1/2 -translate-x-1/2 z-40">
+        <div className="flex items-center gap-0 px-6 py-2 rounded-full bg-gradient-to-br from-[#1FA0FF] to-[#5EEBF7] text-white shadow-2xl border border-white/10">
+          <span className="font-semibold text-xl">HealthSync</span>
         </div>
-        <NavigationLinks role={role} isSidebarOpen={isSidebarOpen} />
+      </div>
+
+      {/* Floating, vertically centered, icon-only sidebar */}
+      <aside className={`hidden md:flex fixed left-6 top-1/2 -translate-y-1/2 z-30 
+        bg-gradient-to-br from-[#1FA0FF] to-[#5EEBF7] text-white rounded-3xl px-3 py-4 items-center justify-center transition-all duration-300 ${isSidebarOpen ? 'w-24' : 'w-20'}`}>
+        <div className="flex flex-col items-center justify-center space-y-3">
+          <NavigationLinks role={role} isSidebarOpen={false} />
+        </div>
       </aside>
 
-      {/* Main Content Area with Dynamic Margin */}
-      <div className={`flex flex-col min-h-screen transition-all duration-300 ${isSidebarOpen ? 'md:ml-72' : 'md:ml-24'}`}>
-        {/* Clean Header without Background */}
-        <div className="relative z-40">
-          <CardNav />
+      {/* Floating Profile - bottom-left, centered under sidebar */}
+      <div className="hidden md:block fixed bottom-6 left-6 z-40">
+        <div className="bg-gradient-to-br from-[#1FA0FF] to-[#5EEBF7] text-white rounded-full shadow-lg shadow-slate-900/10 p-1">
+          <ProfileButton />
         </div>
-        
+      </div>
+
+      {/* Main Content Area with Dynamic Margin and tighter top padding below title */}
+      <div className={`flex flex-col min-h-screen transition-all duration-300 md:ml-28 pt-12 md:pt-16`}>
         {/* Constrained Content Area with Better Spacing */}
         <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
           <div className="max-w-7xl mx-auto">
-            <div className="bg-white/95 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-xl shadow-slate-900/5 p-6 lg:p-8 relative z-10">
+            <div className="bg-white rounded-2xl p-6 lg:p-8 relative z-10">
               <Outlet />
             </div>
           </div>

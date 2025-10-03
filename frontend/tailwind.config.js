@@ -20,7 +20,7 @@ export default {
           secondary: '#64748b', // Lighter Slate for subtitles, placeholders
         },
         bg: {
-          page: '#f1f5f9',    // A clean, light gray for the page background
+          page: '#F8F9FA',    // Soft off-white for the page background
           card: '#ffffff',    // Solid white for cards
         },
         success: '#22c55e',
@@ -28,7 +28,7 @@ export default {
         info: '#0ea5e9',
         'dark-charcoal': '#1e293b',
         'medium-gray': '#64748b',
-        'light-gray': '#f1f5f9',
+        'light-gray': '#F8F9FA',
       },
       fontFamily: {
         sans: ['Inter', 'Plus Jakarta Sans', 'sans-serif'],

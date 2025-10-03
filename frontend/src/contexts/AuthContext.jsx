@@ -8,17 +8,29 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let didCancel = false;
+    const controller = new AbortController();
+    const failSafe = setTimeout(() => {
+      if (!didCancel) setLoading(false);
+    }, 12000);
+
     const init = async () => {
       try {
-        const res = await api.get('/auth/me');
-        setUser(res.data?.data || null);
+        const res = await api.get('/auth/me', { signal: controller.signal });
+        if (!didCancel) setUser(res.data?.data || null);
       } catch (e) {
-        setUser(null);
+        if (!didCancel) setUser(null);
       } finally {
-        setLoading(false);
+        if (!didCancel) setLoading(false);
       }
     };
     init();
+
+    return () => {
+      didCancel = true;
+      controller.abort();
+      clearTimeout(failSafe);
+    };
   }, []);
 
   const login = async (email, password, role) => {

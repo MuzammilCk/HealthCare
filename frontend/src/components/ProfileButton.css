@@ -24,15 +24,19 @@
 
 .profile-menu {
   position: absolute;
-  right: 0;
-  top: calc(100% + 10px);
+  left: calc(100% + 26px); /* moved 2px further right */
+  right: auto;
+  bottom: calc(100% + 3px); /* 5px closer to the button */
+  top: auto;
   width: 350px; /* Increased width for more space */
   background-color: white;
   border-radius: 1rem;
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
   border: 1px solid #f1f5f9;
   z-index: 9999;
-  overflow: hidden;
+  max-height: 60vh; /* reduce vertical footprint */
+  overflow-y: auto;
+  overscroll-behavior: contain;
   animation: fadeIn 0.2s ease-out;
 }
 
@@ -41,7 +45,7 @@
   display: flex;
   align-items: center;
   gap: 1.25rem; /* Increased space between avatar and text */
-  padding: 1.25rem; /* Increased padding for a roomier feel */
+  padding: 1rem; /* slightly tighter to reduce total height */
   background-color: #f8fafc;
 }
 
