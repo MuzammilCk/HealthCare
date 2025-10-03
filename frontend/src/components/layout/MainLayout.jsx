@@ -95,30 +95,28 @@ export default function MainLayout({ role: roleProp }) {
         <NotificationBell />
       </div>
 
-      {/* Brand Title Pill - centered with sidebar gradient */}
-      <div className="hidden md:flex fixed top-4 left-1/2 -translate-x-1/2 z-40">
-        <div className="flex items-center gap-0 px-6 py-2 rounded-full bg-gradient-to-br from-[#1FA0FF] to-[#5EEBF7] text-white shadow-2xl border border-white/10">
-          <span className="font-semibold text-xl">HealthSync</span>
+      {/* Single fixed left column with space-around alignment for brand, sidebar, profile */}
+      <div className="hidden md:flex fixed left-6 top-0 bottom-0 z-40 flex-col items-center justify-around py-4">
+        {/* Brand pill */}
+        <div className="flex items-center justify-center px-5 py-3 rounded-full bg-gradient-to-br from-[#1FA0FF] to-[#5EEBF7] text-white border border-white/10">
+          <span className="font-semibold text-2xl">H</span>
         </div>
-      </div>
 
-      {/* Floating, vertically centered, icon-only sidebar */}
-      <aside className={`hidden md:flex fixed left-6 top-1/2 -translate-y-1/2 z-30 
-        bg-gradient-to-br from-[#1FA0FF] to-[#5EEBF7] text-white rounded-3xl px-3 py-4 items-center justify-center transition-all duration-300 ${isSidebarOpen ? 'w-24' : 'w-20'}`}>
-        <div className="flex flex-col items-center justify-center space-y-3">
-          <NavigationLinks role={role} isSidebarOpen={false} />
-        </div>
-      </aside>
+        {/* Sidebar (not containing brand/profile) */}
+        <aside className={`flex bg-gradient-to-br from-[#1FA0FF] to-[#5EEBF7] text-white rounded-3xl px-3 py-4 items-center justify-center transition-all duration-300 ${isSidebarOpen ? 'w-24' : 'w-20'}`}>
+          <div className="flex flex-col items-center justify-center space-y-3">
+            <NavigationLinks role={role} isSidebarOpen={false} />
+          </div>
+        </aside>
 
-      {/* Floating Profile - bottom-left, centered under sidebar */}
-      <div className="hidden md:block fixed bottom-6 left-6 z-40">
-        <div className="bg-gradient-to-br from-[#1FA0FF] to-[#5EEBF7] text-white rounded-full shadow-lg shadow-slate-900/10 p-1">
+        {/* Profile icon */}
+        <div className="bg-gradient-to-br from-[#1FA0FF] to-[#5EEBF7] text-white rounded-full p-1">
           <ProfileButton />
         </div>
       </div>
 
       {/* Main Content Area with Dynamic Margin and tighter top padding below title */}
-      <div className={`flex flex-col min-h-screen transition-all duration-300 md:ml-28 pt-12 md:pt-16`}>
+      <div className={`flex flex-col min-h-screen transition-all duration-300 md:ml-28 pt-16`}>
         {/* Constrained Content Area with Better Spacing */}
         <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
           <div className="max-w-7xl mx-auto">
