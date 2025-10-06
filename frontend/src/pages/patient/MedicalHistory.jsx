@@ -55,7 +55,7 @@ export default function MedicalHistory() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-text-primary mb-6">Medical History</h1>
+      <h1 className="text-2xl font-bold text-text-primary dark:text-text-primary-dark mb-6">Medical History</h1>
       
       {notFound && (
         <div className="mb-4 p-4 bg-yellow-50 text-yellow-800 border border-yellow-200 rounded-lg">
@@ -63,14 +63,14 @@ export default function MedicalHistory() {
         </div>
       )}
 
-      <form onSubmit={onSubmit} className="space-y-6 max-w-2xl bg-white p-6 rounded-xl shadow-card">
+      <form onSubmit={onSubmit} className="space-y-6 max-w-2xl bg-white p-6 rounded-2xl shadow-card border border-slate-200/60">
         <div className="relative">
           <FiHeart className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
           <input 
             name="bloodType" 
             value={form.bloodType} 
             onChange={onChange} 
-            className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/50" 
+            className="w-full bg-bg-page border border-gray-200 rounded-xl h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-sm" 
             placeholder="Blood Type (e.g., O+)" 
           />
         </div>
@@ -81,7 +81,7 @@ export default function MedicalHistory() {
             name="allergies" 
             value={form.allergies} 
             onChange={onChange} 
-            className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/50" 
+            className="w-full bg-bg-page border border-gray-200 rounded-xl h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-sm" 
             placeholder="Allergies (comma-separated, e.g., Peanuts, Pollen)" 
           />
         </div>
@@ -92,14 +92,14 @@ export default function MedicalHistory() {
             name="pastConditions" 
             value={form.pastConditions} 
             onChange={onChange} 
-            className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/50" 
+            className="w-full bg-bg-page border border-gray-200 rounded-xl h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-sm" 
             placeholder="Past Conditions (comma-separated, e.g., Asthma)" 
           />
         </div>
 
         <button 
           disabled={saving} 
-          className="w-full bg-primary text-white font-bold px-4 py-2 rounded-lg h-12 transition-all duration-300 ease-in-out hover:bg-primary-light hover:shadow-lg hover:-translate-y-px disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold px-4 py-2 rounded-xl h-12 shadow-lg transition-all duration-200 hover:from-blue-600 hover:to-blue-700 focus:ring-2 focus:ring-blue-500/30 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {saving ? 'Saving…' : 'Save Medical History'}
         </button>

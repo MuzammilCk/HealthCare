@@ -34,7 +34,7 @@ export const AppointmentSkeleton = ({ count = 5 }) => {
   return (
     <div className="space-y-4">
       {Array.from({ length: count }).map((_, index) => (
-        <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div key={index} className="bg-white dark:bg-bg-card-dark rounded-xl shadow-sm dark:shadow-card-dark border border-gray-100 dark:border-dark-border p-6">
           <div className="flex items-start space-x-4">
             {/* Avatar skeleton */}
             <Skeleton className="w-12 h-12" rounded="full" />
@@ -66,7 +66,7 @@ export const DashboardStatsSkeleton = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {Array.from({ length: 4 }).map((_, index) => (
-        <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div key={index} className="bg-white dark:bg-bg-card-dark rounded-xl shadow-sm dark:shadow-card-dark border border-gray-100 dark:border-dark-border p-6">
           <div className="flex items-center justify-between">
             <div className="space-y-2">
               <Skeleton className="h-4 w-20" />
@@ -135,7 +135,7 @@ export const MedicalHistorySkeleton = ({ count = 3 }) => {
   return (
     <div className="space-y-4">
       {Array.from({ length: count }).map((_, index) => (
-        <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div key={index} className="bg-white dark:bg-bg-card-dark rounded-xl shadow-sm dark:shadow-card-dark border border-gray-100 dark:border-dark-border p-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Skeleton className="h-5 w-32" />
@@ -161,7 +161,7 @@ export const PrescriptionSkeleton = ({ count = 3 }) => {
   return (
     <div className="space-y-4">
       {Array.from({ length: count }).map((_, index) => (
-        <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div key={index} className="bg-white dark:bg-bg-card-dark rounded-xl shadow-sm dark:shadow-card-dark border border-gray-100 dark:border-dark-border p-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Skeleton className="h-5 w-40" />
@@ -192,7 +192,7 @@ export const BillSkeleton = ({ count = 3 }) => {
   return (
     <div className="space-y-4">
       {Array.from({ length: count }).map((_, index) => (
-        <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div key={index} className="bg-white dark:bg-bg-card-dark rounded-xl shadow-sm dark:shadow-card-dark border border-gray-100 dark:border-dark-border p-6">
           <div className="flex items-center justify-between">
             <div className="space-y-2">
               <Skeleton className="h-5 w-40" />
@@ -214,7 +214,7 @@ export const DoctorSkeleton = ({ count = 6 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {Array.from({ length: count }).map((_, index) => (
-        <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div key={index} className="bg-white dark:bg-bg-card-dark rounded-xl shadow-sm dark:shadow-card-dark border border-gray-100 dark:border-dark-border p-6">
           <div className="flex items-center space-x-4">
             <Skeleton className="w-16 h-16" rounded="full" />
             <div className="flex-1 space-y-2">
@@ -242,7 +242,7 @@ export const InventorySkeleton = ({ count = 8 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {Array.from({ length: count }).map((_, index) => (
-        <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+        <div key={index} className="bg-white dark:bg-bg-card-dark rounded-lg shadow-sm dark:shadow-card-dark border border-gray-100 dark:border-dark-border p-4">
           <div className="space-y-3">
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-8 w-16" />
@@ -264,10 +264,10 @@ export const LoadingOverlay = ({ children, loading, skeleton }) => {
   return (
     <div className="relative">
       {children}
-      <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10">
+      <div className="absolute inset-0 bg-white/80 dark:bg-bg-page-dark/80 backdrop-blur-sm flex items-center justify-center z-10">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-          <p className="text-sm text-gray-600">Loading...</p>
+          <p className="text-sm text-gray-600 dark:text-text-secondary-dark">Loading...</p>
         </div>
       </div>
     </div>
@@ -305,7 +305,7 @@ export const PageSkeleton = ({ type = 'default' }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-bg-page-dark p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
           <Skeleton className="h-8 w-48 mb-2" />

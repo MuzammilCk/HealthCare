@@ -136,17 +136,17 @@ export default function DoctorDashboard() {
     return (
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Doctor Dashboard</h1>
-          <p className="text-gray-600">Manage your practice and patient care</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark mb-2">Doctor Dashboard</h1>
+          <p className="text-gray-600 dark:text-text-secondary-dark">Manage your practice and patient care</p>
         </div>
         <DashboardStatsSkeleton />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Today's Appointments</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-text-primary-dark mb-4">Today's Appointments</h2>
             <AppointmentSkeleton count={3} />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-text-primary-dark mb-4">Recent Activity</h2>
             <AppointmentSkeleton count={3} />
           </div>
         </div>
@@ -159,7 +159,7 @@ export default function DoctorDashboard() {
 
   return (
     <div>
-      <h1 className="text-h2 font-bold mb-4">Doctor Dashboard</h1>
+      <h1 className="text-h2 font-bold mb-4 text-gray-900 dark:text-text-primary-dark">Doctor Dashboard</h1>
       {(verificationStatus === 'Pending' || verificationStatus === 'Rejected') && (
         <div className={`mb-4 p-4 rounded-xl border ${verificationStatus === 'Rejected' ? 'bg-red-50 border-red-200 text-red-800' : 'bg-yellow-50 border-yellow-200 text-yellow-800'}`}>
           <div className="font-semibold mb-1">
@@ -220,12 +220,12 @@ export default function DoctorDashboard() {
       {/* Calendar and Appointments */}
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Calendar */}
-        <div className="bg-white p-6 rounded-xl shadow-card">
+        <div className="bg-white dark:bg-bg-card-dark p-6 rounded-xl shadow-card dark:shadow-card-dark">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold">{monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-text-primary-dark">{monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}</h2>
             <div className="flex gap-2">
-              <button onClick={handlePrevMonth} className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded">←</button>
-              <button onClick={handleNextMonth} className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded">→</button>
+              <button onClick={handlePrevMonth} className="px-3 py-1 bg-gray-100 dark:bg-dark-surface hover:bg-gray-200 dark:hover:bg-dark-surface-hover text-gray-700 dark:text-text-primary-dark rounded">←</button>
+              <button onClick={handleNextMonth} className="px-3 py-1 bg-gray-100 dark:bg-dark-surface hover:bg-gray-200 dark:hover:bg-dark-surface-hover text-gray-700 dark:text-text-primary-dark rounded">→</button>
             </div>
           </div>
           
@@ -262,23 +262,23 @@ export default function DoctorDashboard() {
         </div>
 
         {/* Appointments for Selected Date */}
-        <div className="bg-white p-6 rounded-xl shadow-card">
-          <h2 className="text-xl font-bold mb-4">
+        <div className="bg-white dark:bg-bg-card-dark p-6 rounded-xl shadow-card dark:shadow-card-dark">
+          <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-text-primary-dark">
             Appointments for {selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           </h2>
           
           {filteredAppointments.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-500 dark:text-text-secondary-dark">
               No appointments scheduled for this date
             </div>
           ) : (
             <div className="space-y-3">
               {filteredAppointments.map(apt => (
-                <div key={apt._id} className="p-4 border border-gray-200 rounded-lg hover:border-primary transition-colors">
+                <div key={apt._id} className="p-4 border border-gray-200 dark:border-dark-border rounded-lg hover:border-primary dark:hover:border-primary-light transition-colors bg-white dark:bg-dark-surface">
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <div className="font-semibold">{apt.patientId?.name || 'Unknown Patient'}</div>
-                      <div className="text-sm text-gray-600">{apt.timeSlot}</div>
+                      <div className="font-semibold text-gray-900 dark:text-text-primary-dark">{apt.patientId?.name || 'Unknown Patient'}</div>
+                      <div className="text-sm text-gray-600 dark:text-text-secondary-dark">{apt.timeSlot}</div>
                     </div>
                     <span className={`px-2 py-1 text-xs rounded-full ${
                       apt.status === 'Completed' ? 'bg-green-100 text-green-800' :

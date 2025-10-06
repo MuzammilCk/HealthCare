@@ -60,17 +60,17 @@ export default function PatientDashboard() {
     return (
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back!</h1>
-          <p className="text-gray-600">Here's what's happening with your health</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark mb-2">Welcome back!</h1>
+          <p className="text-gray-600 dark:text-text-secondary-dark">Here's what's happening with your health</p>
         </div>
         <DashboardStatsSkeleton />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Upcoming Appointments</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-text-primary-dark mb-4">Upcoming Appointments</h2>
             <AppointmentSkeleton count={3} />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-text-primary-dark mb-4">Recent Activity</h2>
             <AppointmentSkeleton count={3} />
           </div>
         </div>
@@ -86,18 +86,18 @@ export default function PatientDashboard() {
   })();
 
   const btnPrimary = "inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-105 transition-all duration-200";
-  const btnSecondary = "inline-flex items-center gap-2 px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 font-medium border-2 border-gray-200 hover:border-gray-300 rounded-xl shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200";
-  const btnOutline = "inline-flex items-center gap-2 px-4 py-2 bg-transparent hover:bg-blue-50 text-blue-600 font-medium border-2 border-blue-200 hover:border-blue-300 rounded-lg shadow-sm hover:shadow-md transition-all duration-200";
+  const btnSecondary = "inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-dark-surface hover:bg-gray-50 dark:hover:bg-dark-surface-hover text-gray-700 dark:text-text-primary-dark font-medium border-2 border-gray-200 dark:border-dark-border hover:border-gray-300 dark:hover:border-dark-surface-hover rounded-xl shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200";
+  const btnOutline = "inline-flex items-center gap-2 px-4 py-2 bg-transparent hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium border-2 border-blue-200 dark:border-blue-700 hover:border-blue-300 dark:hover:border-blue-600 rounded-lg shadow-sm hover:shadow-md transition-all duration-200";
 
   return (
     <div className="space-y-8">
       {/* Enhanced Greeting Section */}
       <div className="space-y-2">
-        <h1 className="text-4xl font-bold text-slate-900 tracking-tight">{greet}, {user?.name?.split(' ')[0] || 'there'}.</h1>
-        <p className="text-lg font-medium text-slate-600">Here's what's next and your latest activity.</p>
+        <h1 className="text-4xl font-bold text-slate-900 dark:text-text-primary-dark tracking-tight">{greet}, {user?.name?.split(' ')[0] || 'there'}.</h1>
+        <p className="text-lg font-medium text-slate-600 dark:text-text-secondary-dark">Here's what's next and your latest activity.</p>
       </div>
       {/* Enhanced Up Next Card */}
-      <div className="bg-gradient-to-br from-blue-50/80 to-indigo-50/80 backdrop-blur-sm border-2 border-blue-200/60 rounded-2xl p-8 shadow-lg shadow-blue-900/5">
+      <div className="bg-gradient-to-br from-blue-50/80 to-indigo-50/80 dark:from-blue-900/20 dark:to-indigo-900/20 backdrop-blur-sm border-2 border-blue-200/60 dark:border-blue-700/60 rounded-2xl p-8 shadow-lg shadow-blue-900/5 dark:shadow-blue-900/20">
         <div className="flex items-start justify-between gap-6">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-4">
@@ -106,15 +106,15 @@ export default function PatientDashboard() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-slate-900">Up Next</h3>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-text-primary-dark">Up Next</h3>
             </div>
             {nextAppointment ? (
               <div className="space-y-2">
-                <p className="text-slate-800 font-medium">Your next appointment is with <span className="font-bold text-blue-700">{nextAppointment.doctorId?.name || 'Doctor'}</span>.</p>
-                <p className="text-slate-600 font-medium">{new Date(nextAppointment.date).toLocaleDateString()} {nextAppointment.timeSlot ? `at ${nextAppointment.timeSlot}` : ''}</p>
+                <p className="text-slate-800 dark:text-text-primary-dark font-medium">Your next appointment is with <span className="font-bold text-blue-700 dark:text-blue-400">{nextAppointment.doctorId?.name || 'Doctor'}</span>.</p>
+                <p className="text-slate-600 dark:text-text-secondary-dark font-medium">{new Date(nextAppointment.date).toLocaleDateString()} {nextAppointment.timeSlot ? `at ${nextAppointment.timeSlot}` : ''}</p>
               </div>
             ) : (
-              <p className="text-slate-600 font-medium">You're all up to date! Have a great day.</p>
+              <p className="text-slate-600 dark:text-text-secondary-dark font-medium">You're all up to date! Have a great day.</p>
             )}
           </div>
           <div>
@@ -129,7 +129,7 @@ export default function PatientDashboard() {
 
       {/* Enhanced Quick Actions */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Quick Actions</h2>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-text-primary-dark tracking-tight">Quick Actions</h2>
         <div className="flex flex-wrap gap-4">
           <Link to="/patient/book-appointment" className={btnPrimary}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,43 +154,43 @@ export default function PatientDashboard() {
 
       {/* Enhanced Recent Activity */}
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Recent Activity</h2>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-text-primary-dark tracking-tight">Recent Activity</h2>
         {recentActivity.length === 0 ? (
-          <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-lg shadow-slate-900/10 border border-slate-200/60 p-8 text-center">
-            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-white/95 dark:bg-dark-surface/95 backdrop-blur-xl rounded-2xl shadow-lg shadow-slate-900/10 dark:shadow-slate-900/30 border border-slate-200/60 dark:border-dark-border p-8 text-center">
+            <div className="w-16 h-16 bg-slate-100 dark:bg-dark-surface-hover rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-slate-400 dark:text-text-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
-            <p className="text-slate-600 font-medium">No recent activity yet.</p>
+            <p className="text-slate-600 dark:text-text-secondary-dark font-medium">No recent activity yet.</p>
           </div>
         ) : (
           <div className="space-y-3">
             {recentActivity.map((item, idx) => (
-              <div key={idx} className="bg-white/95 backdrop-blur-xl rounded-xl shadow-sm shadow-slate-900/5 border border-slate-200/60 p-6 hover:shadow-md hover:scale-[1.01] transition-all duration-200">
+              <div key={idx} className="bg-white/95 dark:bg-dark-surface/95 backdrop-blur-xl rounded-xl shadow-sm shadow-slate-900/5 dark:shadow-slate-900/20 border border-slate-200/60 dark:border-dark-border p-6 hover:shadow-md hover:scale-[1.01] transition-all duration-200">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                       item.type === 'appointment' 
-                        ? 'bg-gradient-to-br from-blue-100 to-blue-200' 
-                        : 'bg-gradient-to-br from-green-100 to-green-200'
+                        ? 'bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/50 dark:to-blue-800/50' 
+                        : 'bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/50 dark:to-green-800/50'
                     }`}>
                       {item.type === 'appointment' ? (
-                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       ) : (
-                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                       )}
                     </div>
                     <div>
-                      <h4 className="font-bold text-slate-900">{item.title}</h4>
-                      <p className="text-sm font-medium text-slate-600 mt-1">{item.subtitle}</p>
+                      <h4 className="font-bold text-slate-900 dark:text-text-primary-dark">{item.title}</h4>
+                      <p className="text-sm font-medium text-slate-600 dark:text-text-secondary-dark mt-1">{item.subtitle}</p>
                     </div>
                   </div>
-                  <div className="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                  <div className="text-xs font-medium text-slate-500 dark:text-text-secondary-dark bg-slate-100 dark:bg-dark-surface-hover px-3 py-1 rounded-full">
                     {item.date.toLocaleDateString()}
                   </div>
                 </div>

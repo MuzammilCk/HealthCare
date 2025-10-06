@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { FiPlus, FiEdit2, FiTrash2, FiMapPin, FiPhone, FiMail } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
+import { AppSelect } from '../../components/ui';
 
 export default function ManageHospitals() {
   const [hospitals, setHospitals] = useState([]);
@@ -111,15 +112,15 @@ export default function ManageHospitals() {
     <div className="max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Hospital Management</h1>
-          <p className="text-gray-600 mt-1">Manage hospitals across Kerala</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark">Hospital Management</h1>
+          <p className="text-gray-600 dark:text-text-secondary-dark mt-1">Manage hospitals across Kerala</p>
         </div>
         <button
           onClick={() => {
             resetForm();
             setShowModal(true);
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-lg hover:from-blue-600 hover:to-blue-700 transition-colors"
         >
           <FiPlus className="w-5 h-5" />
           Add Hospital
@@ -129,9 +130,9 @@ export default function ManageHospitals() {
       {/* Hospitals Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {hospitals.map((hospital) => (
-          <div key={hospital._id} className="bg-white rounded-xl shadow-card p-6 hover:shadow-lg transition-shadow">
+          <div key={hospital._id} className="bg-white dark:bg-bg-card-dark rounded-xl shadow-card dark:shadow-card-dark p-6 hover:shadow-lg transition-shadow">
             <div className="flex justify-between items-start mb-4">
-              <h3 className="text-xl font-bold text-gray-900">{hospital.name}</h3>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-text-primary-dark">{hospital.name}</h3>
               <div className="flex gap-2">
                 <button
                   onClick={() => handleEdit(hospital)}
@@ -190,17 +191,17 @@ export default function ManageHospitals() {
       </div>
 
       {hospitals.length === 0 && (
-        <div className="text-center py-12 bg-white rounded-xl">
-          <p className="text-gray-500">No hospitals found. Add your first hospital!</p>
+        <div className="text-center py-12 bg-white dark:bg-bg-card-dark rounded-xl">
+          <p className="text-gray-500 dark:text-text-secondary-dark">No hospitals found. Add your first hospital!</p>
         </div>
       )}
 
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-bg-card-dark rounded-2xl border border-slate-200/60 dark:border-dark-border shadow-card dark:shadow-card-dark max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-text-primary-dark">
                 {editingHospital ? 'Edit Hospital' : 'Add New Hospital'}
               </h2>
             </div>
@@ -217,7 +218,7 @@ export default function ManageHospitals() {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm"
                   />
                 </div>
 
@@ -231,7 +232,7 @@ export default function ManageHospitals() {
                     onChange={handleChange}
                     required
                     rows="2"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm"
                   />
                 </div>
 
@@ -245,7 +246,7 @@ export default function ManageHospitals() {
                     value={formData.phone}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm"
                   />
                 </div>
 
@@ -258,7 +259,7 @@ export default function ManageHospitals() {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm"
                   />
                 </div>
 
@@ -266,12 +267,26 @@ export default function ManageHospitals() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     District
                   </label>
-                  <input
-                    type="text"
-                    name="district"
+                  <AppSelect
                     value={formData.district}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    onChange={(val) => setFormData({ ...formData, district: val })}
+                    options={[
+                      { value: 'Alappuzha', label: 'Alappuzha' },
+                      { value: 'Ernakulam', label: 'Ernakulam' },
+                      { value: 'Idukki', label: 'Idukki' },
+                      { value: 'Kannur', label: 'Kannur' },
+                      { value: 'Kasaragod', label: 'Kasaragod' },
+                      { value: 'Kollam', label: 'Kollam' },
+                      { value: 'Kottayam', label: 'Kottayam' },
+                      { value: 'Kozhikode', label: 'Kozhikode' },
+                      { value: 'Malappuram', label: 'Malappuram' },
+                      { value: 'Palakkad', label: 'Palakkad' },
+                      { value: 'Pathanamthitta', label: 'Pathanamthitta' },
+                      { value: 'Thiruvananthapuram', label: 'Thiruvananthapuram' },
+                      { value: 'Thrissur', label: 'Thrissur' },
+                      { value: 'Wayanad', label: 'Wayanad' }
+                    ]}
+                    placeholder="Select District"
                   />
                 </div>
 
@@ -284,7 +299,7 @@ export default function ManageHospitals() {
                     name="city"
                     value={formData.city}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm"
                   />
                 </div>
 
@@ -297,7 +312,7 @@ export default function ManageHospitals() {
                     name="pincode"
                     value={formData.pincode}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm"
                   />
                 </div>
 
@@ -310,7 +325,7 @@ export default function ManageHospitals() {
                     name="registrationNumber"
                     value={formData.registrationNumber}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm"
                   />
                 </div>
               </div>
@@ -322,13 +337,13 @@ export default function ManageHospitals() {
                     setShowModal(false);
                     resetForm();
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-lg hover:from-blue-600 hover:to-blue-700 transition-colors"
                 >
                   {editingHospital ? 'Update Hospital' : 'Create Hospital'}
                 </button>

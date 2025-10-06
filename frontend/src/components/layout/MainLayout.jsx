@@ -4,6 +4,8 @@ import { useNotifications } from '../../contexts/NotificationContext';
 import { useState } from 'react';
 import ProfileButton from '../ProfileButton';
 import NotificationBell from '../NotificationBell';
+import HoverNavBar from '../HoverNavBar';
+import ThemeToggle from '../ThemeToggle';
 
 function NavLink({ to, label, isSidebarOpen, icon, showNotificationDot = false }) {
   const { pathname } = useLocation();
@@ -89,18 +91,17 @@ export default function MainLayout({ role: roleProp }) {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen">
-      {/* Notification - fixed top-right */}
-      <div className="fixed top-4 right-6 z-50">
+    <div className="min-h-screen bg-bg-page dark:bg-bg-page-dark transition-colors duration-300">
+      {/* Theme Toggle and Notification - fixed top-right */}
+      <div className="fixed top-4 right-6 z-50 flex items-center space-x-3">
+        <ThemeToggle />
         <NotificationBell />
       </div>
 
       {/* Single fixed left column with space-around alignment for brand, sidebar, profile */}
       <div className="hidden md:flex fixed left-6 top-0 bottom-0 z-40 flex-col items-center justify-around py-4">
-        {/* Brand pill */}
-        <div className="flex items-center justify-center px-5 py-3 rounded-full bg-gradient-to-br from-[#1FA0FF] to-[#5EEBF7] text-white border border-white/10">
-          <span className="font-semibold text-2xl">H</span>
-        </div>
+        {/* Brand pill with hover navigation */}
+        <HoverNavBar />
 
         {/* Sidebar (not containing brand/profile) */}
         <aside className={`flex bg-gradient-to-br from-[#1FA0FF] to-[#5EEBF7] text-white rounded-3xl px-3 py-4 items-center justify-center transition-all duration-300 ${isSidebarOpen ? 'w-24' : 'w-20'}`}>
@@ -109,18 +110,18 @@ export default function MainLayout({ role: roleProp }) {
           </div>
         </aside>
 
-        {/* Profile icon */}
-        <div className="bg-gradient-to-br from-[#1FA0FF] to-[#5EEBF7] text-white rounded-full p-1">
+        {/* Profile icon - remove gradient ring wrapper */}
+        <div className="rounded-full">
           <ProfileButton />
         </div>
       </div>
 
-      {/* Main Content Area with Dynamic Margin and tighter top padding below title */}
-      <div className={`flex flex-col min-h-screen transition-all duration-300 md:ml-28 pt-16`}>
+      {/* Main Content Area with Dynamic Margin and top padding for nav */}
+      <div className={`flex flex-col min-h-screen transition-all duration-300 md:ml-28 pt-10`}>
         {/* Constrained Content Area with Better Spacing */}
         <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
           <div className="max-w-7xl mx-auto">
-            <div className="bg-white rounded-2xl p-6 lg:p-8 relative z-10">
+            <div className="bg-white dark:bg-bg-card-dark rounded-2xl p-6 lg:p-8 relative z-10 shadow-card dark:shadow-card-dark transition-colors duration-300">
               <Outlet />
             </div>
           </div>

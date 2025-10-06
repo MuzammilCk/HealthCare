@@ -257,8 +257,8 @@ export default function Appointments() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Appointments</h1>
-          <p className="text-gray-600">Track and manage your medical appointments</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark mb-2">My Appointments</h1>
+          <p className="text-gray-600 dark:text-text-secondary-dark">Track and manage your medical appointments</p>
         </div>
         <div className="hidden md:block">
           <ModernTableContainer>
@@ -275,8 +275,8 @@ export default function Appointments() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">My Appointments</h1>
-        <p className="text-gray-600">Track and manage your medical appointments</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark mb-2">My Appointments</h1>
+        <p className="text-gray-600 dark:text-text-secondary-dark">Track and manage your medical appointments</p>
       </div>
 
       {/* Desktop Table View */}
@@ -311,10 +311,10 @@ export default function Appointments() {
                           size="sm"
                         />
                         <div>
-                          <div className="font-medium text-gray-900">
+                          <div className="font-medium text-gray-900 dark:text-text-primary-dark">
                             {appointment.doctorId?.name || 'Unknown Doctor'}
                           </div>
-                          <div className="text-sm text-gray-500">Doctor</div>
+                          <div className="text-sm text-gray-500 dark:text-text-secondary-dark">Doctor</div>
                         </div>
                       </div>
                     </ModernTableCell>
@@ -358,7 +358,7 @@ export default function Appointments() {
                           </div>
                         )
                       ) : (
-                        <span className="text-sm text-gray-400">—</span>
+                        <span className="text-sm text-gray-400 dark:text-text-secondary-dark">—</span>
                       )}
                     </ModernTableCell>
                     
@@ -384,12 +384,12 @@ export default function Appointments() {
                                 </div>
                               </div>
                             ) : (
-                              <div className="flex flex-col items-center gap-1 p-2 bg-gray-50 rounded-lg">
-                                <div className="flex items-center gap-1 text-xs text-gray-600">
+                              <div className="flex flex-col items-center gap-1 p-2 bg-gray-50 dark:bg-dark-surface rounded-lg">
+                                <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-text-secondary-dark">
                                   <FiAlertTriangle className="w-3 h-3" />
                                   <span className="font-medium">Cannot Cancel</span>
                                 </div>
-                                <div className="text-xs text-gray-500 text-center">
+                                <div className="text-xs text-gray-500 dark:text-text-secondary-dark text-center">
                                   {cancelInfo.reason}
                                 </div>
                               </div>
@@ -441,8 +441,8 @@ export default function Appointments() {
                 
                 {appointment.notes && (
                   <div>
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Notes</label>
-                    <p className="mt-1 text-gray-700">{appointment.notes}</p>
+                    <label className="text-xs font-medium text-gray-500 dark:text-text-secondary-dark uppercase tracking-wide">Notes</label>
+                    <p className="mt-1 text-gray-700 dark:text-text-primary-dark">{appointment.notes}</p>
                   </div>
                 )}
                 
@@ -471,12 +471,12 @@ export default function Appointments() {
                             </div>
                           </div>
                         ) : (
-                          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                          <div className="bg-gray-50 dark:bg-dark-surface p-4 rounded-lg border border-gray-200 dark:border-dark-border">
                             <div className="flex items-center gap-2 mb-2">
                               <FiAlertTriangle className="w-5 h-5 text-amber-500" />
-                              <span className="font-medium text-gray-700">Cannot Cancel</span>
+                              <span className="font-medium text-gray-700 dark:text-text-primary-dark">Cannot Cancel</span>
                             </div>
-                            <div className="text-sm text-gray-600">
+                            <div className="text-sm text-gray-600 dark:text-text-secondary-dark">
                               {cancelInfo.reason}
                             </div>
                           </div>
@@ -488,7 +488,7 @@ export default function Appointments() {
                 
                 {appointment.status === 'Completed' && (
                   <div>
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Rating</label>
+                    <label className="text-xs font-medium text-gray-500 dark:text-text-secondary-dark uppercase tracking-wide">Rating</label>
                     <div className="mt-2">
                       {appointment.isRated ? (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
@@ -529,24 +529,24 @@ export default function Appointments() {
       {/* Cancellation Confirmation Modal */}
       {showCancelModal && appointmentToCancel && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+          <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-xl dark:shadow-card-dark border border-gray-100 dark:border-dark-border w-full max-w-md p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                <FiAlertTriangle className="w-5 h-5 text-red-600" />
+              <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+                <FiAlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Cancel Appointment</h3>
-                <p className="text-sm text-gray-600">This action cannot be undone</p>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-text-primary-dark">Cancel Appointment</h3>
+                <p className="text-sm text-gray-600 dark:text-text-secondary-dark">This action cannot be undone</p>
               </div>
             </div>
             
             <div className="mb-6">
-              <p className="text-gray-700 mb-3">
+              <p className="text-gray-700 dark:text-text-primary-dark mb-3">
                 Are you sure you want to cancel your appointment with{' '}
                 <span className="font-semibold">{appointmentToCancel.doctorId?.name}</span>?
               </p>
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <div className="text-sm text-gray-600 space-y-2">
+              <div className="bg-gray-50 dark:bg-dark-surface p-4 rounded-lg border border-gray-200 dark:border-dark-border">
+                <div className="text-sm text-gray-600 dark:text-text-secondary-dark space-y-2">
                   <div className="flex items-center gap-2">
                     <FiCalendar className="w-4 h-4" />
                     <span className="font-medium">{new Date(appointmentToCancel.date).toLocaleDateString()}</span>
@@ -558,18 +558,18 @@ export default function Appointments() {
                   {(() => {
                     const cancelInfo = getAppointmentCancellationInfo(appointmentToCancel);
                     return (
-                      <div className="flex items-center gap-2 pt-2 border-t border-gray-300">
+                      <div className="flex items-center gap-2 pt-2 border-t border-gray-300 dark:border-dark-border">
                         <FiClock className="w-4 h-4 text-blue-500" />
-                        <span className="text-blue-600 font-medium">{cancelInfo.reason}</span>
+                        <span className="text-blue-600 dark:text-blue-300 font-medium">{cancelInfo.reason}</span>
                       </div>
                     );
                   })()}
                 </div>
               </div>
-              <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
                 <div className="flex items-start gap-2">
-                  <FiAlertTriangle className="w-4 h-4 text-amber-600 mt-0.5" />
-                  <div className="text-sm text-amber-800">
+                  <FiAlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5" />
+                  <div className="text-sm text-amber-800 dark:text-amber-200">
                     <p className="font-medium">Important:</p>
                     <p>Once cancelled, this appointment slot will be available for other patients to book.</p>
                   </div>
@@ -583,7 +583,7 @@ export default function Appointments() {
                   setShowCancelModal(false);
                   setAppointmentToCancel(null);
                 }}
-                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                className="flex-1 px-4 py-2 text-gray-700 dark:text-text-primary-dark bg-gray-100 dark:bg-dark-surface rounded-lg hover:bg-gray-200 dark:hover:bg-dark-surface-hover transition-colors"
                 disabled={cancellingId === appointmentToCancel._id}
               >
                 Keep Appointment

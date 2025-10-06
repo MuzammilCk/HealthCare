@@ -215,9 +215,9 @@ export const ExpandableText = ({ text, maxLength = 50 }) => {
 // Modern Table Container with Enhanced Depth
 export const ModernTableContainer = ({ children, title, subtitle, actions }) => {
   return (
-    <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-900/10 border border-slate-200/60 overflow-hidden">
+    <div className="bg-white/95 dark:bg-bg-card-dark/95 backdrop-blur-xl rounded-2xl shadow-xl dark:shadow-card-dark shadow-slate-900/10 dark:shadow-slate-900/30 border border-slate-200/60 dark:border-dark-border overflow-hidden">
       {(title || subtitle || actions) && (
-        <div className="px-8 py-6 border-b border-slate-200/60 bg-gradient-to-r from-slate-50/80 to-white/80 backdrop-blur-sm">
+        <div className="px-8 py-6 border-b border-slate-200/60 dark:border-dark-border bg-gradient-to-r from-slate-50/80 to-white/80 dark:from-dark-surface/80 dark:to-bg-card-dark/80 backdrop-blur-sm">
           <div className="flex items-center justify-between">
             <div>
               {title && (
@@ -245,12 +245,12 @@ export const ModernTableContainer = ({ children, title, subtitle, actions }) => 
 // Modern Table Header with Enhanced Typography
 export const ModernTableHeader = ({ columns }) => {
   return (
-    <thead className="bg-gradient-to-r from-slate-50/90 to-slate-100/90 backdrop-blur-sm sticky top-0 z-10">
+    <thead className="bg-gradient-to-r from-slate-50/90 to-slate-100/90 dark:from-dark-surface/80 dark:to-bg-card-dark/80 backdrop-blur-sm sticky top-0 z-10">
       <tr>
         {columns.map((column, index) => (
           <th
             key={index}
-            className="px-8 py-5 text-left text-xs font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200/60"
+            className="px-8 py-5 text-left text-xs font-bold text-slate-700 dark:text-text-secondary-dark uppercase tracking-wider border-b border-slate-200/60 dark:border-dark-border"
           >
             <div className="flex items-center gap-3">
               <span className="opacity-80">{column.icon}</span>
@@ -268,9 +268,9 @@ export const ModernTableRow = ({ children, isEven = false, onClick = null, class
   return (
     <tr
       className={`
-        ${isEven ? 'bg-slate-50/30' : 'bg-white/50'}
-        hover:bg-gradient-to-r hover:from-blue-50/80 hover:to-indigo-50/80 hover:shadow-sm
-        transition-all duration-300 border-b border-slate-200/40 last:border-b-0
+        ${isEven ? 'bg-slate-50/30 dark:bg-dark-surface/20' : 'bg-white/50 dark:bg-bg-card-dark/50'}
+        hover:bg-gradient-to-r hover:from-blue-50/80 hover:to-indigo-50/80 dark:hover:from-blue-900/10 dark:hover:to-indigo-900/10 hover:shadow-sm
+        transition-all duration-300 border-b border-slate-200/40 dark:border-dark-border last:border-b-0
         ${onClick ? 'cursor-pointer hover:scale-[1.01]' : ''}
         ${className}
       `}
@@ -338,11 +338,11 @@ export const ActionButton = ({
 export const EmptyState = ({ icon, title, description, action }) => {
   return (
     <div className="text-center py-12 px-6">
-      <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-        {icon || <FiFileText className="w-8 h-8 text-gray-400" />}
+      <div className="mx-auto w-16 h-16 bg-gray-100 dark:bg-dark-surface rounded-full flex items-center justify-center mb-4">
+        {icon || <FiFileText className="w-8 h-8 text-gray-400 dark:text-text-secondary-dark" />}
       </div>
-      <h3 className="text-lg font-medium text-gray-900 mb-2">{title}</h3>
-      <p className="text-gray-600 mb-6 max-w-sm mx-auto">{description}</p>
+      <h3 className="text-lg font-medium text-gray-900 dark:text-text-primary-dark mb-2">{title}</h3>
+      <p className="text-gray-600 dark:text-text-secondary-dark mb-6 max-w-sm mx-auto">{description}</p>
       {action}
     </div>
   );
@@ -353,13 +353,13 @@ export const LoadingState = ({ rows = 5 }) => {
   return (
     <div className="animate-pulse">
       {Array.from({ length: rows }).map((_, index) => (
-        <div key={index} className="flex items-center space-x-4 py-4 px-6 border-b border-gray-100">
-          <div className="rounded-full bg-gray-200 h-10 w-10"></div>
+        <div key={index} className="flex items-center space-x-4 py-4 px-6 border-b border-gray-100 dark:border-dark-border">
+          <div className="rounded-full bg-gray-200 dark:bg-dark-surface h-10 w-10"></div>
           <div className="flex-1 space-y-2">
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-dark-surface rounded w-3/4"></div>
+            <div className="h-3 bg-gray-200 dark:bg-dark-surface rounded w-1/2"></div>
           </div>
-          <div className="h-8 bg-gray-200 rounded w-20"></div>
+          <div className="h-8 bg-gray-200 dark:bg-dark-surface rounded w-20"></div>
         </div>
       ))}
     </div>

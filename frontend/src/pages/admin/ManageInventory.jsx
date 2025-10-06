@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { FiPlus, FiEdit2, FiTrash2, FiPackage, FiAlertCircle, FiFilter } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
+import { AppSelect, ModernTableContainer } from '../../components/ui';
 
 export default function ManageInventory() {
   const [inventory, setInventory] = useState([]);
@@ -153,8 +154,8 @@ export default function ManageInventory() {
     <div className="max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Inventory Management</h1>
-          <p className="text-gray-600 mt-1">Manage medicines across all hospitals</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark">Inventory Management</h1>
+          <p className="text-gray-600 dark:text-text-secondary-dark mt-1">Manage medicines across all hospitals</p>
         </div>
         <button
           onClick={() => {
@@ -169,27 +170,23 @@ export default function ManageInventory() {
       </div>
 
       {/* Filter */}
-      <div className="bg-white rounded-xl shadow-card p-4 mb-6">
+      <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-card dark:shadow-card-dark p-4 mb-6">
         <div className="flex items-center gap-3">
           <FiFilter className="w-5 h-5 text-gray-600" />
           <label className="text-sm font-medium text-gray-700">Filter by Hospital:</label>
-          <select
-            value={selectedHospital}
-            onChange={(e) => setSelectedHospital(e.target.value)}
-            className="flex-1 max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-          >
-            <option value="">All Hospitals</option>
-            {hospitals.map((hospital) => (
-              <option key={hospital._id} value={hospital._id}>
-                {hospital.name} - {hospital.district}
-              </option>
-            ))}
-          </select>
+          <div className="flex-1 max-w-md">
+            <AppSelect
+              placeholder="All Hospitals"
+              value={selectedHospital}
+              onChange={setSelectedHospital}
+              options={[{ value: '', label: 'All Hospitals' }, ...hospitals.map(h => ({ value: h._id, label: `${h.name} - ${h.district || ''}` }))]}
+            />
+          </div>
         </div>
       </div>
 
       {/* Inventory Table */}
-      <div className="bg-white rounded-xl shadow-card overflow-hidden">
+      <ModernTableContainer title="Inventory" subtitle={`${inventory.length} item${inventory.length!==1?'s':''} found`}>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
@@ -214,7 +211,7 @@ export default function ManageInventory() {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-bg-card-dark divide-y divide-gray-200 dark:divide-dark-border">
               {inventory.map((item) => (
                 <tr key={item._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
@@ -293,14 +290,14 @@ export default function ManageInventory() {
             <p className="text-gray-500">No inventory items found</p>
           </div>
         )}
-      </div>
+      </ModernTableContainer>
 
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-bg-card-dark rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-text-primary-dark">
                 {editingItem ? 'Edit Medicine' : 'Add New Medicine'}
               </h2>
             </div>
@@ -311,21 +308,13 @@ export default function ManageInventory() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Hospital *
                   </label>
-                  <select
-                    name="hospitalId"
+                  <AppSelect
                     value={formData.hospitalId}
-                    onChange={handleChange}
-                    required
-                    disabled={editingItem}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
-                  >
-                    <option value="">Select Hospital</option>
-                    {hospitals.map((hospital) => (
-                      <option key={hospital._id} value={hospital._id}>
-                        {hospital.name} - {hospital.district}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setFormData({ ...formData, hospitalId: val })}
+                    options={hospitals.map(h => ({ value: h._id, label: `${h.name} - ${h.district || ''}` }))}
+                    placeholder="Select Hospital"
+                    disabled={!!editingItem}
+                  />
                 </div>
 
                 <div>
@@ -372,22 +361,14 @@ export default function ManageInventory() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Unit *
                   </label>
-                  <select
-                    name="unit"
+                  <AppSelect
                     value={formData.unit}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  >
-                    <option value="tablet">Tablet</option>
-                    <option value="capsule">Capsule</option>
-                    <option value="syrup">Syrup</option>
-                    <option value="injection">Injection</option>
-                    <option value="cream">Cream</option>
-                    <option value="drops">Drops</option>
-                    <option value="inhaler">Inhaler</option>
-                    <option value="other">Other</option>
-                  </select>
+                    onChange={(val) => setFormData({ ...formData, unit: val })}
+                    options={[
+                      'tablet','capsule','syrup','injection','cream','drops','inhaler','other'
+                    ].map(u => ({ value: u, label: u.charAt(0).toUpperCase()+u.slice(1) }))}
+                    placeholder="Select unit"
+                  />
                 </div>
 
                 <div>

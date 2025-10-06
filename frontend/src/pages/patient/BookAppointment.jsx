@@ -257,13 +257,13 @@ export default function BookAppointment() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-text-primary">Find Your Doctor</h1>
-        <p className="text-text-secondary">Book your next appointment with ease.</p>
+        <h1 className="text-3xl font-bold text-text-primary dark:text-text-primary-dark">Find Your Doctor</h1>
+        <p className="text-text-secondary dark:text-text-secondary-dark">Book your next appointment with ease.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {/* Filters */}
-        <div className="md:col-span-1 bg-white p-4 rounded-xl shadow-card space-y-4 self-start">
+        <div className="md:col-span-1 bg-white dark:bg-bg-card-dark p-4 rounded-xl shadow-card dark:shadow-card-dark space-y-4 self-start">
           <h2 className="font-semibold text-text-primary border-b pb-2">Filters</h2>
           <AppSelect
             label="District"
@@ -292,7 +292,7 @@ export default function BookAppointment() {
         {/* Doctor List */}
         <div className="md:col-span-3 space-y-4">
           {/* Search Bar */}
-          <div className="bg-white p-4 rounded-xl shadow-card">
+          <div className="bg-white dark:bg-bg-card-dark p-4 rounded-xl shadow-card dark:shadow-card-dark">
             <div className="relative">
               <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
               <input
@@ -309,7 +309,7 @@ export default function BookAppointment() {
             <div className="text-center p-6">Loading doctors...</div>
           ) : doctors.length > 0 ? (
             doctors.map(doc => (
-              <div key={doc.userId._id} className="bg-white p-4 rounded-xl shadow-card flex items-center justify-between transition-shadow hover:shadow-lg">
+              <div key={doc.userId._id} className="bg-white dark:bg-bg-card-dark p-4 rounded-xl shadow-card dark:shadow-card-dark flex items-center justify-between transition-shadow hover:shadow-lg">
                 <div className="flex items-center">
                   <img 
                     src={doc.photoUrl ? `http://localhost:5000${doc.photoUrl}` : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(doc.userId.name) + '&size=150&background=0D8ABC&color=fff'} 
@@ -336,7 +336,7 @@ export default function BookAppointment() {
               </div>
             ))
           ) : (
-            <div className="bg-white p-6 rounded-xl shadow-card text-center text-text-secondary">
+            <div className="bg-white dark:bg-bg-card-dark p-6 rounded-xl shadow-card dark:shadow-card-dark text-center text-text-secondary dark:text-text-secondary-dark">
               <FiSearch className="mx-auto text-4xl mb-2" />
               <p>
                 {searchQuery.trim() 
@@ -362,7 +362,7 @@ export default function BookAppointment() {
           />
 
           {/* Modal (centered to viewport, not parent) */}
-          <div className="fixed z-[1001] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-xl shadow-xl p-6">
+          <div className="fixed z-[1001] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-bg-card-dark rounded-xl shadow-xl dark:shadow-card-dark p-6">
             <button onClick={() => setSelectedDoctor(null)} className="absolute top-4 right-4 text-text-secondary hover:text-text-primary">
               <FiX size={24} />
             </button>

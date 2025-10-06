@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import VideoBackground from '../VideoBackground';
+import ThemeToggle from '../ThemeToggle';
 
 // Import GIFs from the public directory
 import patientGif from '/patient.gif';
@@ -27,12 +28,23 @@ export default function ModernAuthLayout() {
   const { gif, title, subtitle } = content[role];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-page p-4 relative z-10">
+    <div className="min-h-screen flex items-center justify-center bg-bg-page dark:bg-bg-page-dark p-4 relative z-10 transition-colors duration-300">
       <VideoBackground />
-      <main className="w-full max-w-4xl bg-white rounded-2xl shadow-card overflow-hidden grid grid-cols-1 md:grid-cols-2 animate-fade-in">
+      
+      {/* Theme Toggle - fixed top-right */}
+      <div className="fixed top-4 right-6 z-50">
+        <ThemeToggle />
+      </div>
+      
+      <main className="w-full max-w-4xl bg-white dark:bg-bg-card-dark rounded-2xl shadow-card dark:shadow-card-dark overflow-hidden grid grid-cols-1 md:grid-cols-2 animate-fade-in transition-colors duration-300">
         {/* Left Decorative Panel */}
         <div className="hidden md:flex flex-col items-center justify-center p-8 bg-gradient-to-br from-primary to-secondary text-white text-center">
-          <img src={gif} alt={`${role} illustration`} className="w-48 h-48 mb-6 object-contain" />
+          <img 
+            src={gif} 
+            alt={`${role} illustration`} 
+            className="w-48 h-48 mb-6 object-contain slow-gif-animation" 
+            style={{ animationDuration: '3s' }}
+          />
           <h2 className="text-2xl font-bold mb-2">{title}</h2>
           <p className="text-sm opacity-90">{subtitle}</p>
         </div>
@@ -40,9 +52,9 @@ export default function ModernAuthLayout() {
         {/* Right Form Panel */}
         <div className="p-8 flex flex-col justify-center">
           <div className="mb-6 text-center">
-            <Link to="/" className="text-3xl font-bold text-primary">HealthSync</Link>
-            <h1 className="text-2xl font-bold text-text-primary mt-4">{isLogin ? "Welcome Back!" : "Create Your Account"}</h1>
-            <p className="text-text-secondary">{isLogin ? "Sign in to continue your journey." : "Join our community of patients and doctors."}</p>
+            <Link to="/" className="text-3xl font-bold text-primary dark:text-primary-light">HealthSync</Link>
+            <h1 className="text-2xl font-bold text-text-primary dark:text-text-primary-dark mt-4">{isLogin ? "Welcome Back!" : "Create Your Account"}</h1>
+            <p className="text-text-secondary dark:text-text-secondary-dark">{isLogin ? "Sign in to continue your journey." : "Join our community of patients and doctors."}</p>
           </div>
           {/* Outlet provides the role and setRole function to the Login/Register components */}
           <Outlet context={{ role, setRole }} />
@@ -54,6 +66,21 @@ export default function ModernAuthLayout() {
           to { opacity: 1; transform: scale(1); }
         }
         .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
+        
+        .slow-gif-animation {
+          animation: slow-pulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes slow-pulse {
+          0%, 100% { 
+            transform: scale(1);
+            opacity: 1;
+          }
+          50% { 
+            transform: scale(1.05);
+            opacity: 0.9;
+          }
+        }
       `}</style>
     </div>
   );

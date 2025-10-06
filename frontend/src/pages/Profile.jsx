@@ -196,11 +196,11 @@ export default function Profile() {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Profile</h1>
-          <p className="text-gray-600">Manage your personal information and settings</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark mb-2">My Profile</h1>
+          <p className="text-gray-600 dark:text-text-secondary-dark">Manage your personal information and settings</p>
         </div>
         <ProfileSkeleton />
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-sm dark:shadow-card-dark border border-gray-100 dark:border-dark-border p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Profile Information</h2>
           <FormSkeleton fields={4} />
         </div>
@@ -226,7 +226,7 @@ export default function Profile() {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="bg-white text-primary p-2 rounded-full shadow-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="bg-white dark:bg-dark-surface text-primary p-2 rounded-full shadow-lg hover:bg-gray-50 dark:hover:bg-dark-surface-hover transition-colors disabled:opacity-50"
                 title="Change picture"
               >
                 {uploading ? (
@@ -257,7 +257,7 @@ export default function Profile() {
           </div>
           
           <div className="flex-1">
-            <h1 className="text-3xl font-bold mb-2">{profile?.name}</h1>
+            <h1 className="text-3xl font-bold mb-2 text-white">{profile?.name}</h1>
             <p className="text-white/80 text-lg capitalize">{profile?.role}</p>
             <p className="text-white/60 text-sm">
               Member since {new Date(profile?.createdAt).toLocaleDateString('en-US', { 
@@ -270,10 +270,10 @@ export default function Profile() {
       </div>
 
       {/* Profile Information */}
-      <div className="bg-white rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden">
+      <div className="bg-white dark:bg-bg-card-dark rounded-2xl shadow-xl dark:shadow-card-dark border border-slate-200/60 dark:border-dark-border overflow-hidden">
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-900">Profile Information</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-text-primary-dark">Profile Information</h2>
             <button
               onClick={() => {
                 if (editing) {
@@ -372,11 +372,11 @@ export default function Profile() {
 
       {/* Hospital Information - For Doctors Only */}
       {profile?.role === 'doctor' && profile?.doctorProfile?.hospitalId && (
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden">
+        <div className="bg-white dark:bg-bg-card-dark rounded-2xl shadow-xl dark:shadow-card-dark border border-slate-200/60 dark:border-dark-border overflow-hidden">
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center gap-3">
               <FiHome className="w-6 h-6 text-primary" />
-              <h2 className="text-2xl font-bold text-gray-900">Hospital Information</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-text-primary-dark">Hospital Information</h2>
             </div>
           </div>
 
@@ -437,9 +437,9 @@ export default function Profile() {
       )}
 
       {/* Security Section */}
-      <div className="bg-white rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden">
+      <div className="bg-white dark:bg-bg-card-dark rounded-2xl shadow-xl dark:shadow-card-dark border border-slate-200/60 dark:border-dark-border overflow-hidden">
         <div className="p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">Security</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-text-primary-dark">Security</h2>
         </div>
 
         <div className="p-6">
@@ -464,9 +464,9 @@ export default function Profile() {
       {/* Password Change Modal */}
       {showPasswordModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+          <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-xl w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900">Change Password</h3>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-text-primary-dark">Change Password</h3>
               <button
                 onClick={() => setShowPasswordModal(false)}
                 className="text-gray-400 hover:text-gray-600"

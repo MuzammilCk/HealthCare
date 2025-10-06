@@ -107,7 +107,7 @@ export default function KycRequests() {
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+            className="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-dark-input text-gray-900 dark:text-text-primary-dark"
           >
             {filterOptions.map(option => (
               <option key={option.value} value={option.value}>

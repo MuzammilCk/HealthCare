@@ -2,11 +2,11 @@ import { FiCheckCircle, FiUsers, FiHeart } from 'react-icons/fi';
 
 export default function AboutUs() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-5xl font-bold text-gray-900 dark:text-text-primary-dark mb-4">
             ABOUT <span className="text-primary">US</span>
           </h1>
           <div className="w-24 h-1 bg-primary mx-auto rounded-full"></div>
@@ -34,21 +34,21 @@ export default function AboutUs() {
           {/* Right Side - Content */}
           <div className="space-y-6">
             <div className="prose prose-lg">
-              <p className="text-gray-700 leading-relaxed">
+              <p className="text-gray-700 dark:text-text-secondary-dark leading-relaxed">
                 Welcome to <span className="font-bold text-primary">HealthSync</span>, your trusted partner in managing your healthcare needs conveniently and efficiently. At HealthSync, we understand the challenges individuals face when it comes to scheduling doctor appointments and managing their health records.
               </p>
-              <p className="text-gray-700 leading-relaxed mt-4">
+              <p className="text-gray-700 dark:text-text-secondary-dark leading-relaxed mt-4">
                 HealthSync is committed to excellence in healthcare technology. We continuously strive to enhance our platform, integrating the latest advancements to improve user experience and deliver superior services. Whether you're booking your first appointment or managing ongoing care, HealthSync is here to support you every step of the way.
               </p>
             </div>
 
             {/* Vision Section */}
-            <div className="bg-gradient-to-br from-primary/5 to-purple-500/5 rounded-2xl p-6 border border-primary/10 mt-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-3 flex items-center">
+            <div className="bg-gradient-to-br from-primary/5 to-purple-500/5 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-6 border border-primary/10 dark:border-dark-border mt-8">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-text-primary-dark mb-3 flex items-center">
                 <FiHeart className="mr-3 text-primary" />
                 Our Vision
               </h3>
-              <p className="text-gray-700 leading-relaxed">
+              <p className="text-gray-700 dark:text-text-secondary-dark leading-relaxed">
                 Our vision at HealthSync is to create a seamless healthcare experience for every user. We aim to bridge the gap between patients and healthcare providers, making it easier for you to access the care you need, when you need it.
               </p>
             </div>
@@ -57,40 +57,40 @@ export default function AboutUs() {
 
         {/* Why Choose Us Section */}
         <div className="mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-12 text-center">
+          <h2 className="text-4xl font-bold text-gray-900 dark:text-text-primary-dark mb-12 text-center">
             WHY CHOOSE US
           </h2>
           
           <div className="grid md:grid-cols-3 gap-8">
             {/* Efficiency Card */}
-            <div className="group bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:bg-gradient-to-br hover:from-primary hover:to-blue-600 hover:border-transparent transform hover:-translate-y-2">
+            <div className="group bg-white dark:bg-bg-card-dark rounded-2xl p-8 shadow-xl dark:shadow-card-dark hover:shadow-2xl transition-all duration-300 border border-gray-200 dark:border-dark-border hover:bg-gradient-to-br hover:from-primary hover:to-blue-600 hover:border-transparent transform hover:-translate-y-2">
               <div className="w-16 h-16 bg-primary/10 group-hover:bg-white/20 rounded-full flex items-center justify-center mb-6 transition-colors duration-300">
                 <FiCheckCircle className="w-8 h-8 text-primary group-hover:text-white transition-colors duration-300" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 group-hover:text-white mb-4 transition-colors duration-300">Efficiency:</h3>
-              <p className="text-gray-600 group-hover:text-white/90 leading-relaxed transition-colors duration-300">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-text-primary-dark group-hover:text-white mb-4 transition-colors duration-300">Efficiency:</h3>
+              <p className="text-gray-600 dark:text-text-secondary-dark group-hover:text-white/90 leading-relaxed transition-colors duration-300">
                 Streamlined appointment scheduling that fits into your busy lifestyle.
               </p>
             </div>
 
             {/* Convenience Card */}
-            <div className="group bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:bg-gradient-to-br hover:from-primary hover:to-blue-600 hover:border-transparent transform hover:-translate-y-2">
+            <div className="group bg-white dark:bg-bg-card-dark rounded-2xl p-8 shadow-xl dark:shadow-card-dark hover:shadow-2xl transition-all duration-300 border border-gray-200 dark:border-dark-border hover:bg-gradient-to-br hover:from-primary hover:to-blue-600 hover:border-transparent transform hover:-translate-y-2">
               <div className="w-16 h-16 bg-primary/10 group-hover:bg-white/20 rounded-full flex items-center justify-center mb-6 transition-colors duration-300">
                 <FiUsers className="w-8 h-8 text-primary group-hover:text-white transition-colors duration-300" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 group-hover:text-white mb-4 transition-colors duration-300">Convenience:</h3>
-              <p className="text-gray-600 group-hover:text-white/90 leading-relaxed transition-colors duration-300">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-text-primary-dark group-hover:text-white mb-4 transition-colors duration-300">Convenience:</h3>
+              <p className="text-gray-600 dark:text-text-secondary-dark group-hover:text-white/90 leading-relaxed transition-colors duration-300">
                 Access to a network of trusted healthcare professionals in your area.
               </p>
             </div>
 
             {/* Personalization Card */}
-            <div className="group bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:bg-gradient-to-br hover:from-primary hover:to-blue-600 hover:border-transparent transform hover:-translate-y-2">
+            <div className="group bg-white dark:bg-bg-card-dark rounded-2xl p-8 shadow-xl dark:shadow-card-dark hover:shadow-2xl transition-all duration-300 border border-gray-200 dark:border-dark-border hover:bg-gradient-to-br hover:from-primary hover:to-blue-600 hover:border-transparent transform hover:-translate-y-2">
               <div className="w-16 h-16 bg-primary/10 group-hover:bg-white/20 rounded-full flex items-center justify-center mb-6 transition-colors duration-300">
                 <FiHeart className="w-8 h-8 text-primary group-hover:text-white transition-colors duration-300" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 group-hover:text-white mb-4 transition-colors duration-300">Personalization:</h3>
-              <p className="text-gray-600 group-hover:text-white/90 leading-relaxed transition-colors duration-300">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-text-primary-dark group-hover:text-white mb-4 transition-colors duration-300">Personalization:</h3>
+              <p className="text-gray-600 dark:text-text-secondary-dark group-hover:text-white/90 leading-relaxed transition-colors duration-300">
                 Tailored recommendations and reminders to help you stay on top of your health.
               </p>
             </div>

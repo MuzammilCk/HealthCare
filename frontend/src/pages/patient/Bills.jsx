@@ -113,8 +113,8 @@ export default function PatientBills() {
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-        <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
+        <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="sticky top-0 bg-white dark:bg-bg-card-dark border-b border-gray-200 dark:border-dark-border p-6 flex items-center justify-between">
             <h2 className="text-2xl font-bold text-text-primary">Bill Details</h2>
             <button
               onClick={onClose}
@@ -240,12 +240,12 @@ export default function PatientBills() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-text-primary">Bills & Payments</h1>
-        <p className="text-text-secondary">View and manage your medical bills</p>
+        <h1 className="text-3xl font-bold text-text-primary dark:text-text-primary-dark">Bills & Payments</h1>
+        <p className="text-text-secondary dark:text-text-secondary-dark">View and manage your medical bills</p>
       </div>
 
       {/* Main Tabs */}
-      <div className="bg-white rounded-xl shadow-card p-2 flex gap-2 mb-4">
+      <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-card dark:shadow-card-dark p-2 flex gap-2 mb-4">
         {[
           { value: 'bills', label: 'My Bills', icon: <FiFileText className="w-4 h-4" /> },
           { value: 'payments', label: 'Payment History', icon: <FiDollarSign className="w-4 h-4" /> }
@@ -267,7 +267,7 @@ export default function PatientBills() {
 
       {/* Filter Tabs (only for bills) */}
       {activeTab === 'bills' && (
-        <div className="bg-white rounded-xl shadow-card p-2 flex gap-2">
+        <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-card dark:shadow-card-dark p-2 flex gap-2">
           {[
             { value: 'all', label: 'All Bills' },
             { value: 'unpaid', label: 'Pending Dues' },
@@ -294,7 +294,7 @@ export default function PatientBills() {
         loading ? (
           <BillSkeleton count={5} />
         ) : bills.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-card p-12 text-center">
+        <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-card dark:shadow-card-dark p-12 text-center">
           <FiFileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-text-primary mb-2">No Bills Found</h3>
           <p className="text-text-secondary">
@@ -310,7 +310,7 @@ export default function PatientBills() {
           {bills.map((bill) => (
             <div
               key={bill._id}
-              className="bg-white rounded-xl shadow-card p-6 hover:shadow-lg transition-shadow cursor-pointer"
+              className="bg-white dark:bg-bg-card-dark rounded-xl shadow-card dark:shadow-card-dark p-6 hover:shadow-lg transition-shadow cursor-pointer"
               onClick={() => setSelectedBill(bill)}
             >
               <div className="flex items-start justify-between mb-4">
@@ -368,13 +368,13 @@ export default function PatientBills() {
         loading ? (
           <BillSkeleton count={5} />
         ) : payments.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-card p-12 text-center">
+          <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-card dark:shadow-card-dark p-12 text-center">
             <FiDollarSign className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-text-primary mb-2">No Payments Yet</h3>
             <p className="text-text-secondary">Your payment history will appear here</p>
           </div>
         ) : (
-          <div className="bg-white rounded-xl shadow-card overflow-hidden">
+          <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-card dark:shadow-card-dark overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
@@ -386,7 +386,7 @@ export default function PatientBills() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-bg-card-dark divide-y divide-gray-200 dark:divide-dark-border">
                   {payments.map((payment) => (
                     <tr key={payment._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

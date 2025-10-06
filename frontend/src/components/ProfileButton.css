@@ -4,6 +4,16 @@
   align-items: center;
 }
 
+/* Full-screen blurred backdrop when menu is open */
+.profile-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.25);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 9998;
+}
+
 .profile-avatar-button {
   width: 42px;
   height: 42px;

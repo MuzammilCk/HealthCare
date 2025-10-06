@@ -81,8 +81,8 @@ export default function AdminDashboard() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
-          <p className="text-gray-600">Manage your healthcare platform efficiently</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark mb-2">Admin Dashboard</h1>
+          <p className="text-gray-600 dark:text-text-secondary-dark">Manage your healthcare platform efficiently</p>
         </div>
         <DashboardStatsSkeleton />
       </div>
@@ -92,13 +92,13 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
-        <p className="text-gray-600">Manage your healthcare platform efficiently</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark mb-2">Admin Dashboard</h1>
+        <p className="text-gray-600 dark:text-text-secondary-dark">Manage your healthcare platform efficiently</p>
       </div>
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-sm dark:shadow-card-dark border border-gray-200 dark:border-dark-border p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -116,7 +116,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-sm dark:shadow-card-dark border border-gray-200 dark:border-dark-border p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -134,7 +134,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-sm dark:shadow-card-dark border border-gray-200 dark:border-dark-border p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
@@ -162,7 +162,7 @@ export default function AdminDashboard() {
               className={`relative block p-6 rounded-xl text-white transition-all duration-200 hover:scale-105 hover:shadow-lg ${action.color} ${action.urgent ? 'ring-2 ring-orange-300 ring-opacity-50 animate-pulse' : ''}`}
             >
               {action.badge && (
-                <div className="absolute -top-2 -right-2 bg-white text-gray-900 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold shadow-lg">
+                <div className="absolute -top-2 -right-2 bg-white dark:bg-dark-surface text-gray-900 dark:text-text-primary-dark rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold shadow-lg">
                   {action.badge}
                 </div>
               )}

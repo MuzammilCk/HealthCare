@@ -214,16 +214,16 @@ const AppSelect = ({
 
   // Variant classes
   const variantClasses = {
-    default: 'bg-white border border-gray-300 hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20',
-    outline: 'bg-transparent border-2 border-gray-300 hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20',
-    ghost: 'bg-gray-50 border border-transparent hover:bg-gray-100 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
+    default: 'bg-white dark:bg-dark-surface border border-gray-300 dark:border-dark-border hover:border-gray-400 dark:hover:border-dark-surface-hover focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20',
+    outline: 'bg-transparent border-2 border-gray-300 dark:border-dark-border hover:border-gray-400 dark:hover:border-dark-surface-hover focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20',
+    ghost: 'bg-gray-50 dark:bg-dark-surface border border-transparent dark:border-dark-border hover:bg-gray-100 dark:hover:bg-dark-surface-hover focus:bg-white dark:focus:bg-dark-surface focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
   };
 
   return (
     <div className={cn('relative', className)} ref={selectRef}>
       {/* Label */}
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-text-secondary-dark mb-1">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
@@ -240,7 +240,7 @@ const AppSelect = ({
           'focus:outline-none focus:ring-2 focus:ring-blue-500/20',
           sizeClasses[size],
           variantClasses[variant],
-          disabled && 'opacity-50 cursor-not-allowed bg-gray-100',
+          disabled && 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-dark-surface',
           loading && 'opacity-75 cursor-wait',
           error && 'border-red-500 focus:border-red-500 focus:ring-red-500/20',
           isOpen && 'ring-2 ring-blue-500/20 border-blue-500'
@@ -251,11 +251,11 @@ const AppSelect = ({
         {...props}
       >
         <div className="flex items-center flex-1 min-w-0">
-          {Icon && <Icon className="w-4 h-4 mr-2 text-gray-500 flex-shrink-0" />}
+          {Icon && <Icon className="w-4 h-4 mr-2 text-gray-500 dark:text-text-secondary-dark flex-shrink-0" />}
           <span className={cn(
             'truncate',
-            !internalValue && 'text-gray-500',
-            internalValue && 'text-gray-900 font-medium'
+            !internalValue && 'text-gray-500 dark:text-text-secondary-dark',
+            internalValue && 'text-gray-900 dark:text-text-primary-dark font-medium'
           )}>
             {getDisplayValue()}
           </span>
@@ -263,10 +263,10 @@ const AppSelect = ({
         
         <div className="flex items-center ml-2">
           {loading ? (
-            <FiLoader className="w-4 h-4 text-gray-400 animate-spin" />
+            <FiLoader className="w-4 h-4 text-gray-400 dark:text-text-secondary-dark animate-spin" />
           ) : (
             <FiChevronDown className={cn(
-              'w-4 h-4 text-gray-400 transition-transform duration-150',
+              'w-4 h-4 text-gray-400 dark:text-text-secondary-dark transition-transform duration-150',
               isOpen && 'rotate-180'
             )} />
           )}

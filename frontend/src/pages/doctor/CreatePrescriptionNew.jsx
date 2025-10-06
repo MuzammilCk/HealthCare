@@ -235,7 +235,7 @@ export default function CreatePrescriptionNew() {
       </h1>
 
       {/* Appointment Selection */}
-      <div className="bg-white p-6 rounded-xl shadow-card mb-6">
+      <div className="bg-white dark:bg-bg-card-dark p-6 rounded-xl shadow-card dark:shadow-card-dark mb-6">
         <AppSelect
           label="Select Completed Appointment"
           placeholder="-- Select an appointment --"
@@ -263,7 +263,7 @@ export default function CreatePrescriptionNew() {
       {selectedAppointment && (
         <form onSubmit={onSubmit} className="space-y-6">
           {/* Patient Details */}
-          <div className="bg-white p-6 rounded-xl shadow-card">
+          <div className="bg-white dark:bg-bg-card-dark p-6 rounded-xl shadow-card dark:shadow-card-dark">
             <h3 className="font-semibold text-lg flex items-center mb-4">
               <FiUser className="mr-2 text-primary" /> Patient Details
             </h3>
@@ -318,7 +318,7 @@ export default function CreatePrescriptionNew() {
           </div>
 
           {/* Billed Items Section */}
-          <div className="bg-white p-6 rounded-xl shadow-card">
+          <div className="bg-white dark:bg-bg-card-dark p-6 rounded-xl shadow-card dark:shadow-card-dark">
             <h3 className="font-semibold text-lg flex items-center mb-4">
               <FiShoppingCart className="mr-2 text-primary" /> 
               Billed Items (From Hospital Inventory)
@@ -471,7 +471,7 @@ export default function CreatePrescriptionNew() {
           </div>
 
           {/* Prescribed-Only Items Section */}
-          <div className="bg-white p-6 rounded-xl shadow-card">
+          <div className="bg-white dark:bg-bg-card-dark p-6 rounded-xl shadow-card dark:shadow-card-dark">
             <h3 className="font-semibold text-lg flex items-center mb-4">
               <FiEdit className="mr-2 text-primary" /> 
               Prescribed-Only Items (Not Billed)
@@ -548,7 +548,7 @@ export default function CreatePrescriptionNew() {
           </div>
 
           {/* Doctor Fee */}
-          <div className="bg-white p-6 rounded-xl shadow-card">
+          <div className="bg-white dark:bg-bg-card-dark p-6 rounded-xl shadow-card dark:shadow-card-dark">
             <h3 className="font-semibold text-lg flex items-center mb-4">
               <FiDollarSign className="mr-2 text-primary" /> 
               Doctor Fee

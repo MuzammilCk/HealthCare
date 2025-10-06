@@ -48,7 +48,7 @@ export default function Login() {
         </button>
       </div>
 
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={onSubmit} className="space-y-4 bg-white dark:bg-bg-card-dark p-6 rounded-2xl shadow-card dark:shadow-card-dark border border-slate-200/60 dark:border-dark-border transition-colors duration-300">
         {error && <div className="bg-error/10 border border-error/20 text-error text-sm rounded-lg p-3 text-center">{error}</div>}
 
         <div className="relative">
@@ -58,7 +58,7 @@ export default function Login() {
             name="email"
             value={form.email}
             onChange={onChange}
-            className="w-full bg-bg-page border border-slate-300/70 rounded-lg py-2 h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="w-full bg-bg-page dark:bg-dark-input border border-slate-300/70 dark:border-dark-border rounded-lg py-2 h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/50 text-text-primary dark:text-text-primary-dark transition-colors duration-300"
             placeholder="your@email.com"
             required
           />
@@ -70,7 +70,7 @@ export default function Login() {
             name="password"
             value={form.password}
             onChange={onChange}
-            className="w-full bg-bg-page border border-slate-300/70 rounded-lg py-2 h-12 pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="w-full bg-bg-page dark:bg-dark-input border border-slate-300/70 dark:border-dark-border rounded-lg py-2 h-12 pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-primary/50 text-text-primary dark:text-text-primary-dark transition-colors duration-300"
             placeholder="Password"
             required
           />
@@ -85,12 +85,12 @@ export default function Login() {
         </div>
         <button
           disabled={loading}
-          className="w-full bg-primary text-white font-bold px-4 py-2 rounded-lg h-12 transition-all duration-300 ease-in-out hover:bg-primary-light hover:shadow-lg hover:-translate-y-px disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold px-4 py-2 rounded-xl h-12 shadow-lg transition-all duration-200 hover:from-blue-600 hover:to-blue-700 focus:ring-2 focus:ring-blue-500/30 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? 'Signing In…' : 'Sign In'}
         </button>
-        <div className="text-sm text-center text-text-secondary">
-          No account? <Link to="/auth/register" className="font-medium text-primary hover:underline">Register here</Link>
+        <div className="text-sm text-center text-text-secondary dark:text-text-secondary-dark">
+          No account? <Link to="/auth/register" className="font-medium text-primary dark:text-primary-light hover:underline">Register here</Link>
         </div>
       </form>
     </div>

@@ -42,46 +42,46 @@ export default function PaymentSuccess() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-bg-page dark:bg-bg-page-dark transition-colors duration-300">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-text-secondary">Loading payment details...</p>
+          <p className="text-text-secondary dark:text-text-secondary-dark">Loading payment details...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 flex items-center justify-center p-4 transition-colors duration-300">
+      <div className="max-w-md w-full bg-white dark:bg-bg-card-dark rounded-2xl shadow-xl dark:shadow-card-dark border border-gray-100 dark:border-dark-border p-8 text-center">
         <div className="mb-6">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
-            <FiCheckCircle className="text-green-600 text-5xl" />
+          <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+            <FiCheckCircle className="text-green-600 dark:text-green-400 text-5xl" />
           </div>
-          <h1 className="text-3xl font-bold text-text-primary mb-2">Payment Successful!</h1>
-          <p className="text-text-secondary">Your payment has been processed successfully.</p>
+          <h1 className="text-3xl font-bold text-text-primary dark:text-text-primary-dark mb-2">Payment Successful!</h1>
+          <p className="text-text-secondary dark:text-text-secondary-dark">Your payment has been processed successfully.</p>
         </div>
 
         {payment && (
-          <div className="bg-gray-50 rounded-lg p-6 mb-6 text-left space-y-3">
-            <h2 className="font-semibold text-text-primary text-center mb-4">Payment Details</h2>
+          <div className="bg-gray-50 dark:bg-dark-surface rounded-lg p-6 mb-6 text-left space-y-3">
+            <h2 className="font-semibold text-text-primary dark:text-text-primary-dark text-center mb-4">Payment Details</h2>
             
             <div className="flex justify-between text-sm">
-              <span className="text-text-secondary">Amount Paid:</span>
-              <span className="font-semibold text-text-primary">{formatAmount(payment.amount)}</span>
+              <span className="text-text-secondary dark:text-text-secondary-dark">Amount Paid:</span>
+              <span className="font-semibold text-text-primary dark:text-text-primary-dark">{formatAmount(payment.amount)}</span>
             </div>
             
             <div className="flex justify-between text-sm">
-              <span className="text-text-secondary">Payment Type:</span>
-              <span className="font-semibold text-text-primary capitalize">
+              <span className="text-text-secondary dark:text-text-secondary-dark">Payment Type:</span>
+              <span className="font-semibold text-text-primary dark:text-text-primary-dark capitalize">
                 {payment.paymentType.replace('_', ' ')}
               </span>
             </div>
             
             {payment.doctorId && (
               <div className="flex justify-between text-sm">
-                <span className="text-text-secondary">Doctor:</span>
-                <span className="font-semibold text-text-primary">
+                <span className="text-text-secondary dark:text-text-secondary-dark">Doctor:</span>
+                <span className="font-semibold text-text-primary dark:text-text-primary-dark">
                   Dr. {payment.doctorId.name}
                 </span>
               </div>
@@ -89,8 +89,8 @@ export default function PaymentSuccess() {
             
             {payment.appointmentId && (
               <div className="flex justify-between text-sm">
-                <span className="text-text-secondary">Appointment Date:</span>
-                <span className="font-semibold text-text-primary">
+                <span className="text-text-secondary dark:text-text-secondary-dark">Appointment Date:</span>
+                <span className="font-semibold text-text-primary dark:text-text-primary-dark">
                   {new Date(payment.appointmentId.date).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
@@ -102,16 +102,16 @@ export default function PaymentSuccess() {
             
             {payment.appointmentId?.timeSlot && (
               <div className="flex justify-between text-sm">
-                <span className="text-text-secondary">Time Slot:</span>
-                <span className="font-semibold text-text-primary">
+                <span className="text-text-secondary dark:text-text-secondary-dark">Time Slot:</span>
+                <span className="font-semibold text-text-primary dark:text-text-primary-dark">
                   {payment.appointmentId.timeSlot}
                 </span>
               </div>
             )}
             
             <div className="flex justify-between text-sm">
-              <span className="text-text-secondary">Payment Date:</span>
-              <span className="font-semibold text-text-primary">
+              <span className="text-text-secondary dark:text-text-secondary-dark">Payment Date:</span>
+              <span className="font-semibold text-text-primary dark:text-text-primary-dark">
                 {new Date(payment.paymentDate).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
@@ -135,13 +135,13 @@ export default function PaymentSuccess() {
           
           <button
             onClick={() => navigate('/patient/dashboard')}
-            className="w-full bg-gray-100 text-text-primary font-semibold py-3 rounded-lg hover:bg-gray-200 transition-all"
+            className="w-full bg-gray-100 dark:bg-dark-surface text-text-primary dark:text-text-primary-dark font-semibold py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-dark-surface-hover transition-all"
           >
             Go to Dashboard
           </button>
         </div>
 
-        <p className="text-xs text-text-secondary mt-6">
+        <p className="text-xs text-text-secondary dark:text-text-secondary-dark mt-6">
           A confirmation email has been sent to your registered email address.
         </p>
       </div>

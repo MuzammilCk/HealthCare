@@ -149,8 +149,8 @@ export default function DoctorAppointments() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Appointments</h1>
-          <p className="text-gray-600">Manage your patient appointments and consultations</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark mb-2">My Appointments</h1>
+          <p className="text-gray-600 dark:text-text-secondary-dark">Manage your patient appointments and consultations</p>
         </div>
         <div className="hidden md:block">
           <ModernTableContainer>
@@ -167,8 +167,8 @@ export default function DoctorAppointments() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">My Appointments</h1>
-        <p className="text-gray-600">Manage your patient appointments and consultations</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark mb-2">My Appointments</h1>
+        <p className="text-gray-600 dark:text-text-secondary-dark">Manage your patient appointments and consultations</p>
       </div>
 
       {/* Desktop Table View */}
@@ -497,9 +497,9 @@ export default function DoctorAppointments() {
       {/* Reject Modal */}
       {showRejectModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Reject Appointment</h3>
-            <p className="text-gray-600 mb-4">
+          <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-2xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-text-primary-dark mb-4">Reject Appointment</h3>
+            <p className="text-gray-600 dark:text-text-secondary-dark mb-4">
               Please provide a reason for rejecting this appointment. The patient will be notified.
             </p>
             <textarea
@@ -536,9 +536,9 @@ export default function DoctorAppointments() {
       {/* Reschedule Modal */}
       {showRescheduleModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Reschedule Appointment</h3>
-            <p className="text-gray-600 mb-4">
+          <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-2xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-text-primary-dark mb-4">Reschedule Appointment</h3>
+            <p className="text-gray-600 dark:text-text-secondary-dark mb-4">
               Select a new date and time for this appointment. The patient will be notified.
             </p>
             <div className="space-y-4">

@@ -36,6 +36,10 @@ export default function ProfileButton() {
       </button>
 
       {isOpen && (
+        <div className="profile-backdrop" onClick={() => setIsOpen(false)}></div>
+      )}
+
+      {isOpen && (
         <div className="profile-menu">
           {/* --- MODIFIED HEADER --- */}
           <div className="profile-menu-header">

@@ -102,8 +102,8 @@ export default function PatientFile() {
       </h1>
 
       {/* Search Section */}
-      <div className="bg-white p-6 rounded-xl shadow-card mb-6">
-        <h2 className="text-lg font-semibold mb-4">Search Patient</h2>
+      <div className="bg-white dark:bg-bg-card-dark p-6 rounded-xl shadow-card dark:shadow-card-dark mb-6">
+        <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-text-primary-dark">Search Patient</h2>
         <div className="flex gap-3">
           <div className="flex-1 relative">
             <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
@@ -190,7 +190,7 @@ export default function PatientFile() {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-white p-4 rounded-lg shadow-card">
+            <div className="bg-white dark:bg-bg-card-dark p-4 rounded-lg shadow-card dark:shadow-card-dark">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-text-secondary">Total Appointments</p>
@@ -199,7 +199,7 @@ export default function PatientFile() {
                 <FiCalendar className="text-3xl text-blue-500" />
               </div>
             </div>
-            <div className="bg-white p-4 rounded-lg shadow-card">
+            <div className="bg-white dark:bg-bg-card-dark p-4 rounded-lg shadow-card dark:shadow-card-dark">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-text-secondary">Completed</p>
@@ -208,7 +208,7 @@ export default function PatientFile() {
                 <FiCheckCircle className="text-3xl text-green-500" />
               </div>
             </div>
-            <div className="bg-white p-4 rounded-lg shadow-card">
+            <div className="bg-white dark:bg-bg-card-dark p-4 rounded-lg shadow-card dark:shadow-card-dark">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-text-secondary">Prescriptions</p>
@@ -217,7 +217,7 @@ export default function PatientFile() {
                 <FiFileText className="text-3xl text-purple-500" />
               </div>
             </div>
-            <div className="bg-white p-4 rounded-lg shadow-card">
+            <div className="bg-white dark:bg-bg-card-dark p-4 rounded-lg shadow-card dark:shadow-card-dark">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-text-secondary">Unpaid Bills</p>
@@ -229,7 +229,7 @@ export default function PatientFile() {
           </div>
 
           {/* Tabs */}
-          <div className="bg-white rounded-xl shadow-card">
+          <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-card dark:shadow-card-dark">
             <div className="border-b border-slate-200">
               <div className="flex">
                 {[
@@ -274,7 +274,7 @@ export default function PatientFile() {
                               Patient requested correction on {new Date(patientFile.medicalHistory.correctionRequestDate).toLocaleDateString()}
                             </p>
                             {patientFile.medicalHistory.correctionRequestMessage && (
-                              <p className="text-sm text-yellow-800 mt-2 italic bg-white p-2 rounded border border-yellow-300">
+                              <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-2 italic bg-white dark:bg-yellow-900/20 p-2 rounded border border-yellow-300 dark:border-yellow-600">
                                 "{patientFile.medicalHistory.correctionRequestMessage}"
                               </p>
                             )}
@@ -524,7 +524,7 @@ export default function PatientFile() {
                           <h4 className="font-semibold mb-3 text-red-900">Allergies</h4>
                           <div className="space-y-2">
                             {patientFile.medicalHistory.allergies.map((allergy, idx) => (
-                              <div key={idx} className="bg-white p-3 rounded border border-red-200">
+                              <div key={idx} className="bg-white dark:bg-red-900/20 p-3 rounded border border-red-200 dark:border-red-600">
                                 <div className="flex justify-between">
                                   <span className="font-medium text-red-900">{allergy.name}</span>
                                   <span className={`px-2 py-1 rounded text-xs ${
@@ -550,7 +550,7 @@ export default function PatientFile() {
                           <h4 className="font-semibold mb-3 text-blue-900">Past Medical Conditions</h4>
                           <div className="space-y-2">
                             {patientFile.medicalHistory.pastConditions.map((condition, idx) => (
-                              <div key={idx} className="bg-white p-3 rounded border border-blue-200">
+                              <div key={idx} className="bg-white dark:bg-blue-900/20 p-3 rounded border border-blue-200 dark:border-blue-600">
                                 <div className="flex justify-between">
                                   <span className="font-medium text-blue-900">{condition.name}</span>
                                   <span className={`px-2 py-1 rounded text-xs ${
@@ -576,7 +576,7 @@ export default function PatientFile() {
                           <h4 className="font-semibold mb-3 text-purple-900">Current Medications</h4>
                           <div className="space-y-2">
                             {patientFile.medicalHistory.currentMedications.map((med, idx) => (
-                              <div key={idx} className="bg-white p-3 rounded border border-purple-200">
+                              <div key={idx} className="bg-white dark:bg-purple-900/20 p-3 rounded border border-purple-200 dark:border-purple-600">
                                 <p className="font-medium text-purple-900">{med.name}</p>
                                 <div className="text-sm text-purple-700 mt-1">
                                   {med.dosage && <span>Dosage: {med.dosage}</span>}

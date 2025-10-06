@@ -18,9 +18,9 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm">
-        <h3 className="text-lg font-bold mb-2">{title}</h3>
-        <p className="text-text-secondary mb-6">{message}</p>
+      <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-lg dark:shadow-card-dark p-6 w-full max-w-sm">
+        <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-text-primary-dark">{title}</h3>
+        <p className="text-text-secondary dark:text-text-secondary-dark mb-6">{message}</p>
         <div className="flex justify-end gap-3">
           <button onClick={onCancel} className="px-4 py-2 rounded-lg border">Cancel</button>
           <button onClick={onConfirm} className="px-4 py-2 rounded-lg bg-error text-white">Confirm</button>
@@ -179,7 +179,7 @@ export default function ManageAvailability() {
       {showToast && <Toast message="Availability updated." onUndo={handleUndo} onDismiss={() => setShowToast(false)} />}
       
       {/* Main Weekly Schedule */}
-      <div className="flex-1 bg-white p-4 rounded-xl shadow-card space-y-4">
+      <div className="flex-1 bg-white dark:bg-bg-card-dark p-4 rounded-xl shadow-card dark:shadow-card-dark space-y-4">
         {weekDays.map(day => {
           const dayKey = day.toLowerCase();
           return (
@@ -208,8 +208,8 @@ export default function ManageAvailability() {
       </div>
       
       {/* Actions Sidebar */}
-      <div className="w-full lg:w-64 mt-6 lg:mt-0 bg-white p-4 rounded-xl shadow-card space-y-4">
-        <h2 className="text-lg font-bold text-text-primary">Quick Actions</h2>
+      <div className="w-full lg:w-64 mt-6 lg:mt-0 bg-white dark:bg-bg-card-dark p-4 rounded-xl shadow-card dark:shadow-card-dark space-y-4">
+        <h2 className="text-lg font-bold text-text-primary dark:text-text-primary-dark">Quick Actions</h2>
         
         {/* --- IMPROVED PRESETS SECTION --- */}
         <div>

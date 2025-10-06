@@ -60,10 +60,10 @@ export default function MedicalHistoryView() {
   }
 
   const InfoSection = ({ title, children, isEmpty }) => (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-text-primary mb-4">{title}</h3>
+    <div className="bg-white dark:bg-bg-card-dark rounded-lg border border-gray-200 dark:border-dark-border p-6">
+      <h3 className="text-lg font-semibold text-text-primary dark:text-text-primary-dark mb-4">{title}</h3>
       {isEmpty ? (
-        <p className="text-text-secondary italic">No information available</p>
+        <p className="text-text-secondary dark:text-text-secondary-dark italic">No information available</p>
       ) : (
         children
       )}
@@ -297,9 +297,9 @@ export default function MedicalHistoryView() {
       {/* Correction Request Modal */}
       {showCorrectionModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6">
+          <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-2xl max-w-lg w-full p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-text-primary">Request a Correction</h2>
+              <h2 className="text-xl font-bold text-text-primary dark:text-text-primary-dark">Request a Correction</h2>
               <button
                 onClick={() => setShowCancelModal(false)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"

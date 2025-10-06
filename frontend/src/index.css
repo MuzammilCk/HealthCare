@@ -26,6 +26,28 @@ body {
   position: relative;
 }
 
+/* Global dark mode typography overrides to avoid black text on dark surfaces */
+.dark body {
+  @apply text-text-primary-dark;
+}
+
+/* Map common gray utilities to dark-friendly tints when in dark mode */
+.dark .text-gray-900 { color: theme('colors.text.primary-dark'); }
+.dark .text-gray-800 { color: theme('colors.text.primary-dark'); }
+.dark .text-gray-700 { color: theme('colors.text.primary-dark'); }
+.dark .text-gray-600 { color: theme('colors.text.secondary-dark'); }
+.dark .text-gray-500 { color: theme('colors.text.secondary-dark'); }
+.dark .text-gray-400 { color: theme('colors.text.secondary-dark'); }
+
+/* Inputs and cards default background fix in dark */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: theme('colors.dark-input');
+  color: theme('colors.text.primary-dark');
+  border-color: theme('colors.dark-border');
+}
+
 /* Custom Scrollbar Styles for the Entire App */
 @layer utilities {
   /* For Webkit-based browsers (Chrome, Safari, Edge) */

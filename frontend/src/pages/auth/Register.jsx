@@ -91,22 +91,22 @@ export default function Register() {
         </button>
       </div>
 
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={onSubmit} className="space-y-4 bg-white dark:bg-bg-card-dark p-6 rounded-2xl shadow-card dark:shadow-card-dark border border-slate-200/60 dark:border-dark-border transition-colors duration-300">
         {error && <div className="bg-error/10 border border-error/20 text-error text-sm rounded-lg p-3 text-center">{error}</div>}
         
         <div className="relative">
           <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
-          <input type="text" name="name" value={form.name} onChange={onChange} className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="Full Name" required />
+          <input type="text" name="name" value={form.name} onChange={onChange} className="w-full bg-bg-page dark:bg-dark-input border border-slate-300/70 dark:border-dark-border rounded-lg h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/50 text-text-primary dark:text-text-primary-dark transition-colors duration-300" placeholder="Full Name" required />
         </div>
 
         <div className="relative">
           <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
-          <input type="email" name="email" value={form.email} onChange={onChange} className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="your@email.com" required />
+          <input type="email" name="email" value={form.email} onChange={onChange} className="w-full bg-bg-page dark:bg-dark-input border border-slate-300/70 dark:border-dark-border rounded-lg h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/50 text-text-primary dark:text-text-primary-dark transition-colors duration-300" placeholder="your@email.com" required />
         </div>
         
         <div className="relative">
           <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
-          <input type={showPassword ? 'text' : 'password'} name="password" value={form.password} onChange={onChange} className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="Password (min. 6 characters)" required minLength={6} />
+          <input type={showPassword ? 'text' : 'password'} name="password" value={form.password} onChange={onChange} className="w-full bg-bg-page dark:bg-dark-input border border-slate-300/70 dark:border-dark-border rounded-lg h-12 pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-primary/50 text-text-primary dark:text-text-primary-dark transition-colors duration-300" placeholder="Password (min. 6 characters)" required minLength={6} />
           <button type="button" aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword(v => !v)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-text-secondary hover:text-text-primary">
             {showPassword ? <FiEyeOff /> : <FiEye />}
           </button>
@@ -158,12 +158,12 @@ export default function Register() {
           </>
         )}
 
-        <button disabled={loading} className="w-full bg-primary text-white font-bold px-4 py-2 rounded-lg h-12 transition-all duration-300 ease-in-out hover:bg-primary-light hover:shadow-lg hover:-translate-y-px disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0">
+        <button disabled={loading} className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold px-4 py-2 rounded-xl h-12 shadow-lg transition-all duration-200 hover:from-blue-600 hover:to-blue-700 focus:ring-2 focus:ring-blue-500/30 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
           {loading ? 'Creating Account…' : 'Create Account'}
         </button>
 
-        <div className="text-sm text-center text-text-secondary">
-          Already have an account? <Link to="/auth/login" className="font-medium text-primary hover:underline">Sign in</Link>
+        <div className="text-sm text-center text-text-secondary dark:text-text-secondary-dark">
+          Already have an account? <Link to="/auth/login" className="font-medium text-primary dark:text-primary-light hover:underline">Sign in</Link>
         </div>
       </form>
     </div>

@@ -43,8 +43,8 @@ export default function Prescriptions() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Prescriptions</h1>
-          <p className="text-gray-600">View and manage your prescribed medications</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark mb-2">My Prescriptions</h1>
+          <p className="text-gray-600 dark:text-text-secondary-dark">View and manage your prescribed medications</p>
         </div>
         <div className="hidden md:block">
           <ModernTableContainer>
@@ -61,8 +61,8 @@ export default function Prescriptions() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">My Prescriptions</h1>
-        <p className="text-gray-600">View and manage your prescribed medications</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark mb-2">My Prescriptions</h1>
+        <p className="text-gray-600 dark:text-text-secondary-dark">View and manage your prescribed medications</p>
       </div>
 
       {/* Desktop Table View */}
@@ -96,8 +96,8 @@ export default function Prescriptions() {
                           <FiActivity className="w-5 h-5 text-green-600" />
                         </div>
                         <div>
-                          <div className="font-semibold text-gray-900">{prescription.medication}</div>
-                          <div className="text-sm text-gray-500">Medication</div>
+                          <div className="font-semibold text-gray-900 dark:text-text-primary-dark">{prescription.medication}</div>
+                          <div className="text-sm text-gray-500 dark:text-text-secondary-dark">Medication</div>
                         </div>
                       </div>
                     </ModernTableCell>
@@ -119,10 +119,10 @@ export default function Prescriptions() {
                           size="sm"
                         />
                         <div>
-                          <div className="font-medium text-gray-900">
+                          <div className="font-medium text-gray-900 dark:text-text-primary-dark">
                             {prescription.doctorId?.name || 'Unknown Doctor'}
                           </div>
-                          <div className="text-sm text-gray-500">Doctor</div>
+                          <div className="text-sm text-gray-500 dark:text-text-secondary-dark">Doctor</div>
                         </div>
                       </div>
                     </ModernTableCell>
@@ -154,7 +154,7 @@ export default function Prescriptions() {
                       <FiActivity className="w-6 h-6 text-green-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">{prescription.medication}</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-text-primary-dark">{prescription.medication}</h3>
                       <DateTimeDisplay 
                         date={prescription.dateIssued} 
                         format="date-only"
@@ -165,7 +165,7 @@ export default function Prescriptions() {
                 
                 <div className="grid grid-cols-1 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Dosage</label>
+                    <label className="text-xs font-medium text-gray-500 dark:text-text-secondary-dark uppercase tracking-wide">Dosage</label>
                     <div className="mt-1">
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
                         {prescription.dosage}
@@ -174,18 +174,18 @@ export default function Prescriptions() {
                   </div>
                   
                   <div>
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Instructions</label>
-                    <p className="mt-1 text-gray-700">{prescription.instructions}</p>
+                    <label className="text-xs font-medium text-gray-500 dark:text-text-secondary-dark uppercase tracking-wide">Instructions</label>
+                    <p className="mt-1 text-gray-700 dark:text-text-primary-dark">{prescription.instructions}</p>
                   </div>
                   
                   <div>
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Prescribed By</label>
+                    <label className="text-xs font-medium text-gray-500 dark:text-text-secondary-dark uppercase tracking-wide">Prescribed By</label>
                     <div className="mt-1 flex items-center gap-2">
                       <Avatar 
                         name={prescription.doctorId?.name || 'Unknown Doctor'} 
                         size="sm"
                       />
-                      <span className="font-medium text-gray-900">
+                      <span className="font-medium text-gray-900 dark:text-text-primary-dark">
                         {prescription.doctorId?.name || 'Unknown Doctor'}
                       </span>
                     </div>
