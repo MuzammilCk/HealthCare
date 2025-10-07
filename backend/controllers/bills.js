@@ -96,7 +96,7 @@ exports.createBill = async (req, res) => {
         // Add to line items (store inventory item ID for later stock reduction)
         const itemTotal = inventoryItem.price * medicine.quantity;
         lineItems.push({
-          description: `${medicine.medicineName} - ${medicine.dosage} (${medicine.frequency} for ${medicine.duration})`,
+          description: `${medicine.medicineName} - ${medicine.dosage} (${medicine.frequency} times for ${medicine.duration} days)`,
           quantity: medicine.quantity,
           amount: inventoryItem.price,
           inventoryItemId: inventoryItem._id // Store for payment processing
@@ -106,13 +106,7 @@ exports.createBill = async (req, res) => {
         // NOTE: Stock is NOT reduced here - only reduced after successful payment
       }
 
-      // Add consultation fee
-      lineItems.push({
-        description: 'Consultation Fee',
-        quantity: 1,
-        amount: doctor.consultationFee || 25000
-      });
-      totalAmount += doctor.consultationFee || 25000;
+      // Consultation fee is prepaid at booking; do not add here
 
     } else {
       // MANUAL BILLING (Legacy support)

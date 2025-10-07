@@ -167,7 +167,7 @@ exports.createPrescription = async (req, res) => {
       prescribedOnlyMedicines = [], // Medicines prescribed but not billed
       diagnosis,
       notes,
-      consultationFee,
+      // consultationFee removed from manual entry; fee handled at booking
       generateBill = true         // Flag to auto-generate bill
     } = req.body;
     
@@ -278,10 +278,8 @@ exports.createPrescription = async (req, res) => {
       });
     }
 
-    // Get consultation fee (from request or doctor's default)
-    const finalConsultationFee = consultationFee !== undefined 
-      ? Math.round(consultationFee) 
-      : (doctor?.consultationFee || 25000);
+    // Consultation fee is prepaid at booking; exclude from prescription billing
+    const finalConsultationFee = 0;
 
     // Create prescription
     const prescription = new Prescription({
@@ -310,7 +308,7 @@ exports.createPrescription = async (req, res) => {
       const itemTotal = inventoryItem.price * med.quantity;
       
       lineItems.push({
-        description: `${med.medicineName} - ${med.dosage} (${med.frequency} for ${med.duration})`,
+        description: `${med.medicineName} - ${med.dosage} (${med.frequency} times for ${med.duration} days)`,
         quantity: med.quantity,
         amount: inventoryItem.price,
         inventoryItemId: inventoryItem._id
@@ -318,13 +316,7 @@ exports.createPrescription = async (req, res) => {
       totalAmount += itemTotal;
     }
 
-    // Always add doctor fee
-    lineItems.push({
-      description: 'Doctor Fee',
-      quantity: 1,
-      amount: finalConsultationFee
-    });
-    totalAmount += finalConsultationFee;
+    // Doctor fee not added to bill here; it was collected at booking
 
     // Create bill
     bill = new Bill({

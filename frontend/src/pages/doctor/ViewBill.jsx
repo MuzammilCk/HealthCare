@@ -10,6 +10,12 @@ export default function ViewBill() {
   const [bill, setBill] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Format legacy description pattern: "(N for M)" -> "(N times for M days)"
+  const formatDescription = (text) => {
+    if (typeof text !== 'string') return text;
+    return text.replace(/\((\d+)\s+for\s+(\d+)\)/g, '($1 times for $2 days)');
+  };
+
   useEffect(() => {
     const fetchBill = async () => {
       try {
@@ -120,7 +126,7 @@ export default function ViewBill() {
               <tbody>
                 {bill.items.map((item, index) => (
                   <tr key={index} className="border-b border-gray-100">
-                    <td className="py-3 px-4 text-gray-900">{item.description}</td>
+                    <td className="py-3 px-4 text-gray-900">{formatDescription(item.description)}</td>
                     <td className="py-3 px-4 text-center text-gray-700">{item.quantity}</td>
                     <td className="py-3 px-4 text-right text-gray-700">
                       ₹{(item.amount / 100).toFixed(2)}

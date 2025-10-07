@@ -11,7 +11,6 @@ import {
   FiSearch,
   FiShoppingCart,
   FiEdit,
-  FiDollarSign,
   FiPackage,
   FiAlertCircle
 } from 'react-icons/fi';
@@ -32,7 +31,7 @@ export default function CreatePrescriptionNew() {
   const [prescribedOnlyMedicines, setPrescribedOnlyMedicines] = useState([]);
   const [diagnosis, setDiagnosis] = useState('');
   const [notes, setNotes] = useState('');
-  const [consultationFee, setConsultationFee] = useState('');
+  // Doctor fee is prepaid at appointment booking; no manual entry here
   
   // Inventory search
   const [searchQuery, setSearchQuery] = useState('');
@@ -154,11 +153,10 @@ export default function CreatePrescriptionNew() {
 
   // Calculate total
   const calculateTotal = () => {
-    const medicinesTotal = billedMedicines.reduce((sum, med) => {
+    // Total is only medicines; consultation fee is prepaid at booking
+    return billedMedicines.reduce((sum, med) => {
       return sum + (med.price * med.quantity);
     }, 0);
-    const feeAmount = parseFloat(consultationFee) || 0;
-    return medicinesTotal + (feeAmount * 100); // Convert rupees to paise
   };
 
   // Submit prescription
@@ -195,7 +193,6 @@ export default function CreatePrescriptionNew() {
         prescribedOnlyMedicines: validPrescribedOnly,
         diagnosis,
         notes,
-        consultationFee: consultationFee ? parseFloat(consultationFee) * 100 : undefined,
         generateBill: validBilledMeds.length > 0
       };
 
@@ -547,28 +544,7 @@ export default function CreatePrescriptionNew() {
             </button>
           </div>
 
-          {/* Doctor Fee */}
-          <div className="bg-white dark:bg-bg-card-dark p-6 rounded-xl shadow-card dark:shadow-card-dark">
-            <h3 className="font-semibold text-lg flex items-center mb-4">
-              <FiDollarSign className="mr-2 text-primary" /> 
-              Doctor Fee
-            </h3>
-            <div className="max-w-xs">
-              <label className="block text-sm font-medium text-text-secondary mb-2">
-                Fee Amount (₹)
-              </label>
-              <input
-                type="number"
-                value={consultationFee}
-                onChange={(e) => setConsultationFee(e.target.value)}
-                placeholder="Enter doctor fee"
-                className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 px-4 focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
-              <p className="text-xs text-text-secondary mt-2">
-                Leave empty to use default fee (₹250)
-              </p>
-            </div>
-          </div>
+          {/* Doctor Fee removed: prepaid at booking */}
 
           {/* Bill Summary */}
           {billedMedicines.length > 0 && (
@@ -581,12 +557,7 @@ export default function CreatePrescriptionNew() {
                     ₹{(billedMedicines.reduce((sum, m) => sum + (m.price * m.quantity), 0) / 100).toFixed(2)}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Doctor Fee:</span>
-                  <span className="font-medium">
-                    ₹{(consultationFee || 250)}
-                  </span>
-                </div>
+                {/* Doctor fee removed from summary */}
                 <div className="border-t border-primary/20 pt-2 mt-2 flex justify-between text-lg font-bold text-primary">
                   <span>Total Amount:</span>
                   <span>₹{(calculateTotal() / 100).toFixed(2)}</span>

@@ -13,6 +13,12 @@ export default function PatientBills() {
   const [selectedBill, setSelectedBill] = useState(null);
   const [paying, setPaying] = useState(false);
 
+  // Format legacy description pattern: "(N for M)" -> "(N times for M days)"
+  const formatDescription = (text) => {
+    if (typeof text !== 'string') return text;
+    return text.replace(/\((\d+)\s+for\s+(\d+)\)/g, '($1 times for $2 days)');
+  };
+
   // Helper function to convert paise to rupees for display
   const formatAmount = (amountInPaise) => {
     const rupees = amountInPaise / 100;
@@ -170,7 +176,7 @@ export default function PatientBills() {
                 {bill.items.map((item, index) => (
                   <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                     <div className="flex-1">
-                      <p className="font-medium text-text-primary">{item.description}</p>
+                      <p className="font-medium text-text-primary">{formatDescription(item.description)}</p>
                       <p className="text-sm text-text-secondary">Quantity: {item.quantity}</p>
                     </div>
                     <div className="text-right">
