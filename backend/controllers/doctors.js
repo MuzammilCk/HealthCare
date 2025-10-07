@@ -54,40 +54,17 @@ exports.updateAppointment = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid appointment status' });
     }
 
-    // Prevent marking appointments as completed before they have started
+    // Prevent completing clearly future-dated appointments (but allow same-day regardless of time)
     if (status === 'Completed') {
       const now = new Date();
-      
-      // Parse the appointment date and time
       const appointmentDate = new Date(appt.date);
-      
-      // Extract start time from timeSlot (format: "09:00-10:00")
-      if (appt.timeSlot) {
-        const [startTimeString] = appt.timeSlot.split('-'); // e.g., "09:00"
-        const [startHours, startMinutes] = startTimeString.split(':').map(Number);
-
-        // Create appointment start datetime
-        const appointmentStartTime = new Date(appointmentDate);
-        appointmentStartTime.setHours(startHours, startMinutes, 0, 0);
-
-        // Disallow completion before appointment starts
-        if (appointmentStartTime > now) {
-          return res.status(400).json({ 
-            success: false, 
-            message: 'Cannot complete an appointment before it starts.' 
-          });
-        }
-      } else {
-        // If no timeSlot, just check the date
-        const appointmentDateOnly = new Date(appointmentDate);
-        appointmentDateOnly.setHours(23, 59, 59, 999); // End of day
-        
-        if (appointmentDateOnly > now) {
-          return res.status(400).json({ 
-            success: false, 
-            message: 'Cannot complete a future-dated appointment.' 
-          });
-        }
+      const endOfDay = new Date(appointmentDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      if (endOfDay > now && appointmentDate.toDateString() !== now.toDateString()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Cannot complete a future-dated appointment.'
+        });
       }
     }
 

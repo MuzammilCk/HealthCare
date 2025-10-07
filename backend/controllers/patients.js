@@ -732,21 +732,31 @@ exports.searchPatients = async (req, res) => {
       });
     }
 
-    // Search for patients by name or email
-    // Only return patients who have had appointments with this doctor
-    const appointments = await Appointment.find({ doctorId })
-      .distinct('patientId');
+    // Prefer patients who have interacted with this doctor, but also fall back to global search
+    const appointmentPatientIds = await Appointment.find({ doctorId }).distinct('patientId');
 
-    const patients = await User.find({
-      _id: { $in: appointments },
+    const baseCriteria = {
       role: 'patient',
       $or: [
         { name: { $regex: query, $options: 'i' } },
         { email: { $regex: query, $options: 'i' } }
       ]
-    })
-    .select('name email district photoUrl')
-    .limit(20);
+    };
+
+    // First, search among patients who had appointments with this doctor
+    const preferredPatients = await User.find({
+      ...baseCriteria,
+      _id: { $in: appointmentPatientIds }
+    }).select('name email district photoUrl').limit(20);
+
+    let patients = preferredPatients;
+
+    // If none found, perform a broader search across all patients (limited)
+    if (patients.length === 0) {
+      patients = await User.find(baseCriteria)
+        .select('name email district photoUrl')
+        .limit(20);
+    }
 
     res.json({ 
       success: true, 

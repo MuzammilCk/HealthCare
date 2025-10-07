@@ -27,10 +27,22 @@ export default function PatientDashboard() {
   }, []);
 
   const nextAppointment = useMemo(() => {
+    const toDateTime = (appt) => {
+      try {
+        const base = new Date(appt.date);
+        const startStr = (appt.timeSlot && appt.timeSlot.includes('-')) ? appt.timeSlot.split('-')[0].trim() : (appt.timeSlot || '23:59');
+        const [h, m] = startStr.includes(':') ? startStr.split(':').map(Number) : [23, 59];
+        const dt = new Date(base);
+        dt.setHours(h || 0, m || 0, 0, 0);
+        return dt;
+      } catch {
+        return new Date(appt.date);
+      }
+    };
     const now = new Date();
     return [...appointments]
-      .filter((a) => new Date(a.date) >= now && a.status === 'Scheduled')
-      .sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+      .filter((a) => a.status === 'Scheduled' && toDateTime(a) >= now)
+      .sort((a, b) => toDateTime(a) - toDateTime(b))[0];
   }, [appointments]);
 
   const recentActivity = useMemo(() => {

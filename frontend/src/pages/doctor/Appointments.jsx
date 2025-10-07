@@ -115,26 +115,24 @@ export default function DoctorAppointments() {
     }
   };
 
-  // Helper function to check if appointment is in the future
+  // Helper: an appointment should be considered "future" only if its START time is still ahead
   const isFutureAppointment = (appointment) => {
     const now = new Date();
     const appointmentDate = new Date(appointment.date);
-    
+
     if (appointment.timeSlot) {
-      // Extract end time from timeSlot (format: "09:00-10:00")
-      const endTimeString = appointment.timeSlot.split('-')[1];
-      const [hours, minutes] = endTimeString.split(':').map(Number);
-      
-      // Create appointment end datetime
-      const appointmentEndTime = new Date(appointmentDate);
-      appointmentEndTime.setHours(hours, minutes, 0, 0);
-      
-      return appointmentEndTime > now;
+      // Use slot START time (HH:MM-HH:MM)
+      const startTimeString = appointment.timeSlot.split('-')[0];
+      const [hours, minutes] = startTimeString.split(':').map(Number);
+
+      const start = new Date(appointmentDate);
+      start.setHours(hours, minutes, 0, 0);
+      return start > now; // only disable if start is in the future
     }
-    
-    // If no timeSlot, check if date is in the future
-    appointmentDate.setHours(23, 59, 59, 999);
-    return appointmentDate > now;
+
+    // If no timeSlot, future if the day is after today
+    appointmentDate.setHours(0, 0, 0, 0);
+    return appointmentDate > new Date(new Date().setHours(0, 0, 0, 0));
   };
 
   const columns = [
