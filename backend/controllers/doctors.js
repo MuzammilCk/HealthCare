@@ -54,27 +54,27 @@ exports.updateAppointment = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid appointment status' });
     }
 
-    // CRITICAL FIX: Prevent marking future appointments as completed
+    // Prevent marking appointments as completed before they have started
     if (status === 'Completed') {
       const now = new Date();
       
       // Parse the appointment date and time
       const appointmentDate = new Date(appt.date);
       
-      // Extract end time from timeSlot (format: "09:00-10:00")
+      // Extract start time from timeSlot (format: "09:00-10:00")
       if (appt.timeSlot) {
-        const endTimeString = appt.timeSlot.split('-')[1]; // e.g., "10:00"
-        const [hours, minutes] = endTimeString.split(':').map(Number);
-        
-        // Create appointment end datetime
-        const appointmentEndTime = new Date(appointmentDate);
-        appointmentEndTime.setHours(hours, minutes, 0, 0);
-        
-        // Check if appointment end time is in the future
-        if (appointmentEndTime > now) {
+        const [startTimeString] = appt.timeSlot.split('-'); // e.g., "09:00"
+        const [startHours, startMinutes] = startTimeString.split(':').map(Number);
+
+        // Create appointment start datetime
+        const appointmentStartTime = new Date(appointmentDate);
+        appointmentStartTime.setHours(startHours, startMinutes, 0, 0);
+
+        // Disallow completion before appointment starts
+        if (appointmentStartTime > now) {
           return res.status(400).json({ 
             success: false, 
-            message: 'Cannot mark a future appointment as completed. Please wait until the appointment time has passed.' 
+            message: 'Cannot complete an appointment before it starts.' 
           });
         }
       } else {
@@ -85,7 +85,7 @@ exports.updateAppointment = async (req, res) => {
         if (appointmentDateOnly > now) {
           return res.status(400).json({ 
             success: false, 
-            message: 'Cannot mark a future appointment as completed.' 
+            message: 'Cannot complete a future-dated appointment.' 
           });
         }
       }
@@ -473,16 +473,9 @@ exports.getAvailableSlots = async (req, res) => {
       !bookedSlots.includes(slot)
     );
 
-    res.json({ 
-      success: true, 
-      data: availableSlots,
-      debug: {
-        dayName,
-        totalSlots: dayAvailability.slots,
-        bookedSlots,
-        availableCount: availableSlots.length
-      }
-    });
+    // Return all structurally available (unbooked) slots for the requested date
+    // Client-side will handle any time-based filtering based on user's local time
+    res.json({ data: availableSlots });
   } catch (error) {
     console.error('Error fetching available slots:', error);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -525,10 +518,19 @@ exports.getAvailableDates = async (req, res) => {
       status: 'Scheduled'
     }).select('date timeSlot');
 
-    // Create a map of booked slots per date
+    // Helper to format date as local YYYY-MM-DD to avoid UTC shifting
+    const formatLocalYmd = (d) => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    // Create a map of booked slots per date (keyed by local date string)
     const bookedSlotsPerDate = {};
     appointments.forEach(apt => {
-      const dateStr = apt.date.toISOString().split('T')[0];
+      const aptDate = new Date(apt.date);
+      const dateStr = formatLocalYmd(aptDate);
       if (!bookedSlotsPerDate[dateStr]) {
         bookedSlotsPerDate[dateStr] = [];
       }
@@ -577,7 +579,7 @@ exports.getAvailableDates = async (req, res) => {
       }
 
       const dayName = dayNames[currentDate.getDay()];
-      const dateStr = currentDate.toISOString().split('T')[0];
+      const dateStr = formatLocalYmd(currentDate);
       
       // Calculate total available slots for this day
       const totalSlots = calculateTotalSlotsForDay(dayName);

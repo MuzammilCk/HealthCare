@@ -9,6 +9,14 @@ const formatDateToString = (date) => {
   return `${year}-${month}-${day}`;
 };
 
+// Parse a YYYY-MM-DD string as a LOCAL date (midnight local time)
+const parseLocalDateString = (ymd) => {
+  if (!ymd || typeof ymd !== 'string') return null;
+  const [y, m, d] = ymd.split('-').map(Number);
+  if (!y || !m || !d) return null;
+  return new Date(y, m - 1, d); // Local time
+};
+
 const Calendar = ({ 
   selectedDate, 
   onDateSelect, 
@@ -81,7 +89,10 @@ const Calendar = ({
     if (date < today) return true;
     
     // Disable dates before minDate if provided
-    if (minDate && date < new Date(minDate)) return true;
+    if (minDate) {
+      const min = typeof minDate === 'string' ? parseLocalDateString(minDate) : new Date(minDate);
+      if (min && date < min) return true;
+    }
     
     // Disable dates not in current month that aren't available
     const isCurrentMonth = date.getMonth() === currentMonth.getMonth();

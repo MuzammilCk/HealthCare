@@ -24,8 +24,22 @@ export default function BookAppointment() {
   const [availableDates, setAvailableDates] = useState([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [loadingDates, setLoadingDates] = useState(false);
+  // Track current time (updates every 30s) for live filtering of today's slots
+  const [nowMs, setNowMs] = useState(Date.now());
 
-  const todayIsoDate = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const todayIsoDate = useMemo(() => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`; // Local YYYY-MM-DD
+  }, []);
+
+  // Keep `nowMs` updated so that filtering reflects the passing of time
+  useEffect(() => {
+    const id = setInterval(() => setNowMs(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   // Fetch doctors with search and filters
   const fetchDoctors = async (search = '', district = filterDistrict, specializationId = selectedSpecId) => {
@@ -230,6 +244,39 @@ export default function BookAppointment() {
   const [availableSlots, setAvailableSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
 
+  // Derive filtered and sorted slots based on user's local time
+  const filteredAndSortedSlots = useMemo(() => {
+    if (!Array.isArray(availableSlots) || availableSlots.length === 0) return [];
+    if (!form?.date) return availableSlots.slice();
+
+    // Determine if selected date is today in user's local time
+    const now = new Date(nowMs);
+    const todayLocal = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const isToday = form.date === todayLocal;
+
+    const parseTimeToMinutes = (timeStr) => {
+      const [h, m] = timeStr.split(':').map(Number);
+      return h * 60 + m;
+    };
+
+    // Filter: if today, only keep slots whose start time is > now + 10 minutes
+    const filtered = availableSlots.filter((slot) => {
+      if (!isToday) return true;
+      const start = slot.split('-')[0]; // format HH:MM-HH:MM
+      const [currentH, currentM] = [now.getHours(), now.getMinutes()];
+      const currentMinutes = currentH * 60 + currentM;
+      const slotMinutes = parseTimeToMinutes(start);
+      return slotMinutes > currentMinutes + 10;
+    });
+
+    // Sort slots by start time (ascending)
+    return filtered.sort((a, b) => {
+      const aMins = parseTimeToMinutes(a.split('-')[0]);
+      const bMins = parseTimeToMinutes(b.split('-')[0]);
+      return aMins - bMins;
+    });
+  }, [availableSlots, form?.date, nowMs]);
+
   // Fetch available slots when doctor and date are selected
   useEffect(() => {
     const fetchAvailableSlots = async () => {
@@ -399,10 +446,10 @@ export default function BookAppointment() {
               </div>
               <AppSelect
                 label="Time Slot"
-                placeholder={loadingSlots ? "Loading slots..." : availableSlots.length === 0 && form.date ? "No slots available" : "Select a time"}
+                placeholder={loadingSlots ? "Loading slots..." : filteredAndSortedSlots.length === 0 && form.date ? "No slots available" : "Select a time"}
                 value={form.timeSlot}
                 onChange={(value) => setForm({ ...form, timeSlot: value })}
-                options={availableSlots.map(slot => ({ value: slot, label: slot }))}
+                options={filteredAndSortedSlots.map(slot => ({ value: slot, label: slot }))}
                 icon={FiClock}
                 required
                 disabled={!form.date || loadingSlots}
