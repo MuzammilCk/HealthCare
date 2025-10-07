@@ -23,6 +23,11 @@ const prescriptionSchema = new mongoose.Schema(
     diagnosis: { type: String },
     notes: { type: String },
     dateIssued: { type: Date, default: Date.now },
+    status: {
+      type: String,
+      enum: ['New', 'Pending Fulfillment', 'Filled', 'Partially Filled', 'Cancelled'],
+      default: 'New'
+    },
     consultationFee: {
       type: Number,
       default: 0,

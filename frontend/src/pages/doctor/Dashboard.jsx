@@ -70,45 +70,15 @@ export default function DoctorDashboard() {
 
   // Handle stat card clicks - Cycle through appointments
   const handleTodayClick = () => {
-    const today = new Date();
-    setSelectedDate(today);
-    setCurrentMonth(today);
+    navigate('/doctor/appointments');
   };
 
   const handleScheduledClick = () => {
-    // Get all scheduled appointments sorted by date
-    const scheduledApts = appointments
-      .filter(a => a.status === 'Scheduled')
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
-    
-    if (scheduledApts.length > 0) {
-      // Cycle through scheduled appointments
-      const nextIndex = scheduledIndex % scheduledApts.length;
-      const selectedApt = scheduledApts[nextIndex];
-      const aptDate = new Date(selectedApt.date);
-      
-      setSelectedDate(aptDate);
-      setCurrentMonth(aptDate);
-      setScheduledIndex(nextIndex + 1); // Move to next for next click
-    }
+    navigate('/doctor/appointments');
   };
 
   const handleCompletedClick = () => {
-    // Get all completed appointments sorted by date (most recent first)
-    const completedApts = appointments
-      .filter(a => a.status === 'Completed')
-      .sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    if (completedApts.length > 0) {
-      // Cycle through completed appointments
-      const nextIndex = completedIndex % completedApts.length;
-      const selectedApt = completedApts[nextIndex];
-      const aptDate = new Date(selectedApt.date);
-      
-      setSelectedDate(aptDate);
-      setCurrentMonth(aptDate);
-      setCompletedIndex(nextIndex + 1); // Move to next for next click
-    }
+    navigate('/doctor/appointments');
   };
 
   const isToday = (day) => {

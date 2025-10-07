@@ -163,6 +163,7 @@ app.use('/api/mock-payments', require('./routes/mockPayments'));
 app.use('/api/bills', require('./routes/bills'));
 app.use('/api/medical-history', require('./routes/medicalHistory'));
 app.use('/api/inventory', require('./routes/inventory'));
+app.use('/api/pharmacy', require('./routes/pharmacy'));
 
 // 404 Handler - Must be after all routes
 app.use(notFound);

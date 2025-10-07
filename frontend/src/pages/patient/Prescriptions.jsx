@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { FiCalendar, FiUser, FiFileText, FiActivity } from 'react-icons/fi';
+import { FiCalendar, FiUser, FiFileText, FiActivity, FiTag } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import {
   ModernTableContainer,
@@ -14,10 +15,14 @@ import {
   MobileCard
 } from '../../components/ui';
 import { PrescriptionSkeleton } from '../../components/ui/SkeletonLoader';
+import PrescriptionDetailModal from '../../components/ui/PrescriptionDetailModal';
 
 export default function Prescriptions() {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPrescription, setSelectedPrescription] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -31,12 +36,19 @@ export default function Prescriptions() {
     })();
   }, []);
 
+  const statusColors = {
+    'New': 'bg-blue-100 text-blue-800 border-blue-200',
+    'Pending Fulfillment': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    'Filled': 'bg-green-100 text-green-800 border-green-200',
+    'Partially Filled': 'bg-indigo-100 text-indigo-800 border-indigo-200',
+    'Cancelled': 'bg-red-100 text-red-800 border-red-200',
+  };
+
   const columns = [
     { label: 'Date Issued', icon: <FiCalendar className="w-4 h-4 text-blue-500" /> },
-    { label: 'Medication', icon: <FiActivity className="w-4 h-4 text-green-500" /> },
-    { label: 'Dosage', icon: <FiFileText className="w-4 h-4 text-purple-500" /> },
-    { label: 'Instructions', icon: <FiFileText className="w-4 h-4 text-orange-500" /> },
-    { label: 'Prescribed By', icon: <FiUser className="w-4 h-4 text-teal-500" /> }
+    { label: 'Prescribed By', icon: <FiUser className="w-4 h-4 text-teal-500" /> },
+    { label: 'Status', icon: <FiTag className="w-4 h-4 text-gray-500" /> },
+    { label: 'Actions' }
   ];
 
   if (loading) {
@@ -92,28 +104,6 @@ export default function Prescriptions() {
                     
                     <ModernTableCell>
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center">
-                          <FiActivity className="w-5 h-5 text-green-600" />
-                        </div>
-                        <div>
-                          <div className="font-semibold text-gray-900 dark:text-text-primary-dark">{prescription.medication}</div>
-                          <div className="text-sm text-gray-500 dark:text-text-secondary-dark">Medication</div>
-                        </div>
-                      </div>
-                    </ModernTableCell>
-                    
-                    <ModernTableCell>
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 border border-purple-200">
-                        {prescription.dosage}
-                      </span>
-                    </ModernTableCell>
-                    
-                    <ModernTableCell className="max-w-xs">
-                      <ExpandableText text={prescription.instructions} maxLength={60} />
-                    </ModernTableCell>
-                    
-                    <ModernTableCell>
-                      <div className="flex items-center gap-3">
                         <Avatar 
                           name={prescription.doctorId?.name || 'Unknown Doctor'} 
                           size="sm"
@@ -125,6 +115,19 @@ export default function Prescriptions() {
                           <div className="text-sm text-gray-500 dark:text-text-secondary-dark">Doctor</div>
                         </div>
                       </div>
+                    </ModernTableCell>
+                    <ModernTableCell>
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[prescription.status] || 'bg-gray-100 text-gray-800 border-gray-200'}`}>
+                        {prescription.status || 'New'}
+                      </span>
+                    </ModernTableCell>
+                    <ModernTableCell>
+                      <button
+                        onClick={() => { setSelectedPrescription(prescription); setIsModalOpen(true); }}
+                        className="text-sm text-primary hover:underline"
+                      >
+                        View Details →
+                      </button>
                     </ModernTableCell>
                   </ModernTableRow>
                 ))}
@@ -165,20 +168,6 @@ export default function Prescriptions() {
                 
                 <div className="grid grid-cols-1 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-gray-500 dark:text-text-secondary-dark uppercase tracking-wide">Dosage</label>
-                    <div className="mt-1">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
-                        {prescription.dosage}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs font-medium text-gray-500 dark:text-text-secondary-dark uppercase tracking-wide">Instructions</label>
-                    <p className="mt-1 text-gray-700 dark:text-text-primary-dark">{prescription.instructions}</p>
-                  </div>
-                  
-                  <div>
                     <label className="text-xs font-medium text-gray-500 dark:text-text-secondary-dark uppercase tracking-wide">Prescribed By</label>
                     <div className="mt-1 flex items-center gap-2">
                       <Avatar 
@@ -190,12 +179,35 @@ export default function Prescriptions() {
                       </span>
                     </div>
                   </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 dark:text-text-secondary-dark uppercase tracking-wide">Status</label>
+                    <div className="mt-1">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[prescription.status] || 'bg-gray-100 text-gray-800 border-gray-200'}`}>
+                        {prescription.status || 'New'}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <button
+                      onClick={() => { setSelectedPrescription(prescription); setIsModalOpen(true); }}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      View Details →
+                    </button>
+                  </div>
                 </div>
               </div>
             </MobileCard>
           ))
         )}
       </div>
+
+      {/* Inline modal for details */}
+      <PrescriptionDetailModal
+        open={isModalOpen}
+        prescription={selectedPrescription}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { FiSearch, FiCalendar, FiClock, FiX, FiMapPin } from 'react-icons/fi';
 import { AppSelect, Calendar } from '../../components/ui';
+import DoctorProfileModal from '../../components/ui/DoctorProfileModal';
 import { KERALA_DISTRICTS } from '../../constants';
 
 export default function BookAppointment() {
@@ -14,6 +15,7 @@ export default function BookAppointment() {
   const [filterDistrict, setFilterDistrict] = useState(user?.district || '');
   const [selectedSpecId, setSelectedSpecId] = useState(null);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [profileDoctor, setProfileDoctor] = useState(null);
   const [form, setForm] = useState({ date: '', timeSlot: '' });
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
@@ -374,12 +376,17 @@ export default function BookAppointment() {
                       </p>
                     )}
                     <p className="text-xs text-text-secondary mt-1">{doc.qualifications}</p>
-                    <p className="text-sm font-semibold mt-1 text-yellow-500">{typeof doc.averageRating === 'number' ? `${doc.averageRating} ★` : 'No rating'}</p>
+                    <p className="text-sm font-semibold mt-1 text-yellow-500">{typeof doc.averageRating === 'number' ? `${Number(doc.averageRating).toFixed(1)} ★` : 'No rating'}</p>
                   </div>
                 </div>
-                <button onClick={() => setSelectedDoctor(doc)} className="bg-primary text-white font-bold px-4 py-2 rounded-lg hover:bg-primary-light transition-transform hover:scale-105">
-                  View Availability
-                </button>
+                <div className="flex gap-2">
+                  <button onClick={() => setProfileDoctor(doc)} className="bg-gray-100 text-gray-800 font-semibold px-4 py-2 rounded-lg hover:bg-gray-200">
+                    View Profile
+                  </button>
+                  <button onClick={() => setSelectedDoctor(doc)} className="bg-primary text-white font-bold px-4 py-2 rounded-lg hover:bg-primary-light transition-transform hover:scale-105">
+                    View Availability
+                  </button>
+                </div>
               </div>
             ))
           ) : (
@@ -404,12 +411,12 @@ export default function BookAppointment() {
         <>
           {/* Backdrop (covers viewport) */}
           <div
-            className="fixed inset-0 z-[1000] bg-white/10 backdrop-blur-sm backdrop-saturate-150 animate-fade-in-fast"
+            className="fixed inset-0 z-[1200] bg-white/10 backdrop-blur-sm backdrop-saturate-150 animate-fade-in-fast"
             onClick={() => setSelectedDoctor(null)}
           />
 
           {/* Modal (centered to viewport, not parent) */}
-          <div className="fixed z-[1001] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-bg-card-dark rounded-xl shadow-xl dark:shadow-card-dark p-6">
+          <div className="fixed z-[1201] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-bg-card-dark rounded-xl shadow-xl dark:shadow-card-dark p-6">
             <button onClick={() => setSelectedDoctor(null)} className="absolute top-4 right-4 text-text-secondary hover:text-text-primary">
               <FiX size={24} />
             </button>
@@ -497,6 +504,11 @@ export default function BookAppointment() {
           </div>
           <style>{`.animate-fade-in-fast { animation: fade-in 0.2s ease-out forwards; }`}</style>
         </>,
+        document.body
+      )}
+
+      {profileDoctor && createPortal(
+        <DoctorProfileModal open={!!profileDoctor} doctor={profileDoctor} onClose={() => setProfileDoctor(null)} />,
         document.body
       )}
     </div>

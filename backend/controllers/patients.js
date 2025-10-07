@@ -311,6 +311,32 @@ exports.getPrescriptions = async (req, res) => {
   }
 };
 
+// Get a single prescription for the logged-in patient
+exports.getPrescriptionById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const patientId = req.user.id;
+
+    const prescription = await Prescription.findById(id)
+      .populate('patientId', 'name email')
+      .populate('doctorId', 'name')
+      .populate('appointmentId', 'date timeSlot status');
+
+    if (!prescription) {
+      return res.status(404).json({ success: false, message: 'Prescription not found' });
+    }
+
+    if (prescription.patientId._id.toString() !== patientId) {
+      return res.status(403).json({ success: false, message: 'Unauthorized access' });
+    }
+
+    res.json({ success: true, data: prescription });
+  } catch (error) {
+    console.error('Error fetching patient prescription:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
 exports.cancelAppointment = async (req, res) => {
   try {
     const { appointmentId } = req.params;

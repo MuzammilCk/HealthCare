@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema(
       match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,})+$/, 'Please provide a valid email'],
     },
     password: { type: String, required: true, minlength: 6, select: false },
-    role: { type: String, enum: ['patient', 'doctor', 'admin'], default: 'patient' },
+    role: { type: String, enum: ['patient', 'doctor', 'admin', 'pharmacist'], default: 'patient' },
     status: { type: String, enum: ['active', 'pending_approval'], default: 'active' },
     district: { type: String, trim: true },
     photoUrl: { type: String, default: '' },

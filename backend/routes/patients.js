@@ -6,6 +6,7 @@ const {
   bookAppointment,
   getAppointments,
   getPrescriptions,
+  getPrescriptionById,
   rateAppointment,
   cancelAppointment,
   getPatientFile,
@@ -23,6 +24,7 @@ router.route('/appointments').get(authorize('patient'), getAppointments).post(au
 router.post('/appointments/:id/cancel', authorize('patient'), cancelAppointment);
 router.post('/appointments/:appointmentId/rate', authorize('patient'), rateAppointment);
 router.get('/prescriptions', authorize('patient'), getPrescriptions);
+router.get('/prescriptions/:id', authorize('patient'), getPrescriptionById);
 
 // Doctor-only routes for patient file access
 router.get('/search', authorize('doctor'), searchPatients);

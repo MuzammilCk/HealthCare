@@ -48,8 +48,21 @@ import ManageInventory from './pages/admin/ManageInventory'
 import AboutUs from './pages/AboutUs';
 import Contact from './pages/Contact';
 import Profile from './pages/Profile';
+import PharmacistDashboard from './pages/pharmacist/Dashboard';
+import PatientViewPrescription from './pages/patient/ViewPrescription';
 
 const router = createBrowserRouter([
+  {
+    path: '/pharmacist',
+    element: (
+      <PrivateRoute allowedRoles={['pharmacist']}>
+        <MainLayout role="pharmacist" />
+      </PrivateRoute>
+    ),
+    children: [
+      { index: true, element: <PharmacistDashboard /> },
+    ],
+  },
   {
     path: '/',
     element: <Home />,
@@ -81,6 +94,7 @@ const router = createBrowserRouter([
       { path: 'medical-history', element: <MedicalHistoryView /> },
       { path: 'appointments', element: <PatientAppointments /> },
       { path: 'prescriptions', element: <Prescriptions /> },
+      { path: 'prescriptions/:id', element: <PatientViewPrescription /> },
       { path: 'book-appointment', element: <BookAppointment /> },
       { path: 'bills', element: <PatientBills /> },
     ],
