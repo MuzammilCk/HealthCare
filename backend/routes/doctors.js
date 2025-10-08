@@ -15,7 +15,8 @@ const {
   getAvailableDates,
   markAppointmentMissed,
   rejectAppointment,
-  rescheduleAppointment
+  rescheduleAppointment,
+  scheduleFollowUp
 } = require('../controllers/doctors');
 
 const router = express.Router();
@@ -35,6 +36,7 @@ router.put('/appointments/:id', updateAppointment);
 router.post('/appointments/:id/mark-missed', markAppointmentMissed);
 router.post('/appointments/:id/reject', rejectAppointment);
 router.put('/appointments/:id/reschedule', rescheduleAppointment);
+router.post('/appointments/:id/follow-up', scheduleFollowUp);
 router.put('/availability', updateAvailability);
 router.post('/prescriptions', createPrescription);
 router.get('/prescriptions', getDoctorPrescriptions);

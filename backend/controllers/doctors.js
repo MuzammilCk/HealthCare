@@ -111,6 +111,89 @@ exports.updateAvailability = async (req, res) => {
   }
 };
 
+/**
+ * POST /api/doctors/appointments/:id/follow-up
+ * Doctor schedules a follow-up appointment for a completed appointment
+ */
+exports.scheduleFollowUp = async (req, res) => {
+  try {
+    const doctorId = req.user.id;
+    const { id: originalAppointmentId } = req.params;
+    const { date, timeSlot, notes } = req.body;
+
+    // Validate role
+    if (req.user.role !== 'doctor') {
+      return res.status(403).json({ success: false, message: 'Only doctors can schedule follow-ups' });
+    }
+
+    if (!date || !timeSlot) {
+      return res.status(400).json({ success: false, message: 'Date and time slot are required' });
+    }
+
+    // Find original appointment and validate ownership and status
+    const originalAppt = await Appointment.findById(originalAppointmentId)
+      .populate('patientId', 'name')
+      .populate('doctorId', 'name');
+
+    if (!originalAppt) {
+      return res.status(404).json({ success: false, message: 'Original appointment not found' });
+    }
+
+    if (originalAppt.doctorId._id.toString() !== doctorId) {
+      return res.status(403).json({ success: false, message: 'You can only schedule follow-ups for your own appointments' });
+    }
+
+    // Allow follow-up from Scheduled, Completed, or Missed appointments
+    if (!['Scheduled', 'Completed', 'Missed'].includes(originalAppt.status)) {
+      return res.status(400).json({ success: false, message: 'Follow-up can be scheduled only for valid appointments' });
+    }
+
+    // Normalize date and ensure slot availability
+    const normalizedDate = normalizeDateToUTC(date);
+    const existing = await Appointment.findOne({
+      doctorId,
+      date: normalizedDate,
+      timeSlot,
+      status: 'Scheduled'
+    });
+
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'Selected time slot is not available' });
+    }
+
+    // Create follow-up appointment
+    const followUp = await Appointment.create({
+      patientId: originalAppt.patientId._id || originalAppt.patientId,
+      doctorId,
+      date: normalizedDate,
+      timeSlot,
+      status: 'Scheduled',
+      notes: notes || '',
+      bookingFeeStatus: 'unpaid'
+    });
+
+    // If the original appointment is still Scheduled, mark it Completed automatically
+    if (originalAppt.status === 'Scheduled') {
+      originalAppt.status = 'Completed';
+      await originalAppt.save();
+    }
+
+    // Notify patient
+    await createNotification(
+      originalAppt.patientId._id || originalAppt.patientId,
+      `A follow-up appointment with Dr. ${originalAppt.doctorId.name} has been scheduled on ${new Date(normalizedDate).toLocaleDateString()} at ${timeSlot}.`,
+      '/patient/appointments',
+      'appointment',
+      { appointmentId: followUp._id, relatedTo: originalAppt._id, type: 'follow_up' }
+    );
+
+    return res.status(201).json({ success: true, message: 'Follow-up scheduled', data: { followUp } });
+  } catch (error) {
+    console.error('Error scheduling follow-up:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
 // Doctor submits KYC documents and moves status to Submitted
 exports.submitKyc = async (req, res) => {
   try {
