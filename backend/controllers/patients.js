@@ -311,6 +311,174 @@ exports.getPrescriptions = async (req, res) => {
   }
 };
 
+/**
+ * POST /api/patients/refill/quote
+ * Body: { items: [{ prescriptionId, medicineName, quantity }] }
+ * Returns a computed bill quote for selected medicines using hospital inventory prices when available.
+ */
+exports.getRefillQuote = async (req, res) => {
+  try {
+    const patientId = req.user.id;
+    const { items } = req.body;
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, message: 'No items selected' });
+    }
+
+    const Inventory = require('../models/Inventory');
+    const Doctor = require('../models/Doctor');
+
+    // Load all referenced prescriptions that belong to this patient
+    const prescriptionIds = [...new Set(items.map(i => i.prescriptionId).filter(Boolean))];
+    const prescriptions = await Prescription.find({ _id: { $in: prescriptionIds }, patientId })
+      .select('doctorId');
+
+    // Build quick lookup maps
+    const prescIdToDoctorId = new Map();
+    prescriptions.forEach(p => prescIdToDoctorId.set(p._id.toString(), p.doctorId.toString()));
+
+    // Cache doctor profiles -> hospitalId to avoid repeated queries
+    const doctorToHospitalCache = new Map();
+
+    const lineItems = [];
+    let totalAmount = 0;
+
+    for (const it of items) {
+      const prescriptionId = String(it.prescriptionId || '');
+      const medicineName = String(it.medicineName || '').trim();
+      const quantity = Math.max(1, Number(it.quantity || 1));
+
+      if (!prescIdToDoctorId.has(prescriptionId)) {
+        return res.status(400).json({ success: false, message: 'Invalid prescription selected' });
+      }
+
+      const doctorUserId = prescIdToDoctorId.get(prescriptionId);
+
+      // Resolve hospital for the doctor
+      let hospitalId = doctorToHospitalCache.get(doctorUserId) || null;
+      if (hospitalId === null && !doctorToHospitalCache.has(doctorUserId)) {
+        const docProfile = await Doctor.findOne({ userId: doctorUserId }).select('hospitalId');
+        hospitalId = docProfile?.hospitalId || null;
+        doctorToHospitalCache.set(doctorUserId, hospitalId);
+      }
+
+      let unitPrice = 0;
+      let inventoryItemId = null;
+      if (hospitalId && medicineName) {
+        const inv = await Inventory.findOne({
+          hospitalId,
+          medicineName: { $regex: new RegExp(`^${medicineName}$`, 'i') },
+          isActive: true
+        });
+        if (inv) {
+          unitPrice = inv.price;
+          inventoryItemId = inv._id;
+        }
+      }
+
+      lineItems.push({ description: medicineName, quantity, amount: unitPrice, inventoryItemId });
+      totalAmount += unitPrice * quantity;
+    }
+
+    return res.json({ success: true, data: { items: lineItems, totalAmount: Math.round(totalAmount) } });
+  } catch (error) {
+    console.error('Error computing refill quote:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+/**
+ * POST /api/patients/refill
+ * Body: { items: [{ prescriptionId, medicineName, quantity }] }
+ * Creates a Bill for the selected refill medicines using hospital inventory pricing.
+ * Constraints: all items must belong to the same prescription (same doctor context).
+ */
+exports.createRefillBill = async (req, res) => {
+  try {
+    const patientId = req.user.id;
+    const { items, notes } = req.body;
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, message: 'No items selected' });
+    }
+
+    const Inventory = require('../models/Inventory');
+    const Doctor = require('../models/Doctor');
+    const Bill = require('../models/Bill');
+
+    // Validate prescriptions belong to patient and enforce single-prescription selection
+    const prescriptionIds = [...new Set(items.map(i => String(i.prescriptionId || '')).filter(Boolean))];
+    if (prescriptionIds.length !== 1) {
+      return res.status(400).json({ success: false, message: 'Select medicines from a single prescription for refill' });
+    }
+
+    const prescription = await Prescription.findOne({ _id: prescriptionIds[0], patientId })
+      .select('doctorId appointmentId');
+    if (!prescription) {
+      return res.status(404).json({ success: false, message: 'Prescription not found' });
+    }
+
+    const doctorUserId = prescription.doctorId.toString();
+    const docProfile = await Doctor.findOne({ userId: doctorUserId }).select('hospitalId');
+    if (!docProfile || !docProfile.hospitalId) {
+      return res.status(400).json({ success: false, message: 'Doctor has no associated hospital for inventory pricing' });
+    }
+
+    const hospitalId = docProfile.hospitalId;
+
+    const lineItems = [];
+    let totalAmount = 0;
+
+    for (const it of items) {
+      const medicineName = String(it.medicineName || '').trim();
+      const quantity = Math.max(1, Number(it.quantity || 1));
+
+      const inv = await Inventory.findOne({
+        hospitalId,
+        medicineName: { $regex: new RegExp(`^${medicineName}$`, 'i') },
+        isActive: true
+      });
+
+      if (!inv) {
+        return res.status(404).json({ success: false, message: `Medicine "${medicineName}" not found in hospital inventory` });
+      }
+
+      // Stock is validated on payment in the existing flow; still do a soft check here
+      if (inv.stockQuantity < quantity) {
+        return res.status(400).json({ success: false, message: `Insufficient stock for "${medicineName}". Available: ${inv.stockQuantity}, Required: ${quantity}` });
+      }
+
+      lineItems.push({
+        description: medicineName,
+        quantity,
+        amount: inv.price,
+        inventoryItemId: inv._id
+      });
+      totalAmount += inv.price * quantity;
+    }
+
+    const bill = new Bill({
+      appointmentId: prescription.appointmentId, // tie to original consultation
+      patientId,
+      doctorId: doctorUserId,
+      items: lineItems,
+      totalAmount: Math.round(totalAmount),
+      notes: notes || 'Prescription refill',
+      status: 'unpaid'
+    });
+
+    await bill.save();
+
+    await bill.populate('doctorId', 'name');
+    await bill.populate('appointmentId', 'date timeSlot');
+
+    return res.status(201).json({ success: true, message: 'Refill bill created', data: { bill } });
+  } catch (error) {
+    console.error('Error creating refill bill:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
 // Get a single prescription for the logged-in patient
 exports.getPrescriptionById = async (req, res) => {
   try {

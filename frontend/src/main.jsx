@@ -20,6 +20,7 @@ import MedicalHistory from './pages/patient/MedicalHistory'
 import MedicalHistoryView from './pages/patient/MedicalHistoryView'
 import PatientAppointments from './pages/patient/Appointments'
 import Prescriptions from './pages/patient/Prescriptions'
+import RefillPrescription from './pages/patient/RefillPrescription'
 import BookAppointment from './pages/patient/BookAppointment'
 import SymptomChecker from './pages/patient/SymptomChecker'
 import PatientBills from './pages/patient/Bills'
@@ -94,6 +95,7 @@ const router = createBrowserRouter([
       { path: 'medical-history', element: <MedicalHistoryView /> },
       { path: 'appointments', element: <PatientAppointments /> },
       { path: 'prescriptions', element: <Prescriptions /> },
+      { path: 'refill-prescription', element: <RefillPrescription /> },
       { path: 'prescriptions/:id', element: <PatientViewPrescription /> },
       { path: 'book-appointment', element: <BookAppointment /> },
       { path: 'bills', element: <PatientBills /> },

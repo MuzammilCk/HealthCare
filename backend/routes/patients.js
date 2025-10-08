@@ -7,6 +7,8 @@ const {
   getAppointments,
   getPrescriptions,
   getPrescriptionById,
+  getRefillQuote,
+  createRefillBill,
   rateAppointment,
   cancelAppointment,
   getPatientFile,
@@ -25,6 +27,8 @@ router.post('/appointments/:id/cancel', authorize('patient'), cancelAppointment)
 router.post('/appointments/:appointmentId/rate', authorize('patient'), rateAppointment);
 router.get('/prescriptions', authorize('patient'), getPrescriptions);
 router.get('/prescriptions/:id', authorize('patient'), getPrescriptionById);
+router.post('/refill/quote', authorize('patient'), getRefillQuote);
+router.post('/refill', authorize('patient'), createRefillBill);
 
 // Doctor-only routes for patient file access
 router.get('/search', authorize('doctor'), searchPatients);
