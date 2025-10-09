@@ -1,6 +1,7 @@
 // backend/controllers/aiSymptomChecker.js
 
 const axios = require("axios");
+const SymptomCheckLog = require("../models/SymptomCheckLog");
 
 exports.checkSymptoms = async (req, res) => {
   try {
@@ -118,7 +119,7 @@ Your entire response **must** be valid JSON and nothing else:
 
     // ------------------ OPENROUTER REQUEST ------------------
     const requestPayload = {
-      model: "openai/gpt-4o-mini", // Reliable & fast model
+      model: "x-ai/grok-code-fast-1", // Reliable & fast model
       messages: [{ role: "user", content: masterPrompt }],
     };
 
@@ -155,6 +156,18 @@ Your entire response **must** be valid JSON and nothing else:
 
     // Handle invalid input or malformed response
     if (jsonResponse.error) {
+      // Log invalid input response as well
+      try {
+        await SymptomCheckLog.create({
+          userId: req.user.id,
+          input: { symptoms: symptoms.trim(), age, sex: sex.toLowerCase() },
+          error: `${jsonResponse.error}: ${jsonResponse.message}`,
+          response: jsonResponse,
+          meta: { ip: req.ip, userAgent: req.headers["user-agent"] }
+        });
+      } catch (logErr) {
+        console.error("Failed to save invalid-input SymptomCheckLog:", logErr.message);
+      }
       return res.status(400).json({
         success: false,
         error: jsonResponse.error,
@@ -179,6 +192,25 @@ Your entire response **must** be valid JSON and nothing else:
       }, Conditions found: ${jsonResponse.potentialConditions.length}`
     );
 
+    // Persist log
+    try {
+      await SymptomCheckLog.create({
+        userId: req.user.id,
+        input: { symptoms: symptoms.trim(), age, sex: sex.toLowerCase() },
+        resultSummary: {
+          potentialConditionsCount: jsonResponse.potentialConditions.length,
+          firstAidSuggestion: jsonResponse.firstAidSuggestion || ""
+        },
+        response: jsonResponse,
+        meta: {
+          ip: req.ip,
+          userAgent: req.headers["user-agent"]
+        }
+      });
+    } catch (logErr) {
+      console.error("Failed to save SymptomCheckLog:", logErr.message);
+    }
+
     res.status(200).json({
       success: true,
       data: jsonResponse,
@@ -189,6 +221,24 @@ Your entire response **must** be valid JSON and nothing else:
       "Error in AI Symptom Checker:",
       error.response ? error.response.data : error.message
     );
+
+    // Persist failure log if validation already passed
+    try {
+      const { symptoms, age, sex } = req.body || {};
+      if (symptoms && age && sex && req.user?.id) {
+        await SymptomCheckLog.create({
+          userId: req.user.id,
+          input: { symptoms: String(symptoms).trim(), age: Number(age), sex: String(sex).toLowerCase() },
+          error: error.message || "Unknown error",
+          meta: {
+            ip: req.ip,
+            userAgent: req.headers["user-agent"]
+          }
+        });
+      }
+    } catch (logErr) {
+      console.error("Failed to save error SymptomCheckLog:", logErr.message);
+    }
 
     if (error.response?.status === 401) {
       return res.status(500).json({
@@ -234,5 +284,58 @@ Your entire response **must** be valid JSON and nothing else:
       message:
         "An unexpected error occurred while analyzing symptoms. Please try again later.",
     });
+  }
+};
+
+// GET /api/ai/check-symptoms/history (patient self)
+exports.getMySymptomChecks = async (req, res) => {
+  try {
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 100);
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      SymptomCheckLog.find({ userId: req.user.id })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .select('-response')
+        .lean(),
+      SymptomCheckLog.countDocuments({ userId: req.user.id })
+    ]);
+
+    res.json({
+      success: true,
+      data: items,
+      pagination: { page, limit, total }
+    });
+  } catch (e) {
+    res.status(500).json({ success: false, message: 'Failed to fetch history' });
+  }
+};
+
+// GET /api/ai/check-symptoms/admin (admin only)
+exports.getAllSymptomChecks = async (req, res) => {
+  try {
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 200);
+    const skip = (page - 1) * limit;
+
+    const filter = {};
+    if (req.query.userId) filter.userId = req.query.userId;
+
+    const [items, total] = await Promise.all([
+      SymptomCheckLog.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate('userId', 'name email role')
+        .lean(),
+      SymptomCheckLog.countDocuments(filter)
+    ]);
+
+    res.json({ success: true, data: items, pagination: { page, limit, total } });
+  } catch (e) {
+    res.status(500).json({ success: false, message: 'Failed to fetch logs' });
   }
 };
