@@ -318,9 +318,3 @@ Please keep pull requests focused and describe the change clearly.
 No license has been published for this repository yet. Until a `LICENSE` file is added, all rights are reserved by default — open an issue if you'd like to discuss reuse terms. [MIT](https://choosealicense.com/licenses/mit/) is a common, permissive default for a project at this stage.
 
 ---
-
-<div align="center">
-
-Built by [@MuzammilCk](https://github.com/MuzammilCk)
-
-</div>
