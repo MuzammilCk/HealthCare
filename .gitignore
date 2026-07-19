@@ -66,3 +66,4 @@ nyc_output/
 *.tmp
 *.swp
 *.swo
+*.patch

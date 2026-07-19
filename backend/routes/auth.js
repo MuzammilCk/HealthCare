@@ -32,17 +32,28 @@ router.post(
       .trim()
       .escape()
       .withMessage('District is required'),
+    // SECURITY (defense-in-depth): this validator previously allowed
+    // role='admin' to pass through to the controller, relying entirely on
+    // controllers/auth.js's separate selfRegisterRoles whitelist to reject
+    // it. That whitelist does correctly reject it today, but the two lists
+    // disagreeing is fragile - a future edit to either one in isolation
+    // could silently reopen self-service admin registration. Keep both in
+    // sync: only patient/doctor may self-register.
     check('role', 'Role must be either patient or doctor')
       .optional()
-      .isIn(['patient', 'doctor', 'admin'])
-      .withMessage('Role must be patient, doctor, or admin'),
+      .isIn(['patient', 'doctor'])
+      .withMessage('Role must be patient or doctor'),
   ],
   register
 );
 
 router.post(
   '/login',
-  rateLimitSensitiveOps(15 * 60 * 1000, 50), // 50 attempts per 15 minutes
+  // SECURITY: was 50 attempts/15min, which does little to deter credential
+  // stuffing / brute force against a healthcare app holding PHI. 10/15min
+  // still comfortably covers legitimate typos while meaningfully slowing
+  // automated guessing.
+  rateLimitSensitiveOps(15 * 60 * 1000, 10),
   [
     check('email', 'Please include a valid email')
       .isEmail()

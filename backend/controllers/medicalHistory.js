@@ -15,6 +15,20 @@ exports.getPatientMedicalHistory = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Patient not found' });
     }
 
+    // SECURITY: doctors (not admins) must have an actual care relationship
+    // with this patient. Route-level authorize('doctor','admin') only
+    // checked role, so any doctor could read any patient's allergies,
+    // conditions, medications, and surgeries by guessing a patientId.
+    if (req.user.role === 'doctor') {
+      const { hasCareRelationship } = require('../utils/authorization');
+      if (!(await hasCareRelationship(req.user.id, patientId))) {
+        return res.status(403).json({
+          success: false,
+          message: 'You can only view medical history for patients who have an appointment with you'
+        });
+      }
+    }
+
     let medicalHistory = await MedicalHistory.findOne({ patientId })
       .populate('createdBy', 'name role')
       .populate('lastUpdatedBy', 'name role')
@@ -48,6 +62,20 @@ exports.updatePatientMedicalHistory = async (req, res) => {
     const patient = await User.findById(patientId);
     if (!patient || patient.role !== 'patient') {
       return res.status(404).json({ success: false, message: 'Patient not found' });
+    }
+
+    // SECURITY: a doctor may only WRITE to a patient's medical history if
+    // they have an actual care relationship. Previously any doctor account
+    // could edit (not just read) any patient's allergies/conditions/meds -
+    // a falsified record is a direct patient-safety risk.
+    if (req.user.role === 'doctor') {
+      const { hasCareRelationship } = require('../utils/authorization');
+      if (!(await hasCareRelationship(req.user.id, patientId))) {
+        return res.status(403).json({
+          success: false,
+          message: 'You can only update medical history for patients who have an appointment with you'
+        });
+      }
     }
 
     let medicalHistory = await MedicalHistory.findOne({ patientId });
@@ -195,6 +223,17 @@ exports.approveMedicalHistory = async (req, res) => {
     const patient = await User.findById(patientId);
     if (!patient || patient.role !== 'patient') {
       return res.status(404).json({ success: false, message: 'Patient not found' });
+    }
+
+    // SECURITY: same care-relationship gate as read/update above.
+    if (req.user.role === 'doctor') {
+      const { hasCareRelationship } = require('../utils/authorization');
+      if (!(await hasCareRelationship(doctorId, patientId))) {
+        return res.status(403).json({
+          success: false,
+          message: 'You can only approve medical history for patients who have an appointment with you'
+        });
+      }
     }
 
     let medicalHistory = await MedicalHistory.findOne({ patientId });

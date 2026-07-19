@@ -109,7 +109,21 @@ global.sendNotification = sendNotification;
 // HTTP Request Logging with Morgan
 app.use(morgan('combined', { stream: logger.stream }));
 
-// Body parser
+// Stripe webhook: MUST be registered with express.raw() BEFORE the global
+// express.json() parser below. Stripe signature verification
+// (stripe.webhooks.constructEvent) needs the exact raw request bytes; once
+// express.json() has consumed and parsed the body, the raw bytes are gone
+// and signature verification fails on every webhook delivery. This route
+// previously lived only inside routes/payments.js (which was never mounted
+// - see below - and even if it had been, it would have been mounted after
+// express.json() ran, so this bug would have applied regardless).
+app.post(
+  '/api/payments/webhook',
+  express.raw({ type: 'application/json' }),
+  require('./controllers/payments').stripeWebhook
+);
+
+// Body parser (must come after the raw-body webhook route above)
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -160,6 +174,12 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/ai/check-symptoms', require('./routes/aiSymptomChecker'));
 app.use('/api/mock-payments', require('./routes/mockPayments'));
+// NOTE: controllers/payments.js (real Stripe checkout) was fully implemented
+// but this line was missing entirely, so /api/payments/* 404'd unconditionally
+// and the only live payment path was the mock gateway above. The webhook sub-
+// route is intentionally excluded here - it's mounted separately above, with
+// express.raw(), before the global JSON parser (see comment there).
+app.use('/api/payments', require('./routes/payments'));
 app.use('/api/bills', require('./routes/bills'));
 app.use('/api/medical-history', require('./routes/medicalHistory'));
 app.use('/api/inventory', require('./routes/inventory'));

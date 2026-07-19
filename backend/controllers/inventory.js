@@ -179,18 +179,8 @@ exports.addInventoryItem = async (req, res) => {
  */
 exports.updateInventoryItem = async (req, res) => {
   try {
-    const doctorId = req.user.id;
     const { itemId } = req.params;
     const updates = req.body;
-
-    // Get doctor's hospital
-    const doctor = await Doctor.findOne({ userId: doctorId });
-    if (!doctor || !doctor.hospitalId) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Doctor not associated with any hospital' 
-      });
-    }
 
     // Find inventory item
     const item = await Inventory.findById(itemId);
@@ -198,12 +188,27 @@ exports.updateInventoryItem = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Inventory item not found' });
     }
 
-    // Verify item belongs to doctor's hospital
-    if (item.hospitalId.toString() !== doctor.hospitalId.toString()) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Unauthorized: Item belongs to different hospital' 
-      });
+    // BUG FIX: this route is authorize('doctor', 'admin'), but the hospital
+    // scoping check unconditionally did `Doctor.findOne({ userId: req.user.id })`
+    // - which is always null for an admin (admins have no Doctor profile) -
+    // so every admin request 404'd with a misleading "Doctor not associated
+    // with any hospital", even though the route explicitly permits admins.
+    // Admins manage inventory platform-wide (see controllers/admin.js), so
+    // they bypass the single-hospital scoping that applies to doctors.
+    if (req.user.role === 'doctor') {
+      const doctor = await Doctor.findOne({ userId: req.user.id });
+      if (!doctor || !doctor.hospitalId) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Doctor not associated with any hospital' 
+        });
+      }
+      if (item.hospitalId.toString() !== doctor.hospitalId.toString()) {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'Unauthorized: Item belongs to different hospital' 
+        });
+      }
     }
 
     // Update allowed fields
@@ -257,17 +262,7 @@ exports.updateInventoryItem = async (req, res) => {
  */
 exports.deleteInventoryItem = async (req, res) => {
   try {
-    const doctorId = req.user.id;
     const { itemId } = req.params;
-
-    // Get doctor's hospital
-    const doctor = await Doctor.findOne({ userId: doctorId });
-    if (!doctor || !doctor.hospitalId) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Doctor not associated with any hospital' 
-      });
-    }
 
     // Find inventory item
     const item = await Inventory.findById(itemId);
@@ -275,12 +270,21 @@ exports.deleteInventoryItem = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Inventory item not found' });
     }
 
-    // Verify item belongs to doctor's hospital
-    if (item.hospitalId.toString() !== doctor.hospitalId.toString()) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Unauthorized: Item belongs to different hospital' 
-      });
+    // Same admin-bypass fix as updateInventoryItem above.
+    if (req.user.role === 'doctor') {
+      const doctor = await Doctor.findOne({ userId: req.user.id });
+      if (!doctor || !doctor.hospitalId) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Doctor not associated with any hospital' 
+        });
+      }
+      if (item.hospitalId.toString() !== doctor.hospitalId.toString()) {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'Unauthorized: Item belongs to different hospital' 
+        });
+      }
     }
 
     // Soft delete
