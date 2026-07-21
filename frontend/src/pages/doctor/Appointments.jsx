@@ -1,6 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiCalendar, FiUser, FiActivity, FiFileText, FiCheckCircle, FiClock, FiEdit3, FiDollarSign, FiXCircle, FiAlertCircle, FiRefreshCw } from 'react-icons/fi';
+import {
+  Calendar,
+  User,
+  Activity,
+  FileText,
+  CheckCircle2,
+  Clock,
+  Pencil,
+  DollarSign,
+  AlertCircle,
+  RefreshCw,
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 import { AppSelect } from '../../components/ui';
@@ -18,6 +29,7 @@ import {
   MobileCard
 } from '../../components/ui';
 import { AppointmentSkeleton } from '../../components/ui/SkeletonLoader';
+import Reveal from '../../components/Reveal';
 
 export default function DoctorAppointments() {
   const [list, setList] = useState([]);
@@ -40,7 +52,7 @@ export default function DoctorAppointments() {
   };
 
   useEffect(() => { load(); }, []);
-  
+
   const updateAppt = async (id, payload) => {
     setUpdatingId(id);
     try {
@@ -136,26 +148,26 @@ export default function DoctorAppointments() {
   };
 
   const columns = [
-    { label: 'Date & Time', icon: <FiCalendar className="w-4 h-4 text-blue-500" /> },
-    { label: 'Patient', icon: <FiUser className="w-4 h-4 text-teal-500" /> },
-    { label: 'Status', icon: <FiActivity className="w-4 h-4 text-green-500" /> },
-    { label: 'Notes', icon: <FiFileText className="w-4 h-4 text-orange-500" /> },
-    { label: 'Actions', icon: <FiEdit3 className="w-4 h-4 text-purple-500" /> }
+    { label: 'Date & Time', icon: <Calendar className="h-4 w-4 text-brand-cyan-fg" /> },
+    { label: 'Patient', icon: <User className="h-4 w-4 text-brand-teal" /> },
+    { label: 'Status', icon: <Activity className="h-4 w-4 text-success-fg" /> },
+    { label: 'Notes', icon: <FileText className="h-4 w-4 text-amber-500" /> },
+    { label: 'Actions', icon: <Pencil className="h-4 w-4 text-brand-violet" /> }
   ];
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 bg-background text-foreground">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark mb-2">My Appointments</h1>
-          <p className="text-gray-600 dark:text-text-secondary-dark">Manage your patient appointments and consultations</p>
+          <h1 className="mb-2 font-head text-3xl font-bold tracking-tight text-foreground">My Appointments</h1>
+          <p className="text-muted-foreground">Manage your patient appointments and consultations</p>
         </div>
         <div className="hidden md:block">
           <ModernTableContainer>
             <AppointmentSkeleton count={5} />
           </ModernTableContainer>
         </div>
-        <div className="md:hidden space-y-4">
+        <div className="space-y-4 md:hidden">
           <AppointmentSkeleton count={3} />
         </div>
       </div>
@@ -163,11 +175,13 @@ export default function DoctorAppointments() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark mb-2">My Appointments</h1>
-        <p className="text-gray-600 dark:text-text-secondary-dark">Manage your patient appointments and consultations</p>
-      </div>
+    <div className="space-y-6 bg-background text-foreground">
+      <Reveal>
+        <div>
+          <h1 className="mb-2 font-head text-3xl font-bold tracking-tight text-foreground">My Appointments</h1>
+          <p className="text-muted-foreground">Manage your patient appointments and consultations</p>
+        </div>
+      </Reveal>
 
       {/* Desktop Table View */}
       <div className="hidden lg:block">
@@ -177,7 +191,7 @@ export default function DoctorAppointments() {
         >
           {list.length === 0 ? (
             <EmptyState
-              icon={<FiCalendar className="w-8 h-8 text-gray-400" />}
+              icon={<Calendar className="h-8 w-8 text-muted-foreground" />}
               title="No Appointments Scheduled"
               description="You don't have any appointments yet. They will appear here when patients book with you."
             />
@@ -188,38 +202,38 @@ export default function DoctorAppointments() {
                 {list.map((appointment, index) => (
                   <ModernTableRow key={appointment._id} isEven={index % 2 === 0}>
                     <ModernTableCell>
-                      <DateTimeDisplay 
-                        date={appointment.date} 
+                      <DateTimeDisplay
+                        date={appointment.date}
                         time={appointment.timeSlot}
                       />
                     </ModernTableCell>
-                    
+
                     <ModernTableCell>
                       <div className="flex items-center gap-3">
-                        <Avatar 
-                          name={appointment.patientId?.name || 'Unknown Patient'} 
+                        <Avatar
+                          name={appointment.patientId?.name || 'Unknown Patient'}
                           size="sm"
                         />
                         <div>
-                          <div className="font-medium text-gray-900">
+                          <div className="font-medium text-foreground">
                             {appointment.patientId?.name || 'Unknown Patient'}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-muted-foreground">
                             {appointment.patientId?.email || 'No email'}
                           </div>
                         </div>
                       </div>
                     </ModernTableCell>
-                    
+
                     <ModernTableCell>
                       <div className="flex items-center gap-2">
                         <StatusBadge status={appointment.status} type="appointment" />
                         {updatingId === appointment._id && (
-                          <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-cyan/40 border-t-brand-cyan"></div>
                         )}
                       </div>
                     </ModernTableCell>
-                    
+
                     <ModernTableCell className="max-w-xs">
                       <div className="relative">
                         <textarea
@@ -230,13 +244,13 @@ export default function DoctorAppointments() {
                               updateAppt(appointment._id, { notes: e.target.value });
                             }
                           }}
-                          className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-3 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-150 ease-in-out resize-none hover:bg-white"
+                          className="w-full resize-none rounded-lg border border-border bg-background/60 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand-cyan/30 focus:border-brand-cyan hover:bg-foreground/5"
                           placeholder="Add notes for this appointment..."
                           disabled={updatingId === appointment._id}
                         />
                       </div>
                     </ModernTableCell>
-                    
+
                     <ModernTableCell>
                       <div className="flex items-center gap-2">
                         {appointment.status === 'Scheduled' && (
@@ -244,7 +258,7 @@ export default function DoctorAppointments() {
                             <ActionButton
                               variant="success"
                               size="xs"
-                              icon={<FiCheckCircle className="w-3 h-3" />}
+                              icon={<CheckCircle2 className="h-3 w-3" />}
                               onClick={() => updateAppt(appointment._id, { status: 'Completed' })}
                               disabled={updatingId === appointment._id || isFutureAppointment(appointment)}
                               title={isFutureAppointment(appointment) ? "Cannot complete future appointments" : "Mark as completed"}
@@ -254,7 +268,7 @@ export default function DoctorAppointments() {
                             <ActionButton
                               variant="warning"
                               size="xs"
-                              icon={<FiClock className="w-3 h-3" />}
+                              icon={<Clock className="h-3 w-3" />}
                               onClick={() => navigate('/doctor/follow-up', { state: { appointment } })}
                               disabled={updatingId === appointment._id || isFutureAppointment(appointment)}
                               title={isFutureAppointment(appointment) ? "Cannot schedule follow-up for future appointments" : "Schedule follow-up"}
@@ -269,12 +283,12 @@ export default function DoctorAppointments() {
                               <ActionButton
                                 variant="primary"
                                 size="xs"
-                                icon={<FiFileText className="w-3 h-3" />}
-                                onClick={() => navigate('/doctor/prescriptions/new', { 
-                                  state: { 
-                                    patientId: appointment.patientId?._id, 
-                                    appointmentId: appointment._id 
-                                  } 
+                                icon={<FileText className="h-3 w-3" />}
+                                onClick={() => navigate('/doctor/prescriptions/new', {
+                                  state: {
+                                    patientId: appointment.patientId?._id,
+                                    appointmentId: appointment._id
+                                  }
                                 })}
                               >
                                 Prescribe
@@ -283,11 +297,11 @@ export default function DoctorAppointments() {
                               <ActionButton
                                 variant="success"
                                 size="xs"
-                                icon={<FiFileText className="w-3 h-3" />}
+                                icon={<FileText className="h-3 w-3" />}
                                 onClick={async () => {
                                   try {
-                                    const res = await api.get('/doctors/prescriptions', { 
-                                      params: { appointmentId: appointment._id } 
+                                    const res = await api.get('/doctors/prescriptions', {
+                                      params: { appointmentId: appointment._id }
                                     });
                                     if (res.data.data && res.data.data.length > 0) {
                                       navigate(`/doctor/prescriptions/${res.data.data[0]._id}`);
@@ -296,7 +310,7 @@ export default function DoctorAppointments() {
                                     toast.error('Failed to load prescription');
                                   }
                                 }}
-                                className="bg-green-600 hover:bg-green-700"
+                                className="bg-success hover:brightness-110"
                               >
                                 View Prescription
                               </ActionButton>
@@ -305,11 +319,11 @@ export default function DoctorAppointments() {
                               <ActionButton
                                 variant="info"
                                 size="xs"
-                                icon={<FiDollarSign className="w-3 h-3" />}
+                                icon={<DollarSign className="h-3 w-3" />}
                                 onClick={async () => {
                                   try {
-                                    const res = await api.get('/bills/doctor', { 
-                                      params: { appointmentId: appointment._id } 
+                                    const res = await api.get('/bills/doctor', {
+                                      params: { appointmentId: appointment._id }
                                     });
                                     if (res.data.data && res.data.data.length > 0) {
                                       navigate(`/doctor/bills/${res.data.data[0]._id}`);
@@ -337,11 +351,11 @@ export default function DoctorAppointments() {
       </div>
 
       {/* Mobile/Tablet Card View */}
-      <div className="lg:hidden space-y-4">
+      <div className="space-y-4 lg:hidden">
         {list.length === 0 ? (
           <MobileCard>
             <EmptyState
-              icon={<FiCalendar className="w-8 h-8 text-gray-400" />}
+              icon={<Calendar className="h-8 w-8 text-muted-foreground" />}
               title="No Appointments Scheduled"
               description="You don't have any appointments yet."
             />
@@ -352,19 +366,19 @@ export default function DoctorAppointments() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Avatar 
-                      name={appointment.patientId?.name || 'Unknown Patient'} 
+                    <Avatar
+                      name={appointment.patientId?.name || 'Unknown Patient'}
                       size="md"
                     />
                     <div>
-                      <h3 className="font-semibold text-gray-900">
+                      <h3 className="font-semibold text-foreground">
                         {appointment.patientId?.name || 'Unknown Patient'}
                       </h3>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         {appointment.patientId?.email || 'No email'}
                       </p>
-                      <DateTimeDisplay 
-                        date={appointment.date} 
+                      <DateTimeDisplay
+                        date={appointment.date}
                         time={appointment.timeSlot}
                       />
                     </div>
@@ -372,13 +386,13 @@ export default function DoctorAppointments() {
                   <div className="flex items-center gap-2">
                     <StatusBadge status={appointment.status} type="appointment" />
                     {updatingId === appointment._id && (
-                      <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-cyan/40 border-t-brand-cyan"></div>
                     )}
                   </div>
                 </div>
-                
+
                 <div>
-                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Notes</label>
+                  <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-muted-foreground">Notes</label>
                   <textarea
                     rows={3}
                     defaultValue={appointment.notes || ''}
@@ -387,19 +401,19 @@ export default function DoctorAppointments() {
                         updateAppt(appointment._id, { notes: e.target.value });
                       }
                     }}
-                    className="mt-1 w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-3 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-150 ease-in-out resize-none"
+                    className="mt-1 w-full resize-none rounded-lg border border-border bg-background/60 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand-cyan/30 focus:border-brand-cyan"
                     placeholder="Add notes for this appointment..."
                     disabled={updatingId === appointment._id}
                   />
                 </div>
-                
+
                 <div className="flex flex-wrap gap-2">
                   {appointment.status === 'Scheduled' && (
                     <>
                       <ActionButton
                         variant="success"
                         size="sm"
-                        icon={<FiCheckCircle className="w-4 h-4" />}
+                        icon={<CheckCircle2 className="h-4 w-4" />}
                         onClick={() => updateAppt(appointment._id, { status: 'Completed' })}
                         disabled={updatingId === appointment._id || isFutureAppointment(appointment)}
                         title={isFutureAppointment(appointment) ? "Cannot complete future appointments" : "Mark as completed"}
@@ -410,7 +424,7 @@ export default function DoctorAppointments() {
                       <ActionButton
                         variant="warning"
                         size="sm"
-                        icon={<FiClock className="w-4 h-4" />}
+                        icon={<Clock className="h-4 w-4" />}
                         onClick={() => navigate('/doctor/follow-up', { state: { appointment } })}
                         disabled={updatingId === appointment._id || isFutureAppointment(appointment)}
                         title={isFutureAppointment(appointment) ? "Cannot schedule follow-up for future appointments" : "Schedule follow-up"}
@@ -426,12 +440,12 @@ export default function DoctorAppointments() {
                         <ActionButton
                           variant="primary"
                           size="sm"
-                          icon={<FiFileText className="w-4 h-4" />}
-                          onClick={() => navigate('/doctor/prescriptions/new', { 
-                            state: { 
-                              patientId: appointment.patientId?._id, 
-                              appointmentId: appointment._id 
-                            } 
+                          icon={<FileText className="h-4 w-4" />}
+                          onClick={() => navigate('/doctor/prescriptions/new', {
+                            state: {
+                              patientId: appointment.patientId?._id,
+                              appointmentId: appointment._id
+                            }
                           })}
                           className="flex-1 justify-center"
                         >
@@ -441,11 +455,11 @@ export default function DoctorAppointments() {
                         <ActionButton
                           variant="success"
                           size="sm"
-                          icon={<FiFileText className="w-4 h-4" />}
+                          icon={<FileText className="h-4 w-4" />}
                           onClick={async () => {
                             try {
-                              const res = await api.get('/doctors/prescriptions', { 
-                                params: { appointmentId: appointment._id } 
+                              const res = await api.get('/doctors/prescriptions', {
+                                params: { appointmentId: appointment._id }
                               });
                               if (res.data.data && res.data.data.length > 0) {
                                 navigate(`/doctor/prescriptions/${res.data.data[0]._id}`);
@@ -454,7 +468,7 @@ export default function DoctorAppointments() {
                               toast.error('Failed to load prescription');
                             }
                           }}
-                          className="flex-1 justify-center bg-green-600 hover:bg-green-700"
+                          className="flex-1 justify-center bg-success hover:brightness-110"
                         >
                           View Prescription
                         </ActionButton>
@@ -463,11 +477,11 @@ export default function DoctorAppointments() {
                         <ActionButton
                           variant="info"
                           size="sm"
-                          icon={<FiDollarSign className="w-4 h-4" />}
+                          icon={<DollarSign className="h-4 w-4" />}
                           onClick={async () => {
                             try {
-                              const res = await api.get('/bills/doctor', { 
-                                params: { appointmentId: appointment._id } 
+                              const res = await api.get('/bills/doctor', {
+                                params: { appointmentId: appointment._id }
                               });
                               if (res.data.data && res.data.data.length > 0) {
                                 navigate(`/doctor/bills/${res.data.data[0]._id}`);
@@ -494,34 +508,34 @@ export default function DoctorAppointments() {
 
       {/* Reject Modal */}
       {showRejectModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-2xl max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-text-primary-dark mb-4">Reject Appointment</h3>
-            <p className="text-gray-600 dark:text-text-secondary-dark mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="glass w-full max-w-md rounded-xl p-6 shadow-glow">
+            <h3 className="mb-4 font-head text-xl font-bold text-foreground">Reject Appointment</h3>
+            <p className="mb-4 text-muted-foreground">
               Please provide a reason for rejecting this appointment. The patient will be notified.
             </p>
             <textarea
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
-              className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 resize-none"
+              className="w-full resize-none rounded-lg border border-border bg-background/60 px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-error/30 focus:border-error"
               rows={4}
               placeholder="e.g., Emergency surgery scheduled, Personal emergency, etc."
             />
-            <div className="flex gap-3 mt-6">
+            <div className="mt-6 flex gap-3">
               <button
                 onClick={() => {
                   setShowRejectModal(false);
                   setRejectionReason('');
                   setSelectedAppointment(null);
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                className="flex-1 rounded-lg border border-border px-4 py-2 text-foreground transition-colors hover:bg-foreground/5"
                 disabled={updatingId}
               >
                 Cancel
               </button>
               <button
                 onClick={rejectAppointment}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                className="flex-1 rounded-lg bg-error px-4 py-2 text-white transition-colors hover:brightness-110 disabled:opacity-50"
                 disabled={updatingId || !rejectionReason.trim()}
               >
                 {updatingId ? 'Rejecting...' : 'Reject Appointment'}
@@ -533,59 +547,59 @@ export default function DoctorAppointments() {
 
       {/* Reschedule Modal */}
       {showRescheduleModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-2xl max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-text-primary-dark mb-4">Reschedule Appointment</h3>
-            <p className="text-gray-600 dark:text-text-secondary-dark mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="glass w-full max-w-md rounded-xl p-6 shadow-glow">
+            <h3 className="mb-4 font-head text-xl font-bold text-foreground">Reschedule Appointment</h3>
+            <p className="mb-4 text-muted-foreground">
               Select a new date and time for this appointment. The patient will be notified.
             </p>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">New Date</label>
+                <label className="mb-2 block text-sm font-medium text-foreground">New Date</label>
                 <input
                   type="date"
                   value={rescheduleData.newDate}
                   onChange={(e) => setRescheduleData({ ...rescheduleData, newDate: e.target.value })}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-4 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className="w-full rounded-lg border border-border bg-background/60 px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-brand-cyan/30 focus:border-brand-cyan"
                   min={new Date().toISOString().split('T')[0]}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">New Time Slot</label>
+                <label className="mb-2 block text-sm font-medium text-foreground">New Time Slot</label>
                 <input
                   type="text"
                   value={rescheduleData.newTimeSlot}
                   onChange={(e) => setRescheduleData({ ...rescheduleData, newTimeSlot: e.target.value })}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-4 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className="w-full rounded-lg border border-border bg-background/60 px-4 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-cyan/30 focus:border-brand-cyan"
                   placeholder="e.g., 09:00-10:00"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Reason (Optional)</label>
+                <label className="mb-2 block text-sm font-medium text-foreground">Reason (Optional)</label>
                 <textarea
                   value={rescheduleData.reason}
                   onChange={(e) => setRescheduleData({ ...rescheduleData, reason: e.target.value })}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-4 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none"
+                  className="w-full resize-none rounded-lg border border-border bg-background/60 px-4 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-cyan/30 focus:border-brand-cyan"
                   rows={3}
                   placeholder="Reason for rescheduling..."
                 />
               </div>
             </div>
-            <div className="flex gap-3 mt-6">
+            <div className="mt-6 flex gap-3">
               <button
                 onClick={() => {
                   setShowRescheduleModal(false);
                   setRescheduleData({ newDate: '', newTimeSlot: '', reason: '' });
                   setSelectedAppointment(null);
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                className="flex-1 rounded-lg border border-border px-4 py-2 text-foreground transition-colors hover:bg-foreground/5"
                 disabled={updatingId}
               >
                 Cancel
               </button>
               <button
                 onClick={rescheduleAppointment}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                className="flex-1 rounded-lg bg-gradient-to-br from-brand-cyan to-brand-teal px-4 py-2 text-white shadow-glow transition-colors hover:brightness-110 disabled:opacity-50"
                 disabled={updatingId || !rescheduleData.newDate || !rescheduleData.newTimeSlot}
               >
                 {updatingId ? 'Rescheduling...' : 'Reschedule'}

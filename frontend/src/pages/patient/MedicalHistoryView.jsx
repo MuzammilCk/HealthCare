@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { FiAlertCircle, FiEdit3, FiX, FiCheck } from 'react-icons/fi';
+import { AlertCircle, Edit3, X, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
+import { Button, Badge } from '../../components/ui';
 
 export default function MedicalHistoryView() {
   const [medicalHistory, setMedicalHistory] = useState(null);
@@ -52,18 +53,18 @@ export default function MedicalHistoryView() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-text-secondary">Loading medical history...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-cyan mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading medical history...</p>
         </div>
       </div>
     );
   }
 
   const InfoSection = ({ title, children, isEmpty }) => (
-    <div className="bg-white dark:bg-bg-card-dark rounded-lg border border-gray-200 dark:border-dark-border p-6">
-      <h3 className="text-lg font-semibold text-text-primary dark:text-text-primary-dark mb-4">{title}</h3>
+    <div className="glass rounded-xl p-6">
+      <h3 className="text-lg font-semibold text-foreground mb-4">{title}</h3>
       {isEmpty ? (
-        <p className="text-text-secondary dark:text-text-secondary-dark italic">No information available</p>
+        <p className="text-muted-foreground italic">No information available</p>
       ) : (
         children
       )}
@@ -71,28 +72,24 @@ export default function MedicalHistoryView() {
   );
 
   const InfoItem = ({ label, value }) => (
-    <div className="flex justify-between py-2 border-b border-gray-100 last:border-0">
-      <span className="text-text-secondary">{label}:</span>
-      <span className="font-medium text-text-primary">{value || 'Not specified'}</span>
+    <div className="flex justify-between py-2 border-b border-border last:border-0">
+      <span className="text-muted-foreground">{label}:</span>
+      <span className="font-medium text-foreground">{value || 'Not specified'}</span>
     </div>
   );
 
   const ListItem = ({ item, type }) => {
     if (type === 'allergy') {
       return (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-2">
+        <div className="bg-error/10 border border-error/20 rounded-lg p-3 mb-2">
           <div className="flex justify-between items-start">
             <div>
-              <p className="font-semibold text-red-900">{item.name}</p>
-              {item.reaction && <p className="text-sm text-red-700">Reaction: {item.reaction}</p>}
+              <p className="font-semibold text-error-fg">{item.name}</p>
+              {item.reaction && <p className="text-sm text-error/80">Reaction: {item.reaction}</p>}
             </div>
-            <span className={`px-2 py-1 rounded text-xs font-semibold ${
-              item.severity === 'severe' ? 'bg-red-200 text-red-900' :
-              item.severity === 'moderate' ? 'bg-yellow-200 text-yellow-900' :
-              'bg-green-200 text-green-900'
-            }`}>
+            <Badge variant={item.severity === 'severe' ? 'danger' : item.severity === 'moderate' ? 'warning' : 'success'}>
               {item.severity}
-            </span>
+            </Badge>
           </div>
         </div>
       );
@@ -100,19 +97,15 @@ export default function MedicalHistoryView() {
 
     if (type === 'condition') {
       return (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
+        <div className="bg-brand-sky/10 border border-brand-sky/20 rounded-lg p-3 mb-2">
           <div className="flex justify-between items-start">
             <div>
-              <p className="font-semibold text-blue-900">{item.name}</p>
-              {item.notes && <p className="text-sm text-blue-700">{item.notes}</p>}
+              <p className="font-semibold text-brand-sky-fg">{item.name}</p>
+              {item.notes && <p className="text-sm text-brand-sky/80">{item.notes}</p>}
             </div>
-            <span className={`px-2 py-1 rounded text-xs font-semibold ${
-              item.status === 'active' ? 'bg-red-200 text-red-900' :
-              item.status === 'chronic' ? 'bg-orange-200 text-orange-900' :
-              'bg-green-200 text-green-900'
-            }`}>
+            <Badge variant={item.status === 'active' ? 'danger' : item.status === 'chronic' ? 'warning' : 'success'}>
               {item.status}
-            </span>
+            </Badge>
           </div>
         </div>
       );
@@ -120,9 +113,9 @@ export default function MedicalHistoryView() {
 
     if (type === 'medication') {
       return (
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-2">
-          <p className="font-semibold text-purple-900">{item.name}</p>
-          <div className="text-sm text-purple-700 mt-1">
+        <div className="bg-brand-violet/10 border border-brand-violet/20 rounded-lg p-3 mb-2">
+          <p className="font-semibold text-brand-violet">{item.name}</p>
+          <div className="text-sm text-brand-violet/80 mt-1">
             {item.dosage && <span>Dosage: {item.dosage}</span>}
             {item.frequency && <span className="ml-3">Frequency: {item.frequency}</span>}
           </div>
@@ -132,9 +125,9 @@ export default function MedicalHistoryView() {
 
     if (type === 'surgery') {
       return (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-2">
-          <p className="font-semibold text-gray-900">{item.name}</p>
-          <div className="text-sm text-gray-700 mt-1">
+        <div className="bg-foreground/5 border border-border rounded-lg p-3 mb-2">
+          <p className="font-semibold text-foreground">{item.name}</p>
+          <div className="text-sm text-muted-foreground mt-1">
             {item.date && <span>Date: {new Date(item.date).toLocaleDateString()}</span>}
             {item.hospital && <span className="ml-3">Hospital: {item.hospital}</span>}
           </div>
@@ -144,10 +137,10 @@ export default function MedicalHistoryView() {
 
     if (type === 'family') {
       return (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-2">
+        <div className="bg-success/10 border border-success/20 rounded-lg p-3 mb-2">
           <div className="flex justify-between">
-            <p className="font-semibold text-green-900">{item.condition}</p>
-            <span className="text-sm text-green-700">{item.relationship}</span>
+            <p className="font-semibold text-success-fg">{item.condition}</p>
+            <span className="text-sm text-success/80">{item.relationship}</span>
           </div>
         </div>
       );
@@ -157,30 +150,29 @@ export default function MedicalHistoryView() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-background text-foreground">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">Medical History</h1>
-          <p className="text-text-secondary">Your complete medical records (Read-only)</p>
+          <h1 className="text-3xl font-bold text-foreground">Medical History</h1>
+          <p className="text-muted-foreground">Your complete medical records (Read-only)</p>
         </div>
-        <button
+        <Button
           onClick={() => setShowCorrectionModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors"
         >
-          <FiEdit3 className="w-4 h-4" />
+          <Edit3 className="w-4 h-4" />
           Request a Correction
-        </button>
+        </Button>
       </div>
 
       {/* Approval Status Banner */}
       {medicalHistory?.approvalStatus === 'approved' && medicalHistory?.approvedBy && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="bg-success/10 border border-success/20 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <FiCheck className="w-5 h-5 text-green-600 mt-0.5" />
+            <Check className="w-5 h-5 text-success-fg mt-0.5" />
             <div>
-              <p className="font-semibold text-green-900">Medical History Approved</p>
-              <p className="text-sm text-green-700 mt-1">
-                Approved by <span className="font-semibold">Dr. {medicalHistory.approvedBy.name}</span> on {new Date(medicalHistory.approvedAt).toLocaleDateString()}
+              <p className="font-semibold text-foreground">Medical History Approved</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Approved by <span className="font-semibold text-foreground">Dr. {medicalHistory.approvedBy.name}</span> on {new Date(medicalHistory.approvedAt).toLocaleDateString()}
               </p>
             </div>
           </div>
@@ -188,16 +180,16 @@ export default function MedicalHistoryView() {
       )}
 
       {medicalHistory?.correctionRequested && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="bg-amber-400/10 border border-amber-500/20 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <FiAlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
             <div>
-              <p className="font-semibold text-yellow-900">Correction Request Pending</p>
-              <p className="text-sm text-yellow-700 mt-1">
+              <p className="font-semibold text-amber-600">Correction Request Pending</p>
+              <p className="text-sm text-muted-foreground mt-1">
                 Your correction request is being reviewed by medical staff.
               </p>
               {medicalHistory.correctionRequestMessage && (
-                <p className="text-sm text-yellow-800 mt-2 italic">
+                <p className="text-sm text-amber-600 mt-2 italic">
                   "{medicalHistory.correctionRequestMessage}"
                 </p>
               )}
@@ -223,8 +215,8 @@ export default function MedicalHistoryView() {
       </div>
 
       {/* Allergies */}
-      <InfoSection 
-        title="Allergies" 
+      <InfoSection
+        title="Allergies"
         isEmpty={!medicalHistory?.allergies || medicalHistory.allergies.length === 0}
       >
         {medicalHistory?.allergies?.map((allergy, index) => (
@@ -233,8 +225,8 @@ export default function MedicalHistoryView() {
       </InfoSection>
 
       {/* Past Conditions */}
-      <InfoSection 
-        title="Past Medical Conditions" 
+      <InfoSection
+        title="Past Medical Conditions"
         isEmpty={!medicalHistory?.pastConditions || medicalHistory.pastConditions.length === 0}
       >
         {medicalHistory?.pastConditions?.map((condition, index) => (
@@ -243,8 +235,8 @@ export default function MedicalHistoryView() {
       </InfoSection>
 
       {/* Current Medications */}
-      <InfoSection 
-        title="Current Medications" 
+      <InfoSection
+        title="Current Medications"
         isEmpty={!medicalHistory?.currentMedications || medicalHistory.currentMedications.length === 0}
       >
         {medicalHistory?.currentMedications?.map((medication, index) => (
@@ -253,8 +245,8 @@ export default function MedicalHistoryView() {
       </InfoSection>
 
       {/* Surgeries */}
-      <InfoSection 
-        title="Surgical History" 
+      <InfoSection
+        title="Surgical History"
         isEmpty={!medicalHistory?.surgeries || medicalHistory.surgeries.length === 0}
       >
         {medicalHistory?.surgeries?.map((surgery, index) => (
@@ -263,8 +255,8 @@ export default function MedicalHistoryView() {
       </InfoSection>
 
       {/* Family History */}
-      <InfoSection 
-        title="Family Medical History" 
+      <InfoSection
+        title="Family Medical History"
         isEmpty={!medicalHistory?.familyHistory || medicalHistory.familyHistory.length === 0}
       >
         {medicalHistory?.familyHistory?.map((item, index) => (
@@ -275,13 +267,13 @@ export default function MedicalHistoryView() {
       {/* Additional Notes */}
       {medicalHistory?.additionalNotes && (
         <InfoSection title="Additional Notes">
-          <p className="text-text-primary whitespace-pre-wrap">{medicalHistory.additionalNotes}</p>
+          <p className="text-foreground whitespace-pre-wrap">{medicalHistory.additionalNotes}</p>
         </InfoSection>
       )}
 
       {/* Audit Information */}
       {(medicalHistory?.createdBy || medicalHistory?.lastUpdatedBy) && (
-        <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-600">
+        <div className="bg-foreground/5 rounded-lg p-4 text-sm text-muted-foreground">
           {medicalHistory.createdBy && (
             <p>Created by: {medicalHistory.createdBy.name} ({medicalHistory.createdBy.role})</p>
           )}
@@ -297,19 +289,19 @@ export default function MedicalHistoryView() {
       {/* Correction Request Modal */}
       {showCorrectionModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-2xl max-w-lg w-full p-6">
+          <div className="glass rounded-xl shadow-card max-w-lg w-full p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-text-primary dark:text-text-primary-dark">Request a Correction</h2>
+              <h2 className="text-xl font-bold text-foreground">Request a Correction</h2>
               <button
                 onClick={() => setShowCancelModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-foreground/5 rounded-lg transition-colors"
               >
-                <FiX className="w-5 h-5" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <p className="text-text-secondary mb-4">
-              Please describe what needs to be corrected in your medical history. 
+            <p className="text-muted-foreground mb-4">
+              Please describe what needs to be corrected in your medical history.
               A medical professional will review your request.
             </p>
 
@@ -318,23 +310,25 @@ export default function MedicalHistoryView() {
               onChange={(e) => setCorrectionMessage(e.target.value)}
               placeholder="Describe the correction needed..."
               rows={5}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="w-full px-4 py-2 border border-border bg-background/60 rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-brand-cyan/30"
             />
 
             <div className="flex gap-3 mt-4">
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => {
                   setShowCorrectionModal(false);
                   setCorrectionMessage('');
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-text-primary rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex-1"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="default"
                 onClick={handleRequestCorrection}
                 disabled={submitting || !correctionMessage.trim()}
-                className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1"
               >
                 {submitting ? (
                   <>
@@ -343,11 +337,11 @@ export default function MedicalHistoryView() {
                   </>
                 ) : (
                   <>
-                    <FiCheck className="w-4 h-4" />
+                    <Check className="w-4 h-4" />
                     Submit Request
                   </>
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

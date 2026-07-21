@@ -67,3 +67,5 @@ nyc_output/
 *.swp
 *.swo
 *.patch
+.claude/
+*.json

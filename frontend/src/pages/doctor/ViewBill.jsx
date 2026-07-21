@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FiArrowLeft, FiCalendar, FiUser, FiDollarSign, FiCheckCircle, FiClock } from 'react-icons/fi';
+import { ArrowLeft, Calendar, User, IndianRupee, CheckCircle2, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
+import { cn } from '../../utils/cn';
+import { Button, buttonVariants } from '../../components/ui/Button';
+import Reveal from '../../components/Reveal';
 
 export default function ViewBill() {
   const { id } = useParams();
@@ -34,8 +37,8 @@ export default function ViewBill() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-cyan/30 border-t-brand-cyan"></div>
       </div>
     );
   }
@@ -44,182 +47,188 @@ export default function ViewBill() {
     return null;
   }
 
+  const isPaid = bill.status === 'paid';
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => navigate('/doctor/appointments')}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          <FiArrowLeft className="w-5 h-5" />
-        </button>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Bill Details</h1>
-          <p className="text-gray-600">Read-only view</p>
-        </div>
-      </div>
-
-      {/* Bill Card */}
-      <div className="bg-white rounded-xl shadow-card p-6 space-y-6">
-        {/* Patient & Status Info */}
-        <div className="grid md:grid-cols-3 gap-6 pb-6 border-b border-gray-200">
-          <div className="flex items-start gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <FiUser className="w-5 h-5 text-blue-600" />
-            </div>
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="mx-auto max-w-4xl space-y-8 p-6">
+        <Reveal>
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => navigate('/doctor/appointments')}
+              className="flex h-11 w-11 items-center justify-center rounded-xl border border-border text-foreground transition-colors hover:bg-foreground/5"
+              aria-label="Back"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
             <div>
-              <div className="text-sm text-gray-600">Patient</div>
-              <div className="font-semibold text-gray-900">{bill.patientId?.name}</div>
-              <div className="text-sm text-gray-500">{bill.patientId?.email}</div>
+              <h1 className="font-head text-3xl font-bold tracking-tight text-foreground">Bill Details</h1>
+              <p className="text-muted-foreground">Read-only view</p>
             </div>
           </div>
+        </Reveal>
 
-          <div className="flex items-start gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <FiCalendar className="w-5 h-5 text-green-600" />
-            </div>
-            <div>
-              <div className="text-sm text-gray-600">Appointment</div>
-              <div className="font-semibold text-gray-900">
-                {new Date(bill.appointmentId?.date).toLocaleDateString()}
-              </div>
-              <div className="text-sm text-gray-500">{bill.appointmentId?.timeSlot}</div>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className={`p-2 rounded-lg ${bill.status === 'paid' ? 'bg-green-100' : 'bg-orange-100'}`}>
-              {bill.status === 'paid' ? (
-                <FiCheckCircle className="w-5 h-5 text-green-600" />
-              ) : (
-                <FiClock className="w-5 h-5 text-orange-600" />
-              )}
-            </div>
-            <div>
-              <div className="text-sm text-gray-600">Payment Status</div>
-              <div className={`font-semibold ${bill.status === 'paid' ? 'text-green-600' : 'text-orange-600'}`}>
-                {bill.status === 'paid' ? 'Paid' : 'Unpaid'}
-              </div>
-              {bill.paidAt && (
-                <div className="text-xs text-gray-500">
-                  {new Date(bill.paidAt).toLocaleDateString()}
+        <Reveal>
+          <div className="glass space-y-6 rounded-2xl p-6 shadow-card">
+            {/* Patient & Status Info */}
+            <div className="grid gap-6 border-b border-border pb-6 md:grid-cols-3">
+              <div className="flex items-start gap-3">
+                <div className="rounded-lg bg-brand-cyan/15 p-2 text-brand-cyan-fg">
+                  <User className="h-5 w-5" />
                 </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Bill Items */}
-        <div>
-          <h3 className="font-semibold text-gray-900 mb-4">Bill Items</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Description</th>
-                  <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">Quantity</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Unit Price</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {bill.items.map((item, index) => (
-                  <tr key={index} className="border-b border-gray-100">
-                    <td className="py-3 px-4 text-gray-900">{formatDescription(item.description)}</td>
-                    <td className="py-3 px-4 text-center text-gray-700">{item.quantity}</td>
-                    <td className="py-3 px-4 text-right text-gray-700">
-                      ₹{(item.amount / 100).toFixed(2)}
-                    </td>
-                    <td className="py-3 px-4 text-right font-medium text-gray-900">
-                      ₹{((item.amount * item.quantity) / 100).toFixed(2)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="border-t-2 border-gray-300">
-                  <td colSpan="3" className="py-4 px-4 text-right font-bold text-gray-900">
-                    Total Amount:
-                  </td>
-                  <td className="py-4 px-4 text-right font-bold text-primary text-xl">
-                    ₹{(bill.totalAmount / 100).toFixed(2)}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </div>
-
-        {/* Payment Information */}
-        {bill.status === 'paid' && bill.paymentDetails && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <h4 className="font-semibold text-green-900 mb-2">Payment Information</h4>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              {bill.paymentDetails.orderId && (
                 <div>
-                  <span className="text-green-700">Order ID:</span>
-                  <span className="ml-2 font-medium text-green-900">{bill.paymentDetails.orderId}</span>
+                  <div className="text-sm text-muted-foreground">Patient</div>
+                  <div className="font-semibold text-foreground">{bill.patientId?.name}</div>
+                  <div className="text-sm text-muted-foreground">{bill.patientId?.email}</div>
                 </div>
-              )}
-              {bill.paymentDetails.paymentId && (
-                <div>
-                  <span className="text-green-700">Payment ID:</span>
-                  <span className="ml-2 font-medium text-green-900">{bill.paymentDetails.paymentId}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+              </div>
 
-        {/* Unpaid Notice */}
-        {bill.status === 'unpaid' && (
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <FiClock className="w-5 h-5 text-orange-600 mt-0.5" />
-              <div>
-                <h4 className="font-semibold text-orange-900 mb-1">Payment Pending</h4>
-                <p className="text-sm text-orange-700">
-                  This bill is awaiting payment from the patient. The patient can make the payment through their dashboard.
-                </p>
+              <div className="flex items-start gap-3">
+                <div className="rounded-lg bg-success/15 p-2 text-success-fg">
+                  <Calendar className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Appointment</div>
+                  <div className="font-semibold text-foreground">
+                    {new Date(bill.appointmentId?.date).toLocaleDateString()}
+                  </div>
+                  <div className="text-sm text-muted-foreground">{bill.appointmentId?.timeSlot}</div>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className={cn('rounded-lg p-2', isPaid ? 'bg-success/15 text-success-fg' : 'bg-amber-400/15 text-amber-500')}>
+                  {isPaid ? (
+                    <CheckCircle2 className="h-5 w-5" />
+                  ) : (
+                    <Clock className="h-5 w-5" />
+                  )}
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Payment Status</div>
+                  <div className={cn('font-semibold', isPaid ? 'text-success-fg' : 'text-amber-500')}>
+                    {isPaid ? 'Paid' : 'Unpaid'}
+                  </div>
+                  {bill.paidAt && (
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(bill.paidAt).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        )}
 
-        {/* Bill Metadata */}
-        <div className="pt-4 border-t border-gray-200 text-sm text-gray-600">
-          <div className="flex justify-between">
-            <span>Bill Created:</span>
-            <span className="font-medium text-gray-900">
-              {new Date(bill.createdAt).toLocaleString()}
-            </span>
-          </div>
-          {bill.updatedAt && bill.updatedAt !== bill.createdAt && (
-            <div className="flex justify-between mt-1">
-              <span>Last Updated:</span>
-              <span className="font-medium text-gray-900">
-                {new Date(bill.updatedAt).toLocaleString()}
-              </span>
+            {/* Bill Items */}
+            <div>
+              <h3 className="mb-4 font-head font-semibold text-foreground">Bill Items</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-muted-foreground">Description</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-muted-foreground">Quantity</th>
+                      <th className="px-4 py-3 text-right text-sm font-semibold text-muted-foreground">Unit Price</th>
+                      <th className="px-4 py-3 text-right text-sm font-semibold text-muted-foreground">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bill.items.map((item, index) => (
+                      <tr key={index} className="border-b border-border/60">
+                        <td className="px-4 py-3 text-foreground">{formatDescription(item.description)}</td>
+                        <td className="px-4 py-3 text-center text-foreground">{item.quantity}</td>
+                        <td className="px-4 py-3 text-right text-foreground">
+                          ₹{(item.amount / 100).toFixed(2)}
+                        </td>
+                        <td className="px-4 py-3 text-right font-medium text-foreground">
+                          ₹{((item.amount * item.quantity) / 100).toFixed(2)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="border-t-2 border-border">
+                      <td colSpan="3" className="px-4 py-4 text-right font-bold text-foreground">
+                        Total Amount:
+                      </td>
+                      <td className="px-4 py-4 text-right text-xl font-bold text-brand-cyan-fg">
+                        ₹{(bill.totalAmount / 100).toFixed(2)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
             </div>
-          )}
-        </div>
-      </div>
 
-      {/* Action Buttons */}
-      <div className="flex gap-3">
-        <button
-          onClick={() => navigate('/doctor/appointments')}
-          className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
-        >
-          Back to Appointments
-        </button>
-        <button
-          onClick={() => window.print()}
-          className="px-6 py-3 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium transition-colors"
-        >
-          Print Bill
-        </button>
+            {/* Payment Information */}
+            {isPaid && bill.paymentDetails && (
+              <div className="rounded-xl border border-success/20 bg-success/10 p-4">
+                <h4 className="mb-2 font-semibold text-success-fg">Payment Information</h4>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  {bill.paymentDetails.orderId && (
+                    <div>
+                      <span className="text-success/80">Order ID:</span>
+                      <span className="ml-2 font-medium text-success-fg">{bill.paymentDetails.orderId}</span>
+                    </div>
+                  )}
+                  {bill.paymentDetails.paymentId && (
+                    <div>
+                      <span className="text-success/80">Payment ID:</span>
+                      <span className="ml-2 font-medium text-success-fg">{bill.paymentDetails.paymentId}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Unpaid Notice */}
+            {!isPaid && (
+              <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 p-4">
+                <div className="flex items-start gap-3">
+                  <Clock className="mt-0.5 h-5 w-5 text-amber-500" />
+                  <div>
+                    <h4 className="mb-1 font-semibold text-amber-600">Payment Pending</h4>
+                    <p className="text-sm text-amber-500">
+                      This bill is awaiting payment from the patient. The patient can make the payment through their dashboard.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Bill Metadata */}
+            <div className="border-t border-border pt-4 text-sm text-muted-foreground">
+              <div className="flex justify-between">
+                <span>Bill Created:</span>
+                <span className="font-medium text-foreground">
+                  {new Date(bill.createdAt).toLocaleString()}
+                </span>
+              </div>
+              {bill.updatedAt && bill.updatedAt !== bill.createdAt && (
+                <div className="mt-1 flex justify-between">
+                  <span>Last Updated:</span>
+                  <span className="font-medium text-foreground">
+                    {new Date(bill.updatedAt).toLocaleString()}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </Reveal>
+
+        <Reveal>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/doctor/appointments')}
+            >
+              Back to Appointments
+            </Button>
+            <Button onClick={() => window.print()}>
+              Print Bill
+            </Button>
+          </div>
+        </Reveal>
       </div>
     </div>
   );

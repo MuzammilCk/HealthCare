@@ -171,14 +171,13 @@ Your entire response **must** be valid JSON and nothing else. Use ONE of these t
 `;
 
     console.log(
-      `AI Symptom Check Request - User: ${
-        req.user?.id || "guest"
+      `AI Symptom Check Request - User: ${req.user?.id || "guest"
       }, Symptoms: ${symptoms.substring(0, 60)}...`
     );
 
     // ------------------ OPENROUTER REQUEST ------------------
     const requestPayload = {
-      model: "x-ai/grok-code-fast-1", // Reliable & fast model
+      model: "tencent/hy3:free", // Reliable & fast model
       messages: [{ role: "user", content: masterPrompt }],
     };
 
@@ -273,8 +272,7 @@ Your entire response **must** be valid JSON and nothing else. Use ONE of these t
     }
 
     console.log(
-      `AI Symptom Check Success - User: ${
-        req.user?.id || "guest"
+      `AI Symptom Check Success - User: ${req.user?.id || "guest"
       }, Conditions found: ${jsonResponse.potentialConditions.length}`
     );
 

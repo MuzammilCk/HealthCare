@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
+import { Button } from '../../components/ui';
 
 export default function RefillPrescription() {
   const [prescriptions, setPrescriptions] = useState([]);
@@ -82,38 +83,38 @@ export default function RefillPrescription() {
     }
   };
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  if (loading) return <div className="p-6 text-muted-foreground">Loading...</div>;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6 bg-background text-foreground">
       <div>
-        <h1 className="text-3xl font-bold text-text-primary">Prescription Refill</h1>
-        <p className="text-text-secondary">Select medicines from your past prescriptions and generate a bill.</p>
+        <h1 className="text-3xl font-bold text-foreground">Prescription Refill</h1>
+        <p className="text-muted-foreground">Select medicines from your past prescriptions and generate a bill.</p>
       </div>
 
       <div className="grid gap-4">
         {prescriptions.map((p) => (
-          <div key={p._id} className="bg-white dark:bg-bg-card-dark rounded-xl border shadow-sm p-4">
+          <div key={p._id} className="glass rounded-xl border border-border shadow-card p-4">
             <div className="flex items-center justify-between mb-3">
-              <div className="font-semibold">Issued on {new Date(p.dateIssued).toLocaleDateString()} by {p.doctorId?.name}</div>
+              <div className="font-semibold text-foreground">Issued on {new Date(p.dateIssued).toLocaleDateString()} by {p.doctorId?.name}</div>
             </div>
-            <div className="divide-y">
+            <div className="divide-y divide-border">
               {(p.medicines || []).map((m, idx) => {
                 const key = `${p._id}|${m.medicineName}`;
                 const checked = Boolean(selected[key]);
                 return (
                   <label key={idx} className="flex items-center justify-between py-3 gap-4">
                     <div className="flex items-center gap-3">
-                      <input type="checkbox" checked={checked} onChange={() => toggleItem(p._id, m)} />
+                      <input type="checkbox" checked={checked} onChange={() => toggleItem(p._id, m)} className="accent-brand-cyan" />
                       <div>
-                        <div className="font-medium">{m.medicineName}</div>
-                        <div className="text-sm text-gray-500">{m.dosage} • {m.frequency} • {m.duration}</div>
+                        <div className="font-medium text-foreground">{m.medicineName}</div>
+                        <div className="text-sm text-muted-foreground">{m.dosage} • {m.frequency} • {m.duration}</div>
                       </div>
                     </div>
                     {checked && (
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-500">Qty</span>
-                        <input className="w-20 border rounded px-2 py-1" type="number" min={1} value={selected[key]} onChange={(e) => updateQty(key, e.target.value)} />
+                        <span className="text-sm text-muted-foreground">Qty</span>
+                        <input className="w-20 border border-border bg-background/60 rounded px-2 py-1 text-foreground" type="number" min={1} value={selected[key]} onChange={(e) => updateQty(key, e.target.value)} />
                       </div>
                     )}
                   </label>
@@ -125,28 +126,28 @@ export default function RefillPrescription() {
       </div>
 
       <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-600">{selectedCount} item(s) selected</div>
+        <div className="text-sm text-muted-foreground">{selectedCount} item(s) selected</div>
         <div className="flex gap-2">
-          <button onClick={requestQuote} disabled={quoting} className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50">
+          <Button onClick={requestQuote} disabled={quoting}>
             {quoting ? 'Calculating…' : 'Calculate Bill'}
-          </button>
-          <button onClick={createBill} disabled={quoting} className="px-4 py-2 rounded bg-indigo-600 text-white disabled:opacity-50">
+          </Button>
+          <Button variant="secondary" onClick={createBill} disabled={quoting}>
             {quoting ? 'Please wait…' : 'Buy Now'}
-          </button>
+          </Button>
         </div>
       </div>
 
       {quote && (
-        <div className="bg-white dark:bg-bg-card-dark rounded-xl border shadow-sm p-4">
-          <h2 className="text-xl font-semibold mb-3">Bill</h2>
+        <div className="glass rounded-xl border border-border shadow-card p-4">
+          <h2 className="text-xl font-semibold mb-3 text-foreground">Bill</h2>
           <div className="space-y-2">
             {(quote.items || []).map((it, i) => (
-              <div key={i} className="flex items-center justify-between text-sm">
+              <div key={i} className="flex items-center justify-between text-sm text-foreground">
                 <div>{it.description} × {it.quantity}</div>
                 <div>₹{(it.amount / 100).toFixed(2)}</div>
               </div>
             ))}
-            <div className="border-t pt-2 flex items-center justify-between font-semibold">
+            <div className="border-t border-border pt-2 flex items-center justify-between font-semibold">
               <div>Total</div>
               <div>₹{(quote.totalAmount / 100).toFixed(2)}</div>
             </div>
@@ -156,5 +157,3 @@ export default function RefillPrescription() {
     </div>
   );
 }
-
-

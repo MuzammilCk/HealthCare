@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FiPlus, FiBriefcase, FiFileText, FiEdit2, FiTrash2, FiX } from 'react-icons/fi';
+import { Plus, Briefcase, FileText, Pencil, Trash2, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 import {
@@ -10,8 +10,14 @@ import {
   ActionButton,
   EmptyState,
   LoadingState,
-  MobileCard
+  MobileCard,
+  Button
 } from '../../components/ui';
+import { cn } from '../../utils/cn';
+import Reveal from '../../components/Reveal';
+
+const inputCls =
+  'w-full bg-background/60 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-cyan/30 focus:border-brand-cyan transition-colors';
 
 export default function ManageSpecializations() {
   const [list, setList] = useState([]);
@@ -39,10 +45,10 @@ export default function ManageSpecializations() {
       toast.error('Name is required');
       return;
     }
-    
+
     setSaving(true);
     const loadingToast = toast.loading('Adding specialization...');
-    
+
     try {
       await api.post('/specializations', { name, description });
       toast.dismiss(loadingToast);
@@ -110,163 +116,167 @@ export default function ManageSpecializations() {
   };
 
   const columns = [
-    { label: 'Specialization', icon: <FiBriefcase className="w-4 h-4 text-blue-500" /> },
-    { label: 'Description', icon: <FiFileText className="w-4 h-4 text-green-500" /> },
+    { label: 'Specialization', icon: <Briefcase className="w-4 h-4 text-brand-cyan-fg" /> },
+    { label: 'Description', icon: <FileText className="w-4 h-4 text-brand-teal" /> },
     { label: 'Actions', icon: null }
   ];
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Manage Specializations</h1>
-        <p className="text-gray-600">Add and manage medical specializations for doctors</p>
-      </div>
+    <div className="space-y-8 bg-background text-foreground">
+      <Reveal>
+        <div>
+          <h1 className="mb-2 font-head text-3xl font-bold tracking-tight text-foreground">Manage Specializations</h1>
+          <p className="text-muted-foreground">Add and manage medical specializations for doctors</p>
+        </div>
+      </Reveal>
 
       {/* Add New Specialization Form */}
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-            <FiPlus className="w-5 h-5 text-white" />
+      <Reveal className="rounded-2xl glass p-6 shadow-card">
+        <div className="mb-6 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-brand-cyan to-brand-teal text-white shadow-glow">
+            <Plus className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Add New Specialization</h2>
-            <p className="text-sm text-gray-600">Create a new medical specialization</p>
+            <h2 className="font-head text-lg font-semibold text-foreground">Add New Specialization</h2>
+            <p className="text-sm text-muted-foreground">Create a new medical specialization</p>
           </div>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="name" className="mb-2 block text-sm font-medium text-muted-foreground">
                 Specialization Name *
               </label>
               <div className="relative">
-                <FiBriefcase className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input 
+                <Briefcase className="absolute left-3 top-1/2 w-5 h-5 -translate-y-1/2 text-muted-foreground" />
+                <input
                   id="name"
                   type="text"
-                  value={name} 
-                  onChange={(e) => setName(e.target.value)} 
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className={cn(inputCls, 'pl-10')}
                   placeholder="e.g., Cardiology, Neurology"
                   required
                 />
               </div>
             </div>
-            
+
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="description" className="mb-2 block text-sm font-medium text-muted-foreground">
                 Description
               </label>
               <div className="relative">
-                <FiFileText className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
-                <textarea 
+                <FileText className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
+                <textarea
                   id="description"
-                  value={description} 
-                  onChange={(e) => setDescription(e.target.value)} 
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white resize-none" 
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className={cn(inputCls, 'resize-none pl-10')}
                   placeholder="Brief description of the specialization"
                   rows="3"
                 />
               </div>
             </div>
           </div>
-          
-          <ActionButton 
+
+          <ActionButton
             type="submit"
             variant="primary"
             size="md"
-            icon={<FiPlus className="w-4 h-4" />}
+            icon={<Plus className="w-4 h-4" />}
             disabled={saving}
             className="w-full md:w-auto"
           >
             {saving ? 'Adding Specialization...' : 'Add Specialization'}
           </ActionButton>
         </form>
-      </div>
+      </Reveal>
 
       {/* Specializations Table */}
       <div className="hidden md:block">
-        <ModernTableContainer
-          title="Medical Specializations"
-          subtitle={`${list.length} specialization${list.length !== 1 ? 's' : ''} available`}
-        >
-          {loading ? (
-            <LoadingState rows={5} />
-          ) : list.length === 0 ? (
-            <EmptyState
-              icon={<FiBriefcase className="w-8 h-8 text-gray-400" />}
-              title="No Specializations Found"
-              description="Add your first medical specialization to get started."
-            />
-          ) : (
-            <table className="min-w-full">
-              <ModernTableHeader columns={columns} />
-              <tbody>
-                {list.map((specialization, index) => (
-                  <ModernTableRow key={specialization._id} isEven={index % 2 === 0}>
-                    <ModernTableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
-                          <FiBriefcase className="w-5 h-5 text-blue-600" />
+        <Reveal>
+          <ModernTableContainer
+            title="Medical Specializations"
+            subtitle={`${list.length} specialization${list.length !== 1 ? 's' : ''} available`}
+          >
+            {loading ? (
+              <LoadingState rows={5} />
+            ) : list.length === 0 ? (
+              <EmptyState
+                icon={<Briefcase className="w-8 h-8 text-muted-foreground" />}
+                title="No Specializations Found"
+                description="Add your first medical specialization to get started."
+              />
+            ) : (
+              <table className="min-w-full">
+                <ModernTableHeader columns={columns} />
+                <tbody>
+                  {list.map((specialization, index) => (
+                    <ModernTableRow key={specialization._id} isEven={index % 2 === 0}>
+                      <ModernTableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-cyan/15">
+                            <Briefcase className="w-5 h-5 text-brand-cyan-fg" />
+                          </div>
+                          <div>
+                            <div className="font-semibold text-foreground">{specialization.name}</div>
+                            <div className="text-sm text-muted-foreground">Medical Specialization</div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="font-semibold text-gray-900">{specialization.name}</div>
-                          <div className="text-sm text-gray-500">Medical Specialization</div>
+                      </ModernTableCell>
+
+                      <ModernTableCell>
+                        <div className="text-foreground">
+                          {specialization.description || (
+                            <span className="italic text-muted-foreground">No description provided</span>
+                          )}
                         </div>
-                      </div>
-                    </ModernTableCell>
-                    
-                    <ModernTableCell>
-                      <div className="text-gray-700">
-                        {specialization.description || (
-                          <span className="text-gray-400 italic">No description provided</span>
-                        )}
-                      </div>
-                    </ModernTableCell>
-                    
-                    <ModernTableCell>
-                      <div className="flex items-center gap-2">
-                        <ActionButton
-                          variant="secondary"
-                          size="sm"
-                          icon={<FiEdit2 className="w-4 h-4" />}
-                          onClick={() => handleEdit(specialization)}
-                          title="Edit"
-                        >
-                          Edit
-                        </ActionButton>
-                        <ActionButton
-                          variant="danger"
-                          size="sm"
-                          icon={<FiTrash2 className="w-4 h-4" />}
-                          onClick={() => setDeletingSpec(specialization)}
-                          title="Delete"
-                        >
-                          Delete
-                        </ActionButton>
-                      </div>
-                    </ModernTableCell>
-                  </ModernTableRow>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </ModernTableContainer>
+                      </ModernTableCell>
+
+                      <ModernTableCell>
+                        <div className="flex items-center gap-2">
+                          <ActionButton
+                            variant="secondary"
+                            size="sm"
+                            icon={<Pencil className="w-4 h-4" />}
+                            onClick={() => handleEdit(specialization)}
+                            title="Edit"
+                          >
+                            Edit
+                          </ActionButton>
+                          <ActionButton
+                            variant="danger"
+                            size="sm"
+                            icon={<Trash2 className="w-4 h-4" />}
+                            onClick={() => setDeletingSpec(specialization)}
+                            title="Delete"
+                          >
+                            Delete
+                          </ActionButton>
+                        </div>
+                      </ModernTableCell>
+                    </ModernTableRow>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </ModernTableContainer>
+        </Reveal>
       </div>
 
       {/* Mobile Card View */}
-      <div className="md:hidden space-y-4">
+      <div className="space-y-4 md:hidden">
         {loading ? (
           <div className="space-y-4">
             {Array.from({ length: 3 }).map((_, index) => (
               <MobileCard key={index}>
                 <div className="animate-pulse">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
+                  <div className="mb-3 flex items-center gap-3">
+                    <div className="h-12 w-12 rounded-lg bg-foreground/10"></div>
                     <div className="flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                      <div className="mb-2 h-4 w-3/4 rounded bg-foreground/10"></div>
+                      <div className="h-3 w-1/2 rounded bg-foreground/10"></div>
                     </div>
                   </div>
                 </div>
@@ -276,7 +286,7 @@ export default function ManageSpecializations() {
         ) : list.length === 0 ? (
           <MobileCard>
             <EmptyState
-              icon={<FiBriefcase className="w-8 h-8 text-gray-400" />}
+              icon={<Briefcase className="w-8 h-8 text-muted-foreground" />}
               title="No Specializations Found"
               description="Add your first medical specialization to get started."
             />
@@ -286,27 +296,27 @@ export default function ManageSpecializations() {
             <MobileCard key={specialization._id}>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
-                    <FiBriefcase className="w-6 h-6 text-blue-600" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-cyan/15">
+                    <Briefcase className="w-6 h-6 text-brand-cyan-fg" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">{specialization.name}</h3>
-                    <p className="text-sm text-gray-500">Medical Specialization</p>
+                    <h3 className="font-semibold text-foreground">{specialization.name}</h3>
+                    <p className="text-sm text-muted-foreground">Medical Specialization</p>
                   </div>
                 </div>
-                
+
                 {specialization.description && (
                   <div>
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Description</label>
-                    <p className="mt-1 text-gray-700">{specialization.description}</p>
+                    <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Description</label>
+                    <p className="mt-1 text-foreground">{specialization.description}</p>
                   </div>
                 )}
 
-                <div className="flex gap-2 pt-3 border-t border-gray-100">
+                <div className="flex gap-2 border-t border-border pt-3">
                   <ActionButton
                     variant="secondary"
                     size="sm"
-                    icon={<FiEdit2 className="w-4 h-4" />}
+                    icon={<Pencil className="w-4 h-4" />}
                     onClick={() => handleEdit(specialization)}
                     className="flex-1"
                   >
@@ -315,7 +325,7 @@ export default function ManageSpecializations() {
                   <ActionButton
                     variant="danger"
                     size="sm"
-                    icon={<FiTrash2 className="w-4 h-4" />}
+                    icon={<Trash2 className="w-4 h-4" />}
                     onClick={() => setDeletingSpec(specialization)}
                     className="flex-1"
                   >
@@ -330,21 +340,22 @@ export default function ManageSpecializations() {
 
       {/* Edit Modal */}
       {editingSpec && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Edit Specialization</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="glass-strong w-full max-w-md rounded-2xl border border-border p-6 shadow-card">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="font-head text-xl font-bold text-foreground">Edit Specialization</h2>
               <button
                 onClick={() => setEditingSpec(null)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-muted-foreground transition-colors hover:text-foreground"
+                aria-label="Close"
               >
-                <FiX className="w-6 h-6" />
+                <X className="w-6 h-6" />
               </button>
             </div>
 
             <form onSubmit={handleUpdate} className="space-y-4">
               <div>
-                <label htmlFor="edit-name" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="edit-name" className="mb-2 block text-sm font-medium text-muted-foreground">
                   Specialization Name *
                 </label>
                 <input
@@ -352,39 +363,36 @@ export default function ManageSpecializations() {
                   type="text"
                   value={editingSpec.name}
                   onChange={(e) => setEditingSpec({ ...editingSpec, name: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className={inputCls}
                   required
                 />
               </div>
 
               <div>
-                <label htmlFor="edit-description" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="edit-description" className="mb-2 block text-sm font-medium text-muted-foreground">
                   Description
                 </label>
                 <textarea
                   id="edit-description"
                   value={editingSpec.description || ''}
                   onChange={(e) => setEditingSpec({ ...editingSpec, description: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none"
+                  className={cn(inputCls, 'resize-none')}
                   rows="3"
                 />
               </div>
 
               <div className="flex gap-3 pt-4">
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  className="flex-1"
                   onClick={() => setEditingSpec(null)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-                >
+                </Button>
+                <Button type="submit" className="flex-1" disabled={saving}>
                   {saving ? 'Updating...' : 'Update'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -393,44 +401,47 @@ export default function ManageSpecializations() {
 
       {/* Delete Confirmation Modal */}
       {deletingSpec && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Confirm Delete</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="glass-strong w-full max-w-md rounded-2xl border border-border p-6 shadow-card">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="font-head text-xl font-bold text-foreground">Confirm Delete</h2>
               <button
                 onClick={() => setDeletingSpec(null)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-muted-foreground transition-colors hover:text-foreground"
+                aria-label="Close"
               >
-                <FiX className="w-6 h-6" />
+                <X className="w-6 h-6" />
               </button>
             </div>
 
             <div className="mb-6">
-              <p className="text-gray-700">
+              <p className="text-foreground">
                 Are you sure you want to delete the specialization{' '}
                 <span className="font-semibold">"{deletingSpec.name}"</span>?
               </p>
-              <p className="text-sm text-red-600 mt-2">
+              <p className="mt-2 text-sm text-error-fg">
                 This action cannot be undone.
               </p>
             </div>
 
             <div className="flex gap-3">
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                className="flex-1"
                 onClick={() => setDeletingSpec(null)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="destructive"
+                className="flex-1"
                 onClick={handleDelete}
                 disabled={saving}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
               >
                 {saving ? 'Deleting...' : 'Delete'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

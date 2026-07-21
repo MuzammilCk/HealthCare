@@ -2,6 +2,19 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import { DashboardStatsSkeleton } from '../../components/ui/SkeletonLoader';
+import { Card } from '../../components/ui/Card';
+import { Badge } from '../../components/ui/Badge';
+import { cn } from '../../utils/cn';
+import Reveal from '../../components/Reveal';
+import {
+  ShieldCheck,
+  Stethoscope,
+  Layers,
+  Clock,
+  Users,
+  Activity,
+  ArrowRight,
+} from 'lucide-react';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -42,47 +55,35 @@ export default function AdminDashboard() {
     {
       title: 'KYC Requests',
       description: 'Review and approve doctor verification requests',
-      icon: (
-        <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
+      icon: ShieldCheck,
       link: '/admin/kyc-requests',
-      color: 'bg-gradient-to-r from-orange-500 to-red-500',
       badge: stats.pendingKyc > 0 ? stats.pendingKyc : null,
-      urgent: stats.pendingKyc > 0
+      urgent: stats.pendingKyc > 0,
+      accent: 'from-brand-cyan to-brand-teal'
     },
     {
       title: 'Manage Doctors',
       description: 'View and manage registered doctors',
-      icon: (
-        <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-3-3h-1m-2-3a3 3 0 11-6 0m3 3a3 3 0 00-3 3v2h5.586a1 1 0 00.707-.293l2.414-2.414A1 1 0 0020 16.586V14a3 3 0 00-3-3z" />
-        </svg>
-      ),
+      icon: Stethoscope,
       link: '/admin/doctors',
-      color: 'bg-gradient-to-r from-blue-500 to-indigo-500',
-      badge: stats.totalDoctors > 0 ? stats.totalDoctors : null
+      badge: stats.totalDoctors > 0 ? stats.totalDoctors : null,
+      accent: 'from-brand-violet to-brand-indigo'
     },
     {
       title: 'Specializations',
       description: 'Manage medical specializations',
-      icon: (
-        <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-        </svg>
-      ),
+      icon: Layers,
       link: '/admin/specializations',
-      color: 'bg-gradient-to-r from-green-500 to-teal-500'
+      accent: 'from-brand-teal to-brand-cyan'
     }
   ];
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-8 bg-background text-foreground">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark mb-2">Admin Dashboard</h1>
-          <p className="text-gray-600 dark:text-text-secondary-dark">Manage your healthcare platform efficiently</p>
+          <h1 className="mb-2 font-head text-3xl font-bold tracking-tight text-foreground">Admin Dashboard</h1>
+          <p className="text-muted-foreground">Manage your healthcare platform efficiently</p>
         </div>
         <DashboardStatsSkeleton />
       </div>
@@ -90,124 +91,106 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark mb-2">Admin Dashboard</h1>
-        <p className="text-gray-600 dark:text-text-secondary-dark">Manage your healthcare platform efficiently</p>
-      </div>
+    <div className="space-y-8 bg-background text-foreground">
+      <Reveal>
+        <div>
+          <h1 className="mb-2 font-head text-3xl font-bold tracking-tight text-foreground">Admin Dashboard</h1>
+          <p className="text-muted-foreground">Manage your healthcare platform efficiently</p>
+        </div>
+      </Reveal>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-sm dark:shadow-card-dark border border-gray-200 dark:border-dark-border p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Pending KYC</p>
-              <p className="text-2xl font-semibold text-gray-900">
-                {loading ? '...' : stats.pendingKyc}
-              </p>
-            </div>
+      <Reveal className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <Card className="flex items-center gap-4 p-6">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-cyan/15 text-brand-cyan-fg shadow-glow">
+            <Clock className="h-6 w-6" />
           </div>
-        </div>
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Pending KYC</p>
+            <p className="font-head text-3xl font-bold text-foreground">{stats.pendingKyc}</p>
+          </div>
+        </Card>
 
-        <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-sm dark:shadow-card-dark border border-gray-200 dark:border-dark-border p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Doctors</p>
-              <p className="text-2xl font-semibold text-gray-900">
-                {loading ? '...' : stats.totalDoctors}
-              </p>
-            </div>
+        <Card className="flex items-center gap-4 p-6">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-violet/15 text-brand-violet shadow-glow">
+            <Users className="h-6 w-6" />
           </div>
-        </div>
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Total Doctors</p>
+            <p className="font-head text-3xl font-bold text-foreground">{stats.totalDoctors}</p>
+          </div>
+        </Card>
 
-        <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-sm dark:shadow-card-dark border border-gray-200 dark:border-dark-border p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Platform Status</p>
-              <p className="text-2xl font-semibold text-green-600">Active</p>
-            </div>
+        <Card className="flex items-center justify-between gap-4 p-6">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Platform Status</p>
+            <p className="mt-1 font-head text-3xl font-bold text-foreground">Active</p>
           </div>
-        </div>
-      </div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-success to-brand-teal text-white shadow-glow">
+            <Activity className="h-6 w-6" />
+          </div>
+        </Card>
+      </Reveal>
 
       {/* Quick Actions */}
-      <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {quickActions.map((action, index) => (
-            <Link
-              key={index}
-              to={action.link}
-              className={`relative block p-6 rounded-xl text-white transition-all duration-200 hover:scale-105 hover:shadow-lg ${action.color} ${action.urgent ? 'ring-2 ring-orange-300 ring-opacity-50 animate-pulse' : ''}`}
-            >
-              {action.badge && (
-                <div className="absolute -top-2 -right-2 bg-white dark:bg-dark-surface text-gray-900 dark:text-text-primary-dark rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold shadow-lg">
-                  {action.badge}
+      <Reveal className="space-y-4">
+        <h2 className="font-head text-2xl font-bold tracking-tight text-foreground">Quick Actions</h2>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {quickActions.map((action) => {
+            const Icon = action.icon;
+            return (
+              <Link
+                key={action.title}
+                to={action.link}
+                className={cn(
+                  'group relative block overflow-hidden rounded-2xl glass p-6 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-glow',
+                  action.urgent && 'ring-2 ring-brand-cyan/40'
+                )}
+              >
+                {action.badge && (
+                  <span className="absolute right-4 top-4 flex h-7 min-w-7 items-center justify-center rounded-full bg-foreground/10 px-2 text-xs font-bold text-foreground">
+                    {action.badge}
+                  </span>
+                )}
+                <div className="flex items-center gap-3">
+                  <div className={cn('flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-glow', action.accent)}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-head text-lg font-semibold text-foreground">{action.title}</h3>
                 </div>
-              )}
-              <div className="flex items-center mb-3">
-                <div className="flex-shrink-0 mr-3">
-                  {action.icon}
+                <p className="mt-3 text-sm text-muted-foreground">{action.description}</p>
+                <div className="mt-4 flex items-center gap-1 text-sm font-medium text-brand-cyan-fg">
+                  <span>Go to {action.title}</span>
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </div>
-                <h3 className="text-lg font-semibold">{action.title}</h3>
-              </div>
-              <p className="text-white/90 text-sm">{action.description}</p>
-              <div className="mt-4 flex items-center text-sm">
-                <span>Go to {action.title}</span>
-                <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
-      </div>
+      </Reveal>
 
-      {/* Recent Activity Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">System Overview</h2>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between py-2">
-            <span className="text-gray-600">Platform Status</span>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-              Operational
-            </span>
+      {/* System Overview */}
+      <Reveal>
+        <Card className="p-6">
+          <h2 className="mb-4 font-head text-xl font-semibold text-foreground">System Overview</h2>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between py-2">
+              <span className="text-muted-foreground">Platform Status</span>
+              <Badge variant="success">Operational</Badge>
+            </div>
+            <div className="flex items-center justify-between py-2">
+              <span className="text-muted-foreground">Database Connection</span>
+              <Badge variant="success">Connected</Badge>
+            </div>
+            <div className="flex items-center justify-between py-2">
+              <span className="text-muted-foreground">Last Updated</span>
+              <span className="text-sm text-muted-foreground">
+                {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}
+              </span>
+            </div>
           </div>
-          <div className="flex items-center justify-between py-2">
-            <span className="text-gray-600">Database Connection</span>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-              Connected
-            </span>
-          </div>
-          <div className="flex items-center justify-between py-2">
-            <span className="text-gray-600">Last Updated</span>
-            <span className="text-gray-500 text-sm">
-              {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}
-            </span>
-          </div>
-        </div>
-      </div>
+        </Card>
+      </Reveal>
     </div>
   );
 }

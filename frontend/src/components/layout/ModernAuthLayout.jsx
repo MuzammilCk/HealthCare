@@ -1,87 +1,105 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import VideoBackground from '../VideoBackground';
+import { motion } from 'framer-motion';
+import AmbientBackdrop from '../../three/AmbientBackdrop';
 import ThemeToggle from '../ThemeToggle';
-
-// Import GIFs from the public directory
-import patientGif from '/patient.gif';
-import doctorGif from '/doctor.gif';
+import { cn } from '../../utils/cn';
 
 const content = {
   patient: {
-    gif: patientGif,
-    title: "Your Health, Your Way",
-    subtitle: "Book appointments, manage prescriptions, and take control of your well-being with ease."
+    title: 'Your Health, Your Way',
+    subtitle: 'Book appointments, manage prescriptions, and take control of your well-being with ease.',
+    accent: 'from-brand-cyan to-brand-teal',
   },
   doctor: {
-    gif: doctorGif,
-    title: "Empowering Medical Professionals",
-    subtitle: "Streamline your appointments, manage patient care, and focus on what matters most."
-  }
+    title: 'Empowering Clinicians',
+    subtitle: 'Streamline appointments, manage patient care, and focus on what matters most.',
+    accent: 'from-brand-violet to-brand-cyan',
+  },
 };
 
 export default function ModernAuthLayout() {
-  const [role, setRole] = useState('patient'); // Default to patient view
+  const [role, setRole] = useState('patient');
   const { pathname } = useLocation();
   const isLogin = pathname.includes('login');
-
-  const { gif, title, subtitle } = content[role];
+  const { title, subtitle, accent } = content[role];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-page dark:bg-bg-page-dark p-4 relative z-10 transition-colors duration-300">
-      <VideoBackground />
-      
-      {/* Theme Toggle - fixed top-right */}
-      <div className="fixed top-4 right-6 z-50">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-4 transition-colors duration-300">
+      {/* 3D ambient stage */}
+      <AmbientBackdrop className="pointer-events-none absolute inset-0 h-full w-full" />
+      <div className="aura-bg pointer-events-none absolute inset-0 opacity-60" aria-hidden="true" />
+
+      <div className="fixed right-6 top-4 z-50">
         <ThemeToggle />
       </div>
-      
-      <main className="w-full max-w-4xl bg-white dark:bg-bg-card-dark rounded-2xl shadow-card dark:shadow-card-dark overflow-hidden grid grid-cols-1 md:grid-cols-2 animate-fade-in transition-colors duration-300">
-        {/* Left Decorative Panel */}
-        <div className="hidden md:flex flex-col items-center justify-center p-8 bg-gradient-to-br from-primary to-secondary text-white text-center">
-          <img 
-            src={gif} 
-            alt={`${role} illustration`} 
-            className="w-48 h-48 mb-6 object-contain slow-gif-animation" 
-            style={{ animationDuration: '3s' }}
-          />
-          <h2 className="text-2xl font-bold mb-2">{title}</h2>
-          <p className="text-sm opacity-90">{subtitle}</p>
+
+      <motion.main
+        initial={{ opacity: 0, y: 24, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10 grid w-full max-w-4xl overflow-hidden rounded-3xl glass-strong shadow-glow lg:grid-cols-2"
+      >
+        {/* Left brand / role panel */}
+        <div
+          className={cn(
+            'relative hidden flex-col justify-between overflow-hidden p-9 text-foreground lg:flex',
+            'bg-gradient-to-br',
+            accent
+          )}
+          style={{ mixBlendMode: 'normal' }}
+        >
+          <div className="pointer-events-none absolute inset-0 bg-white/10" aria-hidden="true" />
+          <div className="relative z-10">
+            <Link to="/" className="font-head text-2xl font-extrabold text-white drop-shadow">
+              HealthSync
+            </Link>
+            <h2 className="mt-10 font-head text-3xl font-bold text-white">{title}</h2>
+            <p className="mt-3 max-w-xs text-sm text-white/85">{subtitle}</p>
+          </div>
+
+          {/* Role segmented toggle */}
+          <div className="relative z-10">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-white/70">
+              I am a
+            </p>
+            <div className="flex rounded-xl bg-black/20 p-1">
+              {['patient', 'doctor'].map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => setRole(r)}
+                  className={cn(
+                    'flex-1 rounded-lg px-4 py-2 text-sm font-semibold capitalize transition-all',
+                    role === r ? 'bg-white text-brand-ink shadow' : 'text-white/80 hover:text-white'
+                  )}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* Right Form Panel */}
-        <div className="p-8 flex flex-col justify-center">
-          <div className="mb-6 text-center">
-            <Link to="/" className="text-3xl font-bold text-primary dark:text-primary-light">HealthSync</Link>
-            <h1 className="text-2xl font-bold text-text-primary dark:text-text-primary-dark mt-4">{isLogin ? "Welcome Back!" : "Create Your Account"}</h1>
-            <p className="text-text-secondary dark:text-text-secondary-dark">{isLogin ? "Sign in to continue your journey." : "Join our community of patients and doctors."}</p>
+        {/* Right form panel */}
+        <div className="flex flex-col justify-center p-8 sm:p-10">
+          <div className="mb-7 text-center">
+            <Link to="/" className="font-head text-3xl font-extrabold text-foreground">
+              Health<span className="text-aurora">Sync</span>
+            </Link>
+            <h1 className="mt-4 font-head text-2xl font-bold text-foreground">
+              {isLogin ? 'Welcome back' : 'Create your account'}
+            </h1>
+            <p className="mt-1 text-muted-foreground">
+              {isLogin
+                ? 'Sign in to continue your journey.'
+                : 'Join our community of patients and clinicians.'}
+            </p>
           </div>
-          {/* Outlet provides the role and setRole function to the Login/Register components */}
+
           <Outlet context={{ role, setRole }} />
         </div>
-      </main>
-      <style>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
-        
-        .slow-gif-animation {
-          animation: slow-pulse 4s ease-in-out infinite;
-        }
-        
-        @keyframes slow-pulse {
-          0%, 100% { 
-            transform: scale(1);
-            opacity: 1;
-          }
-          50% { 
-            transform: scale(1.05);
-            opacity: 0.9;
-          }
-        }
-      `}</style>
+      </motion.main>
     </div>
   );
 }

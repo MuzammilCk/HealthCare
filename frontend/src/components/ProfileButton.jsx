@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Avatar } from './ui';
 import './ProfileButton.css';
-import { GoArrowRight } from 'react-icons/go';
-import { FiUser } from 'react-icons/fi';
+import { ArrowRight, User } from 'lucide-react';
 
 
 export default function ProfileButton() {
@@ -65,9 +64,9 @@ export default function ProfileButton() {
               className="profile-menu-item"
               onClick={() => setIsOpen(false)}
             >
-              <FiUser className="w-4 h-4" />
+              <User className="w-4 h-4" />
               <span>Profile</span>
-              <GoArrowRight />
+              <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
           
@@ -75,7 +74,7 @@ export default function ProfileButton() {
           
           <button onClick={logout} className="profile-menu-item logout-button">
             <span>Logout</span>
-            <GoArrowRight />
+            <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       )}

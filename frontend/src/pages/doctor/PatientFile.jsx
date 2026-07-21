@@ -2,19 +2,22 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
+import { cn } from '../../utils/cn';
+import { Button, buttonVariants } from '../../components/ui/Button';
+import Reveal from '../../components/Reveal';
 import {
-  FiSearch,
-  FiUser,
-  FiFileText,
-  FiCalendar,
-  FiDollarSign,
-  FiActivity,
-  FiClock,
-  FiCheckCircle,
-  FiXCircle,
-  FiAlertCircle,
-  FiHeart
-} from 'react-icons/fi';
+  Search,
+  User,
+  FileText,
+  Calendar,
+  IndianRupee,
+  Activity,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  Heart
+} from 'lucide-react';
 
 export default function PatientFile() {
   const navigate = useNavigate();
@@ -25,6 +28,9 @@ export default function PatientFile() {
   const [patientFile, setPatientFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+
+  const inputCls =
+    'w-full rounded-xl bg-background/60 border border-border px-4 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors';
 
   // Search patients
   const searchPatients = async () => {
@@ -81,560 +87,569 @@ export default function PatientFile() {
   // Get status badge color
   const getStatusColor = (status) => {
     const colors = {
-      'Scheduled': 'bg-blue-100 text-blue-800',
-      'Completed': 'bg-green-100 text-green-800',
-      'Cancelled': 'bg-red-100 text-red-800',
-      'cancelled_refunded': 'bg-orange-100 text-orange-800',
-      'cancelled_no_refund': 'bg-red-100 text-red-800',
-      'Missed': 'bg-orange-100 text-orange-800',
-      'Rejected': 'bg-red-100 text-red-800',
-      'paid': 'bg-green-100 text-green-800',
-      'unpaid': 'bg-yellow-100 text-yellow-800'
+      'Scheduled': 'bg-brand-cyan/15 text-brand-cyan-fg',
+      'Completed': 'bg-success/15 text-success-fg',
+      'Cancelled': 'bg-error/15 text-error-fg',
+      'cancelled_refunded': 'bg-amber-400/15 text-amber-500',
+      'cancelled_no_refund': 'bg-error/15 text-error-fg',
+      'Missed': 'bg-amber-400/15 text-amber-500',
+      'Rejected': 'bg-error/15 text-error-fg',
+      'paid': 'bg-success/15 text-success-fg',
+      'unpaid': 'bg-amber-400/15 text-amber-500'
     };
-    return colors[status] || 'bg-gray-100 text-gray-800';
+    return colors[status] || 'bg-foreground/5 text-muted-foreground';
   };
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold text-text-primary mb-6 flex items-center">
-        <FiFileText className="mr-3 text-primary" />
-        Patient File Viewer
-      </h1>
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="mx-auto max-w-7xl p-6">
+        <Reveal>
+          <h1 className="mb-6 flex items-center font-head text-3xl font-bold tracking-tight text-foreground">
+            <FileText className="mr-3 h-7 w-7 text-brand-cyan-fg" />
+            Patient File Viewer
+          </h1>
+        </Reveal>
 
-      {/* Search Section */}
-      <div className="bg-white dark:bg-bg-card-dark p-6 rounded-xl shadow-card dark:shadow-card-dark mb-6">
-        <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-text-primary-dark">Search Patient</h2>
-        <div className="flex gap-3">
-          <div className="flex-1 relative">
-            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && searchPatients()}
-              placeholder="Search by patient name or email..."
-              className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50"
-            />
-          </div>
-          <button
-            onClick={searchPatients}
-            disabled={searching}
-            className="px-6 bg-primary text-white font-semibold rounded-lg hover:bg-primary-light transition-all disabled:opacity-50"
-          >
-            {searching ? 'Searching...' : 'Search'}
-          </button>
-        </div>
-
-        {/* Search Results */}
-        {searchResults.length > 0 && (
-          <div className="mt-4 border border-slate-200 rounded-lg divide-y">
-            {searchResults.map((patient) => (
-              <button
-                key={patient._id}
-                onClick={() => loadPatientFile(patient._id)}
-                className="w-full p-4 hover:bg-slate-50 text-left transition-colors flex items-center justify-between"
+        {/* Search Section */}
+        <Reveal>
+          <div className="glass mb-6 rounded-2xl p-6 shadow-card">
+            <h2 className="mb-4 font-head text-lg font-semibold text-foreground">Search Patient</h2>
+            <div className="flex gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && searchPatients()}
+                  placeholder="Search by patient name or email..."
+                  className="h-12 w-full rounded-xl border border-border bg-background/60 pl-12 pr-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+              </div>
+              <Button
+                onClick={searchPatients}
+                disabled={searching}
               >
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-3">
-                    <FiUser className="text-primary" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-text-primary">{patient.name}</div>
-                    <div className="text-sm text-text-secondary">{patient.email}</div>
-                  </div>
-                </div>
-                <div className="text-sm text-text-secondary">{patient.district}</div>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+                {searching ? 'Searching...' : 'Search'}
+              </Button>
+            </div>
 
-      {/* Loading State */}
-      {loading && (
-        <div className="text-center py-12">
-          <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-text-secondary">Loading patient file...</p>
-        </div>
-      )}
-
-      {/* Patient File */}
-      {!loading && patientFile && (
-        <div className="space-y-6">
-          {/* Patient Header */}
-          <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-xl border border-primary/20">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center">
-                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mr-4">
-                  <FiUser className="text-primary text-2xl" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-text-primary">{patientFile.patient.name}</h2>
-                  <p className="text-text-secondary">{patientFile.patient.email}</p>
-                  <p className="text-sm text-text-secondary mt-1">
-                    District: {patientFile.patient.district || 'Not specified'}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  setPatientFile(null);
-                  setSelectedPatient(null);
-                }}
-                className="text-sm text-text-secondary hover:text-text-primary"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-bg-card-dark p-4 rounded-lg shadow-card dark:shadow-card-dark">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-text-secondary">Total Appointments</p>
-                  <p className="text-2xl font-bold text-text-primary">{patientFile.appointments.total}</p>
-                </div>
-                <FiCalendar className="text-3xl text-blue-500" />
-              </div>
-            </div>
-            <div className="bg-white dark:bg-bg-card-dark p-4 rounded-lg shadow-card dark:shadow-card-dark">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-text-secondary">Completed</p>
-                  <p className="text-2xl font-bold text-green-600">{patientFile.appointments.completed}</p>
-                </div>
-                <FiCheckCircle className="text-3xl text-green-500" />
-              </div>
-            </div>
-            <div className="bg-white dark:bg-bg-card-dark p-4 rounded-lg shadow-card dark:shadow-card-dark">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-text-secondary">Prescriptions</p>
-                  <p className="text-2xl font-bold text-text-primary">{patientFile.prescriptions.total}</p>
-                </div>
-                <FiFileText className="text-3xl text-purple-500" />
-              </div>
-            </div>
-            <div className="bg-white dark:bg-bg-card-dark p-4 rounded-lg shadow-card dark:shadow-card-dark">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-text-secondary">Unpaid Bills</p>
-                  <p className="text-2xl font-bold text-orange-600">{patientFile.bills.unpaid}</p>
-                </div>
-                <FiDollarSign className="text-3xl text-orange-500" />
-              </div>
-            </div>
-          </div>
-
-          {/* Tabs */}
-          <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-card dark:shadow-card-dark">
-            <div className="border-b border-slate-200">
-              <div className="flex">
-                {[
-                  { id: 'overview', label: 'Overview', icon: FiActivity },
-                  { id: 'appointments', label: 'Appointments', icon: FiCalendar },
-                  { id: 'prescriptions', label: 'Prescriptions', icon: FiFileText },
-                  { id: 'bills', label: 'Bills', icon: FiDollarSign },
-                  { id: 'medicalHistory', label: 'Medical History', icon: FiHeart }
-                ].map((tab) => (
+            {/* Search Results */}
+            {searchResults.length > 0 && (
+              <div className="mt-4 divide-y divide-border rounded-lg border border-border">
+                {searchResults.map((patient) => (
                   <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center px-6 py-4 font-medium transition-colors border-b-2 ${
-                      activeTab === tab.id
-                        ? 'border-primary text-primary'
-                        : 'border-transparent text-text-secondary hover:text-text-primary'
-                    }`}
+                    key={patient._id}
+                    onClick={() => loadPatientFile(patient._id)}
+                    className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-foreground/5"
                   >
-                    <tab.icon className="mr-2" />
-                    {tab.label}
+                    <div className="flex items-center">
+                      <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-full bg-brand-cyan/10">
+                        <User className="text-brand-cyan-fg" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-foreground">{patient.name}</div>
+                        <div className="text-sm text-muted-foreground">{patient.email}</div>
+                      </div>
+                    </div>
+                    <div className="text-sm text-muted-foreground">{patient.district}</div>
                   </button>
                 ))}
               </div>
-            </div>
+            )}
+          </div>
+        </Reveal>
 
-            <div className="p-6">
-              {/* Overview Tab */}
-              {activeTab === 'overview' && (
-                <div className="space-y-6">
-                  {/* Medical History */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3">Medical History</h3>
-                    
-                    {/* Correction Request Warning */}
-                    {patientFile.medicalHistory?.correctionRequested && (
-                      <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded mb-4">
-                        <div className="flex items-start">
-                          <FiAlertCircle className="text-yellow-600 mt-0.5 mr-3 flex-shrink-0" />
-                          <div>
-                            <p className="font-semibold text-yellow-900">⚠️ Correction Requested</p>
-                            <p className="text-sm text-yellow-700 mt-1">
-                              Patient requested correction on {new Date(patientFile.medicalHistory.correctionRequestDate).toLocaleDateString()}
-                            </p>
-                            {patientFile.medicalHistory.correctionRequestMessage && (
-                              <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-2 italic bg-white dark:bg-yellow-900/20 p-2 rounded border border-yellow-300 dark:border-yellow-600">
-                                "{patientFile.medicalHistory.correctionRequestMessage}"
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {patientFile.medicalHistory ? (
-                      <div className="bg-slate-50 p-4 rounded-lg space-y-2">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <span className="font-medium text-text-secondary">Blood Type:</span>{' '}
-                            <span className="text-text-primary">{patientFile.medicalHistory.bloodType}</span>
-                          </div>
-                          <div>
-                            <span className="font-medium text-text-secondary">Height:</span>{' '}
-                            <span className="text-text-primary">
-                              {patientFile.medicalHistory.height ? `${patientFile.medicalHistory.height} cm` : 'Not specified'}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="font-medium text-text-secondary">Weight:</span>{' '}
-                            <span className="text-text-primary">
-                              {patientFile.medicalHistory.weight ? `${patientFile.medicalHistory.weight} kg` : 'Not specified'}
-                            </span>
-                          </div>
-                        </div>
-                        {patientFile.medicalHistory.allergies && patientFile.medicalHistory.allergies.length > 0 && (
-                          <div className="mt-3">
-                            <span className="font-medium text-text-secondary">Allergies:</span>
-                            <div className="flex flex-wrap gap-2 mt-1">
-                              {patientFile.medicalHistory.allergies.map((allergy, idx) => (
-                                <span key={idx} className="px-2 py-1 bg-red-100 text-red-800 text-sm rounded">
-                                  {allergy.name}
-                                </span>
-                              ))}
+        {/* Loading State */}
+        {loading && (
+          <div className="py-12 text-center">
+            <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-2 border-brand-cyan/30 border-t-brand-cyan" />
+            <p className="text-muted-foreground">Loading patient file...</p>
+          </div>
+        )}
+
+        {/* Patient File */}
+        {!loading && patientFile && (
+          <Reveal>
+            <div className="space-y-6">
+              {/* Patient Header */}
+              <div className="rounded-2xl border border-brand-cyan/20 bg-gradient-to-br from-brand-cyan/10 to-brand-teal/5 p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center">
+                    <div className="mr-4 flex h-16 w-16 items-center justify-center rounded-full bg-brand-cyan/20">
+                      <User className="text-2xl text-brand-cyan-fg" />
+                    </div>
+                    <div>
+                      <h2 className="font-head text-2xl font-bold text-foreground">{patientFile.patient.name}</h2>
+                      <p className="text-muted-foreground">{patientFile.patient.email}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        District: {patientFile.patient.district || 'Not specified'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setPatientFile(null);
+                      setSelectedPatient(null);
+                    }}
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+                <div className="glass rounded-xl p-4 shadow-card">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Appointments</p>
+                      <p className="text-2xl font-bold text-foreground">{patientFile.appointments.total}</p>
+                    </div>
+                    <Calendar className="h-8 w-8 text-brand-cyan-fg" />
+                  </div>
+                </div>
+                <div className="glass rounded-xl p-4 shadow-card">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Completed</p>
+                      <p className="text-2xl font-bold text-success-fg">{patientFile.appointments.completed}</p>
+                    </div>
+                    <CheckCircle2 className="h-8 w-8 text-success-fg" />
+                  </div>
+                </div>
+                <div className="glass rounded-xl p-4 shadow-card">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Prescriptions</p>
+                      <p className="text-2xl font-bold text-foreground">{patientFile.prescriptions.total}</p>
+                    </div>
+                    <FileText className="h-8 w-8 text-brand-violet" />
+                  </div>
+                </div>
+                <div className="glass rounded-xl p-4 shadow-card">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Unpaid Bills</p>
+                      <p className="text-2xl font-bold text-amber-500">{patientFile.bills.unpaid}</p>
+                    </div>
+                    <IndianRupee className="h-8 w-8 text-amber-500" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Tabs */}
+              <div className="glass rounded-2xl shadow-card">
+                <div className="border-b border-border">
+                  <div className="flex">
+                    {[
+                      { id: 'overview', label: 'Overview', icon: Activity },
+                      { id: 'appointments', label: 'Appointments', icon: Calendar },
+                      { id: 'prescriptions', label: 'Prescriptions', icon: FileText },
+                      { id: 'bills', label: 'Bills', icon: IndianRupee },
+                      { id: 'medicalHistory', label: 'Medical History', icon: Heart }
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex items-center border-b-2 px-6 py-4 font-medium transition-colors ${
+                          activeTab === tab.id
+                            ? 'border-brand-cyan text-brand-cyan-fg'
+                            : 'border-transparent text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        <tab.icon className="mr-2 h-4 w-4" />
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-6">
+                  {/* Overview Tab */}
+                  {activeTab === 'overview' && (
+                    <div className="space-y-6">
+                      {/* Medical History */}
+                      <div>
+                        <h3 className="mb-3 font-head text-lg font-semibold text-foreground">Medical History</h3>
+
+                        {/* Correction Request Warning */}
+                        {patientFile.medicalHistory?.correctionRequested && (
+                          <div className="mb-4 rounded-lg border-l-4 border-amber-400 bg-amber-400/10 p-4">
+                            <div className="flex items-start">
+                              <AlertTriangle className="mt-0.5 mr-3 flex-shrink-0 text-amber-600" />
+                              <div>
+                                <p className="font-semibold text-amber-700">⚠️ Correction Requested</p>
+                                <p className="mt-1 text-sm text-amber-600">
+                                  Patient requested correction on {new Date(patientFile.medicalHistory.correctionRequestDate).toLocaleDateString()}
+                                </p>
+                                {patientFile.medicalHistory.correctionRequestMessage && (
+                                  <p className="mt-2 rounded border border-amber-400/30 bg-amber-400/10 p-2 text-sm italic text-amber-600">
+                                    "{patientFile.medicalHistory.correctionRequestMessage}"
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           </div>
                         )}
-                      </div>
-                    ) : (
-                      <p className="text-text-secondary">No medical history available</p>
-                    )}
-                  </div>
 
-                  {/* Quick Stats */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3">Summary</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-blue-50 p-4 rounded-lg">
-                        <p className="text-sm text-blue-600 font-medium">Upcoming Appointments</p>
-                        <p className="text-2xl font-bold text-blue-700">{patientFile.appointments.upcoming}</p>
-                      </div>
-                      <div className="bg-orange-50 p-4 rounded-lg">
-                        <p className="text-sm text-orange-600 font-medium">Total Unpaid Amount</p>
-                        <p className="text-2xl font-bold text-orange-700">
-                          {formatCurrency(patientFile.bills.totalUnpaidAmount)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Appointments Tab */}
-              {activeTab === 'appointments' && (
-                <div className="space-y-3">
-                  {patientFile.appointments.data.length > 0 ? (
-                    patientFile.appointments.data.map((appt) => (
-                      <div key={appt._id} className="border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="flex items-center gap-2 mb-2">
-                              <FiCalendar className="text-primary" />
-                              <span className="font-medium">{formatDate(appt.date)}</span>
-                              <span className="text-text-secondary">•</span>
-                              <span className="text-text-secondary">{appt.timeSlot}</span>
+                        {patientFile.medicalHistory ? (
+                          <div className="space-y-2 rounded-lg bg-foreground/5 p-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <span className="font-medium text-muted-foreground">Blood Type:</span>{' '}
+                                <span className="text-foreground">{patientFile.medicalHistory.bloodType}</span>
+                              </div>
+                              <div>
+                                <span className="font-medium text-muted-foreground">Height:</span>{' '}
+                                <span className="text-foreground">
+                                  {patientFile.medicalHistory.height ? `${patientFile.medicalHistory.height} cm` : 'Not specified'}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="font-medium text-muted-foreground">Weight:</span>{' '}
+                                <span className="text-foreground">
+                                  {patientFile.medicalHistory.weight ? `${patientFile.medicalHistory.weight} kg` : 'Not specified'}
+                                </span>
+                              </div>
                             </div>
-                            <div className="text-sm text-text-secondary">
-                              Doctor: {appt.doctorId?.name || 'Unknown'}
-                            </div>
-                            {appt.notes && (
-                              <div className="text-sm text-text-secondary mt-1">
-                                Notes: {appt.notes}
+                            {patientFile.medicalHistory.allergies && patientFile.medicalHistory.allergies.length > 0 && (
+                              <div className="mt-3">
+                                <span className="font-medium text-muted-foreground">Allergies:</span>
+                                <div className="mt-1 flex flex-wrap gap-2">
+                                  {patientFile.medicalHistory.allergies.map((allergy, idx) => (
+                                    <span key={idx} className="rounded bg-error/15 px-2 py-1 text-sm text-error-fg">
+                                      {allergy.name}
+                                    </span>
+                                  ))}
+                                </div>
                               </div>
                             )}
                           </div>
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(appt.status)}`}>
-                            {appt.status}
-                          </span>
+                        ) : (
+                          <p className="text-muted-foreground">No medical history available</p>
+                        )}
+                      </div>
+
+                      {/* Quick Stats */}
+                      <div>
+                        <h3 className="mb-3 font-head text-lg font-semibold text-foreground">Summary</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="rounded-lg bg-brand-cyan/10 p-4">
+                            <p className="text-sm font-medium text-brand-cyan-fg">Upcoming Appointments</p>
+                            <p className="text-2xl font-bold text-brand-cyan-fg">{patientFile.appointments.upcoming}</p>
+                          </div>
+                          <div className="rounded-lg bg-amber-400/10 p-4">
+                            <p className="text-sm font-medium text-amber-500">Total Unpaid Amount</p>
+                            <p className="text-2xl font-bold text-amber-600">
+                              {formatCurrency(patientFile.bills.totalUnpaidAmount)}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    ))
-                  ) : (
-                    <p className="text-center text-text-secondary py-8">No appointments found</p>
+                    </div>
                   )}
-                </div>
-              )}
 
-              {/* Prescriptions Tab */}
-              {activeTab === 'prescriptions' && (
-                <div className="space-y-3">
-                  {patientFile.prescriptions.data.length > 0 ? (
-                    patientFile.prescriptions.data.map((pres) => (
-                      <div key={pres._id} className="border border-slate-200 rounded-lg p-4">
-                        <div className="flex justify-between items-start mb-3">
-                          <div>
-                            <div className="font-medium text-text-primary">
-                              {formatDate(pres.dateIssued)}
-                            </div>
-                            <div className="text-sm text-text-secondary">
-                              Dr. {pres.doctorId?.name || 'Unknown'}
+                  {/* Appointments Tab */}
+                  {activeTab === 'appointments' && (
+                    <div className="space-y-3">
+                      {patientFile.appointments.data.length > 0 ? (
+                        patientFile.appointments.data.map((appt) => (
+                          <div key={appt._id} className="rounded-lg border border-border p-4 transition-shadow hover:shadow-card">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <div className="mb-2 flex items-center gap-2">
+                                  <Calendar className="text-brand-cyan-fg" />
+                                  <span className="font-medium">{formatDate(appt.date)}</span>
+                                  <span className="text-muted-foreground">•</span>
+                                  <span className="text-muted-foreground">{appt.timeSlot}</span>
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  Doctor: {appt.doctorId?.name || 'Unknown'}
+                                </div>
+                                {appt.notes && (
+                                  <div className="mt-1 text-sm text-muted-foreground">
+                                    Notes: {appt.notes}
+                                  </div>
+                                )}
+                              </div>
+                              <span className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(appt.status)}`}>
+                                {appt.status}
+                              </span>
                             </div>
                           </div>
-                          {pres.consultationFee > 0 && (
-                            <div className="text-sm font-medium text-primary">
-                              Fee: {formatCurrency(pres.consultationFee)}
+                        ))
+                      ) : (
+                        <p className="py-8 text-center text-muted-foreground">No appointments found</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Prescriptions Tab */}
+                  {activeTab === 'prescriptions' && (
+                    <div className="space-y-3">
+                      {patientFile.prescriptions.data.length > 0 ? (
+                        patientFile.prescriptions.data.map((pres) => (
+                          <div key={pres._id} className="rounded-lg border border-border p-4">
+                            <div className="mb-3 flex items-start justify-between">
+                              <div>
+                                <div className="font-medium text-foreground">
+                                  {formatDate(pres.dateIssued)}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  Dr. {pres.doctorId?.name || 'Unknown'}
+                                </div>
+                              </div>
+                              {pres.consultationFee > 0 && (
+                                <div className="text-sm font-medium text-brand-cyan-fg">
+                                  Fee: {formatCurrency(pres.consultationFee)}
+                                </div>
+                              )}
+                            </div>
+                            {pres.diagnosis && (
+                              <div className="mb-2">
+                                <span className="font-medium text-muted-foreground">Diagnosis:</span>{' '}
+                                <span className="text-foreground">{pres.diagnosis}</span>
+                              </div>
+                            )}
+                            {pres.medicines && pres.medicines.length > 0 && (
+                              <div>
+                                <span className="font-medium text-muted-foreground">Medicines:</span>
+                                <div className="mt-2 space-y-2">
+                                  {pres.medicines.map((med, idx) => (
+                                    <div key={idx} className="rounded bg-foreground/5 p-3 text-sm">
+                                      <div className="font-medium text-foreground">{med.medicineName}</div>
+                                      <div className="text-muted-foreground">
+                                        {med.dosage} • {med.frequency} • {med.duration}
+                                      </div>
+                                      {med.instructions && (
+                                        <div className="mt-1 text-xs text-muted-foreground">
+                                          {med.instructions}
+                                        </div>
+                                      )}
+                                      {med.purchaseFromHospital && (
+                                        <span className="mt-1 inline-block rounded bg-success/15 px-2 py-0.5 text-xs text-success-fg">
+                                          Billed
+                                        </span>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <p className="py-8 text-center text-muted-foreground">No prescriptions found</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Bills Tab */}
+                  {activeTab === 'bills' && (
+                    <div className="space-y-3">
+                      {patientFile.bills.data.length > 0 ? (
+                        patientFile.bills.data.map((bill) => (
+                          <div key={bill._id} className="rounded-lg border border-border p-4">
+                            <div className="mb-3 flex items-start justify-between">
+                              <div>
+                                <div className="font-medium text-foreground">
+                                  Bill #{bill._id.slice(-6)}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  {formatDate(bill.createdAt)}
+                                </div>
+                              </div>
+                              <span className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(bill.status)}`}>
+                                {bill.status}
+                              </span>
+                            </div>
+                            <div className="mb-3 space-y-1">
+                              {bill.items.map((item, idx) => (
+                                <div key={idx} className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">
+                                    {item.description} × {item.quantity}
+                                  </span>
+                                  <span className="font-medium text-foreground">
+                                    {formatCurrency(item.amount * item.quantity)}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="flex justify-between border-t border-border pt-2 font-bold">
+                              <span className="text-foreground">Total</span>
+                              <span className="text-brand-cyan-fg">{formatCurrency(bill.totalAmount)}</span>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="py-8 text-center text-muted-foreground">No bills found</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Medical History Tab */}
+                  {activeTab === 'medicalHistory' && (
+                    <div className="space-y-4">
+                      <div className="mb-4 flex items-center justify-between">
+                        <h3 className="font-head text-lg font-semibold text-foreground">Complete Medical History</h3>
+                        <Button
+                          size="sm"
+                          onClick={() => navigate('/doctor/edit-medical-history', {
+                            state: { patientId: selectedPatient._id, patientName: selectedPatient.name }
+                          })}
+                        >
+                          Edit Medical History
+                        </Button>
+                      </div>
+
+                      {patientFile.medicalHistory ? (
+                        <div className="space-y-4">
+                          {/* Basic Info */}
+                          <div className="rounded-lg bg-foreground/5 p-4">
+                            <h4 className="mb-3 font-semibold text-foreground">Basic Information</h4>
+                            <div className="grid grid-cols-3 gap-4">
+                              <div>
+                                <span className="text-sm text-muted-foreground">Blood Type:</span>
+                                <p className="font-medium text-foreground">{patientFile.medicalHistory.bloodType}</p>
+                              </div>
+                              <div>
+                                <span className="text-sm text-muted-foreground">Height:</span>
+                                <p className="font-medium text-foreground">
+                                  {patientFile.medicalHistory.height ? `${patientFile.medicalHistory.height} cm` : 'Not specified'}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-sm text-muted-foreground">Weight:</span>
+                                <p className="font-medium text-foreground">
+                                  {patientFile.medicalHistory.weight ? `${patientFile.medicalHistory.weight} kg` : 'Not specified'}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Allergies */}
+                          {patientFile.medicalHistory.allergies && patientFile.medicalHistory.allergies.length > 0 && (
+                            <div className="rounded-lg border border-error/20 bg-error/10 p-4">
+                              <h4 className="mb-3 font-semibold text-error-fg">Allergies</h4>
+                              <div className="space-y-2">
+                                {patientFile.medicalHistory.allergies.map((allergy, idx) => (
+                                  <div key={idx} className="rounded border border-border bg-foreground/5 p-3">
+                                    <div className="flex justify-between">
+                                      <span className="font-medium text-error-fg">{allergy.name}</span>
+                                      <span className={`rounded px-2 py-1 text-xs ${
+                                        allergy.severity === 'severe' ? 'bg-error/20 text-error-fg' :
+                                        allergy.severity === 'moderate' ? 'bg-amber-400/20 text-amber-600' :
+                                        'bg-success/20 text-success-fg'
+                                      }`}>
+                                        {allergy.severity}
+                                      </span>
+                                    </div>
+                                    {allergy.reaction && (
+                                      <p className="mt-1 text-sm text-error/80">Reaction: {allergy.reaction}</p>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           )}
-                        </div>
-                        {pres.diagnosis && (
-                          <div className="mb-2">
-                            <span className="font-medium text-text-secondary">Diagnosis:</span>{' '}
-                            <span className="text-text-primary">{pres.diagnosis}</span>
-                          </div>
-                        )}
-                        {pres.medicines && pres.medicines.length > 0 && (
-                          <div>
-                            <span className="font-medium text-text-secondary">Medicines:</span>
-                            <div className="mt-2 space-y-2">
-                              {pres.medicines.map((med, idx) => (
-                                <div key={idx} className="bg-slate-50 p-3 rounded text-sm">
-                                  <div className="font-medium">{med.medicineName}</div>
-                                  <div className="text-text-secondary">
-                                    {med.dosage} • {med.frequency} • {med.duration}
-                                  </div>
-                                  {med.instructions && (
-                                    <div className="text-text-secondary text-xs mt-1">
-                                      {med.instructions}
+
+                          {/* Conditions */}
+                          {patientFile.medicalHistory.pastConditions && patientFile.medicalHistory.pastConditions.length > 0 && (
+                            <div className="rounded-lg border border-brand-cyan/20 bg-brand-cyan/10 p-4">
+                              <h4 className="mb-3 font-semibold text-brand-cyan-fg">Past Medical Conditions</h4>
+                              <div className="space-y-2">
+                                {patientFile.medicalHistory.pastConditions.map((condition, idx) => (
+                                  <div key={idx} className="rounded border border-border bg-foreground/5 p-3">
+                                    <div className="flex justify-between">
+                                      <span className="font-medium text-brand-cyan-fg">{condition.name}</span>
+                                      <span className={`rounded px-2 py-1 text-xs ${
+                                        condition.status === 'active' ? 'bg-error/20 text-error-fg' :
+                                        condition.status === 'chronic' ? 'bg-amber-400/20 text-amber-600' :
+                                        'bg-success/20 text-success-fg'
+                                      }`}>
+                                        {condition.status}
+                                      </span>
                                     </div>
-                                  )}
-                                  {med.purchaseFromHospital && (
-                                    <span className="inline-block mt-1 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded">
-                                      Billed
-                                    </span>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-center text-text-secondary py-8">No prescriptions found</p>
-                  )}
-                </div>
-              )}
-
-              {/* Bills Tab */}
-              {activeTab === 'bills' && (
-                <div className="space-y-3">
-                  {patientFile.bills.data.length > 0 ? (
-                    patientFile.bills.data.map((bill) => (
-                      <div key={bill._id} className="border border-slate-200 rounded-lg p-4">
-                        <div className="flex justify-between items-start mb-3">
-                          <div>
-                            <div className="font-medium text-text-primary">
-                              Bill #{bill._id.slice(-6)}
-                            </div>
-                            <div className="text-sm text-text-secondary">
-                              {formatDate(bill.createdAt)}
-                            </div>
-                          </div>
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(bill.status)}`}>
-                            {bill.status}
-                          </span>
-                        </div>
-                        <div className="space-y-1 mb-3">
-                          {bill.items.map((item, idx) => (
-                            <div key={idx} className="flex justify-between text-sm">
-                              <span className="text-text-secondary">
-                                {item.description} × {item.quantity}
-                              </span>
-                              <span className="text-text-primary font-medium">
-                                {formatCurrency(item.amount * item.quantity)}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="border-t pt-2 flex justify-between font-bold">
-                          <span>Total</span>
-                          <span className="text-primary">{formatCurrency(bill.totalAmount)}</span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-center text-text-secondary py-8">No bills found</p>
-                  )}
-                </div>
-              )}
-
-              {/* Medical History Tab */}
-              {activeTab === 'medicalHistory' && (
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold">Complete Medical History</h3>
-                    <button
-                      onClick={() => navigate('/doctor/edit-medical-history', {
-                        state: { patientId: selectedPatient._id, patientName: selectedPatient.name }
-                      })}
-                      className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors"
-                    >
-                      Edit Medical History
-                    </button>
-                  </div>
-                  
-                  {patientFile.medicalHistory ? (
-                    <div className="space-y-4">
-                      {/* Basic Info */}
-                      <div className="bg-slate-50 p-4 rounded-lg">
-                        <h4 className="font-semibold mb-3">Basic Information</h4>
-                        <div className="grid grid-cols-3 gap-4">
-                          <div>
-                            <span className="text-sm text-text-secondary">Blood Type:</span>
-                            <p className="font-medium">{patientFile.medicalHistory.bloodType}</p>
-                          </div>
-                          <div>
-                            <span className="text-sm text-text-secondary">Height:</span>
-                            <p className="font-medium">
-                              {patientFile.medicalHistory.height ? `${patientFile.medicalHistory.height} cm` : 'Not specified'}
-                            </p>
-                          </div>
-                          <div>
-                            <span className="text-sm text-text-secondary">Weight:</span>
-                            <p className="font-medium">
-                              {patientFile.medicalHistory.weight ? `${patientFile.medicalHistory.weight} kg` : 'Not specified'}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Allergies */}
-                      {patientFile.medicalHistory.allergies && patientFile.medicalHistory.allergies.length > 0 && (
-                        <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                          <h4 className="font-semibold mb-3 text-red-900">Allergies</h4>
-                          <div className="space-y-2">
-                            {patientFile.medicalHistory.allergies.map((allergy, idx) => (
-                              <div key={idx} className="bg-white dark:bg-red-900/20 p-3 rounded border border-red-200 dark:border-red-600">
-                                <div className="flex justify-between">
-                                  <span className="font-medium text-red-900">{allergy.name}</span>
-                                  <span className={`px-2 py-1 rounded text-xs ${
-                                    allergy.severity === 'severe' ? 'bg-red-200 text-red-900' :
-                                    allergy.severity === 'moderate' ? 'bg-yellow-200 text-yellow-900' :
-                                    'bg-green-200 text-green-900'
-                                  }`}>
-                                    {allergy.severity}
-                                  </span>
-                                </div>
-                                {allergy.reaction && (
-                                  <p className="text-sm text-red-700 mt-1">Reaction: {allergy.reaction}</p>
-                                )}
+                                    {condition.notes && (
+                                      <p className="mt-1 text-sm text-brand-cyan/80">{condition.notes}</p>
+                                    )}
+                                  </div>
+                                ))}
                               </div>
-                            ))}
+                            </div>
+                          )}
+
+                          {/* Current Medications */}
+                          {patientFile.medicalHistory.currentMedications && patientFile.medicalHistory.currentMedications.length > 0 && (
+                            <div className="rounded-lg border border-brand-violet/20 bg-brand-violet/10 p-4">
+                              <h4 className="mb-3 font-semibold text-brand-violet">Current Medications</h4>
+                              <div className="space-y-2">
+                                {patientFile.medicalHistory.currentMedications.map((med, idx) => (
+                                  <div key={idx} className="rounded border border-border bg-foreground/5 p-3">
+                                    <p className="font-medium text-brand-violet">{med.name}</p>
+                                    <div className="mt-1 text-sm text-brand-violet/80">
+                                      {med.dosage && <span>Dosage: {med.dosage}</span>}
+                                      {med.frequency && <span className="ml-3">Frequency: {med.frequency}</span>}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Lifestyle */}
+                          <div className="rounded-lg bg-foreground/5 p-4">
+                            <h4 className="mb-3 font-semibold text-foreground">Lifestyle Information</h4>
+                            <div className="grid grid-cols-3 gap-4">
+                              <div>
+                                <span className="text-sm text-muted-foreground">Smoking:</span>
+                                <p className="font-medium capitalize text-foreground">{patientFile.medicalHistory.smokingStatus}</p>
+                              </div>
+                              <div>
+                                <span className="text-sm text-muted-foreground">Alcohol:</span>
+                                <p className="font-medium capitalize text-foreground">{patientFile.medicalHistory.alcoholConsumption}</p>
+                              </div>
+                              <div>
+                                <span className="text-sm text-muted-foreground">Exercise:</span>
+                                <p className="font-medium capitalize text-foreground">{patientFile.medicalHistory.exerciseFrequency}</p>
+                              </div>
+                            </div>
                           </div>
+                        </div>
+                      ) : (
+                        <div className="py-12 text-center">
+                          <Heart className="mx-auto mb-4 h-16 w-16 text-muted-foreground/30" />
+                          <p className="mb-4 text-muted-foreground">No medical history available</p>
+                          <Button
+                            size="sm"
+                            onClick={() => navigate('/doctor/edit-medical-history', {
+                              state: { patientId: selectedPatient._id, patientName: selectedPatient.name }
+                            })}
+                          >
+                            Create Medical History
+                          </Button>
                         </div>
                       )}
-
-                      {/* Conditions */}
-                      {patientFile.medicalHistory.pastConditions && patientFile.medicalHistory.pastConditions.length > 0 && (
-                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                          <h4 className="font-semibold mb-3 text-blue-900">Past Medical Conditions</h4>
-                          <div className="space-y-2">
-                            {patientFile.medicalHistory.pastConditions.map((condition, idx) => (
-                              <div key={idx} className="bg-white dark:bg-blue-900/20 p-3 rounded border border-blue-200 dark:border-blue-600">
-                                <div className="flex justify-between">
-                                  <span className="font-medium text-blue-900">{condition.name}</span>
-                                  <span className={`px-2 py-1 rounded text-xs ${
-                                    condition.status === 'active' ? 'bg-red-200 text-red-900' :
-                                    condition.status === 'chronic' ? 'bg-orange-200 text-orange-900' :
-                                    'bg-green-200 text-green-900'
-                                  }`}>
-                                    {condition.status}
-                                  </span>
-                                </div>
-                                {condition.notes && (
-                                  <p className="text-sm text-blue-700 mt-1">{condition.notes}</p>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Current Medications */}
-                      {patientFile.medicalHistory.currentMedications && patientFile.medicalHistory.currentMedications.length > 0 && (
-                        <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                          <h4 className="font-semibold mb-3 text-purple-900">Current Medications</h4>
-                          <div className="space-y-2">
-                            {patientFile.medicalHistory.currentMedications.map((med, idx) => (
-                              <div key={idx} className="bg-white dark:bg-purple-900/20 p-3 rounded border border-purple-200 dark:border-purple-600">
-                                <p className="font-medium text-purple-900">{med.name}</p>
-                                <div className="text-sm text-purple-700 mt-1">
-                                  {med.dosage && <span>Dosage: {med.dosage}</span>}
-                                  {med.frequency && <span className="ml-3">Frequency: {med.frequency}</span>}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Lifestyle */}
-                      <div className="bg-slate-50 p-4 rounded-lg">
-                        <h4 className="font-semibold mb-3">Lifestyle Information</h4>
-                        <div className="grid grid-cols-3 gap-4">
-                          <div>
-                            <span className="text-sm text-text-secondary">Smoking:</span>
-                            <p className="font-medium capitalize">{patientFile.medicalHistory.smokingStatus}</p>
-                          </div>
-                          <div>
-                            <span className="text-sm text-text-secondary">Alcohol:</span>
-                            <p className="font-medium capitalize">{patientFile.medicalHistory.alcoholConsumption}</p>
-                          </div>
-                          <div>
-                            <span className="text-sm text-text-secondary">Exercise:</span>
-                            <p className="font-medium capitalize">{patientFile.medicalHistory.exerciseFrequency}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <FiHeart className="mx-auto text-6xl text-text-secondary/30 mb-4" />
-                      <p className="text-text-secondary mb-4">No medical history available</p>
-                      <button
-                        onClick={() => navigate('/doctor/edit-medical-history', {
-                          state: { patientId: selectedPatient._id, patientName: selectedPatient.name }
-                        })}
-                        className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors"
-                      >
-                        Create Medical History
-                      </button>
                     </div>
                   )}
                 </div>
-              )}
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </Reveal>
+        )}
 
-      {/* Empty State */}
-      {!loading && !patientFile && searchResults.length === 0 && (
-        <div className="text-center py-12">
-          <FiSearch className="mx-auto text-6xl text-text-secondary/30 mb-4" />
-          <p className="text-text-secondary">Search for a patient to view their complete medical file</p>
-        </div>
-      )}
+        {/* Empty State */}
+        {!loading && !patientFile && searchResults.length === 0 && (
+          <Reveal>
+            <div className="py-12 text-center">
+              <Search className="mx-auto mb-4 h-16 w-16 text-muted-foreground/30" />
+              <p className="text-muted-foreground">Search for a patient to view their complete medical file</p>
+            </div>
+          </Reveal>
+        )}
+      </div>
     </div>
   );
 }

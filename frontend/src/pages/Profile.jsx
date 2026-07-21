@@ -1,11 +1,24 @@
 import { useState, useEffect, useRef } from 'react';
-import { FiUser, FiMail, FiMapPin, FiCamera, FiEdit2, FiSave, FiX, FiLock, FiCalendar, FiTrash2, FiUpload, FiHome } from 'react-icons/fi';
+import {
+  User,
+  Mail,
+  MapPin,
+  Camera,
+  Pencil,
+  Save,
+  X,
+  Lock,
+  Calendar,
+  Trash2,
+  Home,
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import { KERALA_DISTRICTS } from '../constants';
-import { AppSelect, Avatar } from '../components/ui';
+import { AppSelect, Avatar, Button, buttonVariants } from '../components/ui';
 import { ProfileSkeleton, FormSkeleton } from '../components/ui/SkeletonLoader';
+import { cn } from '../utils/cn';
 
 export default function Profile() {
   const { user, updateUser } = useAuth();
@@ -79,7 +92,7 @@ export default function Profile() {
         setProfile(response.data.data);
         setEditing(false);
         toast.success('Profile updated successfully!');
-        
+
         // Update user context with new data
         updateUser({
           ...user,
@@ -194,14 +207,14 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="mx-auto max-w-4xl space-y-6 bg-background text-foreground">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark mb-2">My Profile</h1>
-          <p className="text-gray-600 dark:text-text-secondary-dark">Manage your personal information and settings</p>
+          <h1 className="mb-2 font-head text-3xl font-bold text-foreground">My Profile</h1>
+          <p className="text-muted-foreground">Manage your personal information and settings</p>
         </div>
         <ProfileSkeleton />
-        <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-sm dark:shadow-card-dark border border-gray-100 dark:border-dark-border p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Profile Information</h2>
+        <div className="rounded-xl glass border border-border p-6 shadow-card">
+          <h2 className="mb-4 font-head text-xl font-semibold text-foreground">Profile Information</h2>
           <FormSkeleton fields={4} />
         </div>
       </div>
@@ -209,9 +222,9 @@ export default function Profile() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6 bg-background text-foreground">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary to-primary-light text-white rounded-2xl p-8">
+      <div className="rounded-2xl bg-gradient-to-r from-brand-cyan to-brand-teal p-8 text-white shadow-glow">
         <div className="flex items-center gap-6">
           <div className="relative">
             <Avatar
@@ -220,33 +233,33 @@ export default function Profile() {
               size="3xl"
               className="border-4 border-white shadow-lg"
             />
-            
+
             {/* Upload/Remove Picture Buttons */}
             <div className="absolute -bottom-2 -right-2 flex gap-1">
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="bg-white dark:bg-dark-surface text-primary p-2 rounded-full shadow-lg hover:bg-gray-50 dark:hover:bg-dark-surface-hover transition-colors disabled:opacity-50"
+                className="glass rounded-full p-2 text-brand-cyan-fg shadow-lg transition-colors hover:bg-brand-cyan/15 disabled:opacity-50"
                 title="Change picture"
               >
                 {uploading ? (
-                  <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-cyan border-t-transparent" />
                 ) : (
-                  <FiCamera className="w-4 h-4" />
+                  <Camera className="h-4 w-4" />
                 )}
               </button>
-              
+
               {profile?.photoUrl && (
                 <button
                   onClick={handleRemovePicture}
-                  className="bg-red-500 text-white p-2 rounded-full shadow-lg hover:bg-red-600 transition-colors"
+                  className="rounded-full bg-error p-2 text-white shadow-lg transition-colors hover:bg-error/90"
                   title="Remove picture"
                 >
-                  <FiTrash2 className="w-4 h-4" />
+                  <Trash2 className="h-4 w-4" />
                 </button>
               )}
             </div>
-            
+
             <input
               ref={fileInputRef}
               type="file"
@@ -255,14 +268,14 @@ export default function Profile() {
               className="hidden"
             />
           </div>
-          
+
           <div className="flex-1">
-            <h1 className="text-3xl font-bold mb-2 text-white">{profile?.name}</h1>
-            <p className="text-white/80 text-lg capitalize">{profile?.role}</p>
-            <p className="text-white/60 text-sm">
-              Member since {new Date(profile?.createdAt).toLocaleDateString('en-US', { 
-                month: 'long', 
-                year: 'numeric' 
+            <h1 className="mb-2 text-3xl font-bold text-white">{profile?.name}</h1>
+            <p className="text-lg capitalize text-white/80">{profile?.role}</p>
+            <p className="text-sm text-white/60">
+              Member since {new Date(profile?.createdAt).toLocaleDateString('en-US', {
+                month: 'long',
+                year: 'numeric'
               })}
             </p>
           </div>
@@ -270,11 +283,13 @@ export default function Profile() {
       </div>
 
       {/* Profile Information */}
-      <div className="bg-white dark:bg-bg-card-dark rounded-2xl shadow-xl dark:shadow-card-dark border border-slate-200/60 dark:border-dark-border overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
+      <div className="overflow-hidden rounded-2xl glass border border-border shadow-card">
+        <div className="border-b border-border p-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-text-primary-dark">Profile Information</h2>
-            <button
+            <h2 className="font-head text-2xl font-bold text-foreground">Profile Information</h2>
+            <Button
+              variant={editing ? 'outline' : 'default'}
+              size="default"
               onClick={() => {
                 if (editing) {
                   setFormData({
@@ -285,19 +300,18 @@ export default function Profile() {
                 }
                 setEditing(!editing);
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors"
             >
-              {editing ? <FiX className="w-4 h-4" /> : <FiEdit2 className="w-4 h-4" />}
+              {editing ? <X className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
               {editing ? 'Cancel' : 'Edit'}
-            </button>
+            </Button>
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="space-y-6 p-6">
           {/* Name Field */}
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-              <FiUser className="w-4 h-4" />
+            <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+              <User className="h-4 w-4" />
               Full Name
             </label>
             {editing ? (
@@ -306,36 +320,36 @@ export default function Profile() {
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                className="w-full rounded-xl bg-background/60 border border-border px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
                 placeholder="Enter your full name"
               />
             ) : (
-              <p className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900">{profile?.name || 'Not provided'}</p>
+              <p className="rounded-lg bg-foreground/5 px-4 py-3 text-foreground">{profile?.name || 'Not provided'}</p>
             )}
           </div>
 
           {/* Email Field - Always Disabled */}
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-              <FiMail className="w-4 h-4" />
+            <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+              <Mail className="h-4 w-4" />
               Email Address
-              <span className="text-xs text-gray-500">(Cannot be changed)</span>
+              <span className="text-xs text-muted-foreground">(Cannot be changed)</span>
             </label>
             <div className="relative">
               <input
                 type="email"
                 value={profile?.email || 'Not provided'}
                 disabled
-                className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-lg text-gray-600 cursor-not-allowed"
+                className="w-full rounded-xl border border-border bg-foreground/5 px-4 py-3 text-muted-foreground cursor-not-allowed"
               />
-              <FiLock className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Lock className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             </div>
           </div>
 
           {/* District Field */}
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-              <FiMapPin className="w-4 h-4" />
+            <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+              <MapPin className="h-4 w-4" />
               District
             </label>
             {editing ? (
@@ -351,20 +365,17 @@ export default function Profile() {
                 searchPlaceholder="Search districts..."
               />
             ) : (
-              <p className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900">{profile?.district || 'Not provided'}</p>
+              <p className="rounded-lg bg-foreground/5 px-4 py-3 text-foreground">{profile?.district || 'Not provided'}</p>
             )}
           </div>
 
           {/* Save Button */}
           {editing && (
             <div className="flex gap-3 pt-4">
-              <button
-                onClick={handleSaveProfile}
-                className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors font-medium"
-              >
-                <FiSave className="w-4 h-4" />
+              <Button onClick={handleSaveProfile}>
+                <Save className="h-4 w-4" />
                 Save Changes
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -372,49 +383,49 @@ export default function Profile() {
 
       {/* Hospital Information - For Doctors Only */}
       {profile?.role === 'doctor' && profile?.doctorProfile?.hospitalId && (
-        <div className="bg-white dark:bg-bg-card-dark rounded-2xl shadow-xl dark:shadow-card-dark border border-slate-200/60 dark:border-dark-border overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
+        <div className="overflow-hidden rounded-2xl glass border border-border shadow-card">
+          <div className="border-b border-border p-6">
             <div className="flex items-center gap-3">
-              <FiHome className="w-6 h-6 text-primary" />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-text-primary-dark">Hospital Information</h2>
+              <Home className="h-6 w-6 text-brand-cyan-fg" />
+              <h2 className="font-head text-2xl font-bold text-foreground">Hospital Information</h2>
             </div>
           </div>
 
-          <div className="p-6 bg-gradient-to-br from-blue-50 to-white">
+          <div className="bg-foreground/5 p-6">
             <div className="space-y-4">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <FiHome className="w-5 h-5 text-primary" />
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-brand-cyan/15">
+                  <Home className="h-5 w-5 text-brand-cyan-fg" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Hospital Name</p>
-                  <p className="text-lg font-semibold text-gray-900">{profile.doctorProfile.hospitalId.name}</p>
+                  <p className="mb-1 text-sm text-muted-foreground">Hospital Name</p>
+                  <p className="text-lg font-semibold text-foreground">{profile.doctorProfile.hospitalId.name}</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <FiMapPin className="w-5 h-5 text-primary" />
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-brand-cyan/15">
+                  <MapPin className="h-5 w-5 text-brand-cyan-fg" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Location</p>
-                  <p className="text-gray-900">{profile.doctorProfile.hospitalId.district}, {profile.doctorProfile.hospitalId.city || 'Kerala'}</p>
+                  <p className="mb-1 text-sm text-muted-foreground">Location</p>
+                  <p className="text-foreground">{profile.doctorProfile.hospitalId.district}, {profile.doctorProfile.hospitalId.city || 'Kerala'}</p>
                   {profile.doctorProfile.hospitalId.address && (
-                    <p className="text-sm text-gray-600 mt-1">{profile.doctorProfile.hospitalId.address}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{profile.doctorProfile.hospitalId.address}</p>
                   )}
                 </div>
               </div>
 
               {profile.doctorProfile.hospitalId.phone && (
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <FiUser className="w-5 h-5 text-primary" />
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-brand-cyan/15">
+                    <User className="h-5 w-5 text-brand-cyan-fg" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Contact</p>
-                    <p className="text-gray-900">{profile.doctorProfile.hospitalId.phone}</p>
+                    <p className="mb-1 text-sm text-muted-foreground">Contact</p>
+                    <p className="text-foreground">{profile.doctorProfile.hospitalId.phone}</p>
                     {profile.doctorProfile.hospitalId.email && (
-                      <p className="text-sm text-gray-600">{profile.doctorProfile.hospitalId.email}</p>
+                      <p className="text-sm text-muted-foreground">{profile.doctorProfile.hospitalId.email}</p>
                     )}
                   </div>
                 </div>
@@ -422,12 +433,12 @@ export default function Profile() {
 
               {profile.doctorProfile.specializationId && (
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <FiCalendar className="w-5 h-5 text-primary" />
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-brand-cyan/15">
+                    <Calendar className="h-5 w-5 text-brand-cyan-fg" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Specialization</p>
-                    <p className="text-gray-900 font-medium">{profile.doctorProfile.specializationId.name}</p>
+                    <p className="mb-1 text-sm text-muted-foreground">Specialization</p>
+                    <p className="font-medium text-foreground">{profile.doctorProfile.specializationId.name}</p>
                   </div>
                 </div>
               )}
@@ -437,47 +448,42 @@ export default function Profile() {
       )}
 
       {/* Security Section */}
-      <div className="bg-white dark:bg-bg-card-dark rounded-2xl shadow-xl dark:shadow-card-dark border border-slate-200/60 dark:border-dark-border overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-text-primary-dark">Security</h2>
+      <div className="overflow-hidden rounded-2xl glass border border-border shadow-card">
+        <div className="border-b border-border p-6">
+          <h2 className="font-head text-2xl font-bold text-foreground">Security</h2>
         </div>
 
         <div className="p-6">
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between rounded-lg bg-foreground/5 p-4">
             <div className="flex items-center gap-3">
-              <FiLock className="w-5 h-5 text-gray-600" />
+              <Lock className="h-5 w-5 text-muted-foreground" />
               <div>
-                <h3 className="font-medium text-gray-900">Password</h3>
-                <p className="text-sm text-gray-600">Last updated: {new Date(profile?.updatedAt).toLocaleDateString()}</p>
+                <h3 className="font-medium text-foreground">Password</h3>
+                <p className="text-sm text-muted-foreground">Last updated: {new Date(profile?.updatedAt).toLocaleDateString()}</p>
               </div>
             </div>
-            <button
-              onClick={() => setShowPasswordModal(true)}
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors"
-            >
-              Change Password
-            </button>
+            <Button onClick={() => setShowPasswordModal(true)}>Change Password</Button>
           </div>
         </div>
       </div>
 
       {/* Password Change Modal */}
       {showPasswordModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-bg-card-dark rounded-xl shadow-xl w-full max-w-md p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-text-primary-dark">Change Password</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="glass-strong w-full max-w-md rounded-xl p-6 shadow-glow">
+            <div className="mb-6 flex items-center justify-between">
+              <h3 className="font-head text-xl font-bold text-foreground">Change Password</h3>
               <button
                 onClick={() => setShowPasswordModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-muted-foreground transition-colors hover:text-foreground"
               >
-                <FiX className="w-6 h-6" />
+                <X className="h-6 w-6" />
               </button>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-foreground">
                   Current Password
                 </label>
                 <input
@@ -485,13 +491,13 @@ export default function Profile() {
                   name="currentPassword"
                   value={passwordData.currentPassword}
                   onChange={handlePasswordChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                  className="w-full rounded-xl bg-background/60 border border-border px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
                   placeholder="Enter current password"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-foreground">
                   New Password
                 </label>
                 <input
@@ -499,13 +505,13 @@ export default function Profile() {
                   name="newPassword"
                   value={passwordData.newPassword}
                   onChange={handlePasswordChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                  className="w-full rounded-xl bg-background/60 border border-border px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
                   placeholder="Enter new password"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-foreground">
                   Confirm New Password
                 </label>
                 <input
@@ -513,25 +519,22 @@ export default function Profile() {
                   name="confirmPassword"
                   value={passwordData.confirmPassword}
                   onChange={handlePasswordChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                  className="w-full rounded-xl bg-background/60 border border-border px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
                   placeholder="Confirm new password"
                 />
               </div>
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <div className="mt-6 flex gap-3">
               <button
                 onClick={() => setShowPasswordModal(false)}
-                className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex-1 rounded-lg border border-border px-4 py-3 text-foreground transition-colors hover:bg-foreground/5"
               >
                 Cancel
               </button>
-              <button
-                onClick={handleChangePassword}
-                className="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors"
-              >
+              <Button onClick={handleChangePassword} className="flex-1">
                 Change Password
-              </button>
+              </Button>
             </div>
           </div>
         </div>

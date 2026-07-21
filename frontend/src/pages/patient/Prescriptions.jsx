@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FiCalendar, FiUser, FiFileText, FiActivity, FiTag } from 'react-icons/fi';
+import { Calendar, User, FileText, Activity, Tag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import {
@@ -37,26 +37,26 @@ export default function Prescriptions() {
   }, []);
 
   const statusColors = {
-    'New': 'bg-blue-100 text-blue-800 border-blue-200',
-    'Pending Fulfillment': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    'Filled': 'bg-green-100 text-green-800 border-green-200',
-    'Partially Filled': 'bg-indigo-100 text-indigo-800 border-indigo-200',
-    'Cancelled': 'bg-red-100 text-red-800 border-red-200',
+    'New': 'bg-brand-sky/15 text-brand-sky-fg border-brand-sky/20',
+    'Pending Fulfillment': 'bg-amber-400/15 text-amber-500 border-amber-500/20',
+    'Filled': 'bg-success/15 text-success-fg border-success/20',
+    'Partially Filled': 'bg-brand-violet/15 text-brand-violet border-brand-violet/20',
+    'Cancelled': 'bg-error/15 text-error-fg border-error/20',
   };
 
   const columns = [
-    { label: 'Date Issued', icon: <FiCalendar className="w-4 h-4 text-blue-500" /> },
-    { label: 'Prescribed By', icon: <FiUser className="w-4 h-4 text-teal-500" /> },
-    { label: 'Status', icon: <FiTag className="w-4 h-4 text-gray-500" /> },
+    { label: 'Date Issued', icon: <Calendar className="w-4 h-4 text-brand-cyan-fg" /> },
+    { label: 'Prescribed By', icon: <User className="w-4 h-4 text-brand-teal" /> },
+    { label: 'Status', icon: <Tag className="w-4 h-4 text-muted-foreground" /> },
     { label: 'Actions' }
   ];
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 bg-background text-foreground">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark mb-2">My Prescriptions</h1>
-          <p className="text-gray-600 dark:text-text-secondary-dark">View and manage your prescribed medications</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">My Prescriptions</h1>
+          <p className="text-muted-foreground">View and manage your prescribed medications</p>
         </div>
         <div className="hidden md:block">
           <ModernTableContainer>
@@ -71,10 +71,10 @@ export default function Prescriptions() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-background text-foreground">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark mb-2">My Prescriptions</h1>
-        <p className="text-gray-600 dark:text-text-secondary-dark">View and manage your prescribed medications</p>
+        <h1 className="text-3xl font-bold text-foreground mb-2">My Prescriptions</h1>
+        <p className="text-muted-foreground">View and manage your prescribed medications</p>
       </div>
 
       {/* Desktop Table View */}
@@ -85,7 +85,7 @@ export default function Prescriptions() {
         >
           {list.length === 0 ? (
             <EmptyState
-              icon={<FiActivity className="w-8 h-8 text-gray-400" />}
+              icon={<Activity className="w-8 h-8 text-muted-foreground" />}
               title="No Prescriptions Found"
               description="You don't have any prescriptions yet. They will appear here after your doctor visits."
             />
@@ -96,35 +96,35 @@ export default function Prescriptions() {
                 {list.map((prescription, index) => (
                   <ModernTableRow key={prescription._id} isEven={index % 2 === 0}>
                     <ModernTableCell>
-                      <DateTimeDisplay 
-                        date={prescription.dateIssued} 
+                      <DateTimeDisplay
+                        date={prescription.dateIssued}
                         format="date-only"
                       />
                     </ModernTableCell>
-                    
+
                     <ModernTableCell>
                       <div className="flex items-center gap-3">
-                        <Avatar 
-                          name={prescription.doctorId?.name || 'Unknown Doctor'} 
+                        <Avatar
+                          name={prescription.doctorId?.name || 'Unknown Doctor'}
                           size="sm"
                         />
                         <div>
-                          <div className="font-medium text-gray-900 dark:text-text-primary-dark">
+                          <div className="font-medium text-foreground">
                             {prescription.doctorId?.name || 'Unknown Doctor'}
                           </div>
-                          <div className="text-sm text-gray-500 dark:text-text-secondary-dark">Doctor</div>
+                          <div className="text-sm text-muted-foreground">Doctor</div>
                         </div>
                       </div>
                     </ModernTableCell>
                     <ModernTableCell>
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[prescription.status] || 'bg-gray-100 text-gray-800 border-gray-200'}`}>
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[prescription.status] || 'bg-foreground/5 text-muted-foreground border-border'}`}>
                         {prescription.status || 'New'}
                       </span>
                     </ModernTableCell>
                     <ModernTableCell>
                       <button
                         onClick={() => { setSelectedPrescription(prescription); setIsModalOpen(true); }}
-                        className="text-sm text-primary hover:underline"
+                        className="text-sm text-brand-cyan-fg hover:underline"
                       >
                         View Details →
                       </button>
@@ -142,7 +142,7 @@ export default function Prescriptions() {
         {list.length === 0 ? (
           <MobileCard>
             <EmptyState
-              icon={<FiActivity className="w-8 h-8 text-gray-400" />}
+              icon={<Activity className="w-8 h-8 text-muted-foreground" />}
               title="No Prescriptions Found"
               description="You don't have any prescriptions yet."
             />
@@ -153,36 +153,36 @@ export default function Prescriptions() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center">
-                      <FiActivity className="w-6 h-6 text-green-600" />
+                    <div className="w-12 h-12 bg-brand-teal/15 rounded-lg flex items-center justify-center">
+                      <Activity className="w-6 h-6 text-brand-teal" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-text-primary-dark">{prescription.medication}</h3>
-                      <DateTimeDisplay 
-                        date={prescription.dateIssued} 
+                      <h3 className="font-semibold text-foreground">{prescription.medication}</h3>
+                      <DateTimeDisplay
+                        date={prescription.dateIssued}
                         format="date-only"
                       />
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-gray-500 dark:text-text-secondary-dark uppercase tracking-wide">Prescribed By</label>
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Prescribed By</label>
                     <div className="mt-1 flex items-center gap-2">
-                      <Avatar 
-                        name={prescription.doctorId?.name || 'Unknown Doctor'} 
+                      <Avatar
+                        name={prescription.doctorId?.name || 'Unknown Doctor'}
                         size="sm"
                       />
-                      <span className="font-medium text-gray-900 dark:text-text-primary-dark">
+                      <span className="font-medium text-foreground">
                         {prescription.doctorId?.name || 'Unknown Doctor'}
                       </span>
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-500 dark:text-text-secondary-dark uppercase tracking-wide">Status</label>
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</label>
                     <div className="mt-1">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[prescription.status] || 'bg-gray-100 text-gray-800 border-gray-200'}`}>
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[prescription.status] || 'bg-foreground/5 text-muted-foreground border-border'}`}>
                         {prescription.status || 'New'}
                       </span>
                     </div>
@@ -190,7 +190,7 @@ export default function Prescriptions() {
                   <div>
                     <button
                       onClick={() => { setSelectedPrescription(prescription); setIsModalOpen(true); }}
-                      className="text-sm text-primary hover:underline"
+                      className="text-sm text-brand-cyan-fg hover:underline"
                     >
                       View Details →
                     </button>

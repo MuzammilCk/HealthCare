@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FiPlus, FiTrash2, FiDollarSign, FiFileText, FiArrowLeft } from 'react-icons/fi';
+import { Plus, Trash2, IndianRupee, FileText, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
+import { cn } from '../../utils/cn';
+import { Button, buttonVariants } from '../../components/ui/Button';
+import Reveal from '../../components/Reveal';
 
 export default function GenerateBill() {
   const navigate = useNavigate();
@@ -14,6 +17,9 @@ export default function GenerateBill() {
   ]);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const inputCls =
+    'w-full rounded-xl bg-background/60 border border-border px-4 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors';
 
   useEffect(() => {
     if (!appointment) {
@@ -103,144 +109,159 @@ export default function GenerateBill() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => navigate('/doctor/appointments')}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          <FiArrowLeft className="w-5 h-5" />
-        </button>
-        <div>
-          <h1 className="text-3xl font-bold text-text-primary">Generate Bill</h1>
-          <p className="text-text-secondary">Create a bill for completed appointment</p>
-        </div>
-      </div>
-
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-semibold text-blue-900 mb-2">Appointment Details</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-blue-800">
-          <p><span className="font-medium">Patient:</span> {appointment.patientId?.name}</p>
-          <p><span className="font-medium">Date:</span> {new Date(appointment.date).toLocaleDateString()}</p>
-          <p><span className="font-medium">Time:</span> {appointment.timeSlot}</p>
-          <p><span className="font-medium">Status:</span> {appointment.status}</p>
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-card p-6 space-y-6">
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-text-primary flex items-center gap-2">
-              <FiFileText className="text-primary" />
-              Bill Items
-            </h2>
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="mx-auto max-w-4xl space-y-8 p-6">
+        <Reveal>
+          <div className="flex items-center gap-4">
             <button
               type="button"
-              onClick={addItem}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors"
+              onClick={() => navigate('/doctor/appointments')}
+              className="flex h-11 w-11 items-center justify-center rounded-xl border border-border text-foreground hover:bg-foreground/5 transition-colors"
+              aria-label="Back"
             >
-              <FiPlus className="w-4 h-4" />
-              Add Item
+              <ArrowLeft className="h-5 w-5" />
             </button>
+            <div>
+              <h1 className="font-head text-3xl font-bold tracking-tight text-foreground">
+                Generate Bill
+              </h1>
+              <p className="text-muted-foreground">Create a bill for completed appointment</p>
+            </div>
           </div>
+        </Reveal>
 
-          <div className="space-y-3">
-            {items.map((item, index) => (
-              <div key={index} className="flex gap-3 items-start">
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-3">
-                  <div className="md:col-span-6">
-                    <input
-                      type="text"
-                      placeholder="Description (e.g., Consultation Fee, Medicine)"
-                      value={item.description}
-                      onChange={(e) => updateItem(index, 'description', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
-                      required
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <input
-                      type="number"
-                      placeholder="Qty"
-                      min="1"
-                      value={item.quantity}
-                      onChange={(e) => updateItem(index, 'quantity', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
-                      required
-                    />
-                  </div>
-                  <div className="md:col-span-4">
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
-                      <input
-                        type="number"
-                        step="0.01"
-                        placeholder="Amount (per item)"
-                        value={item.amount}
-                        onChange={(e) => updateItem(index, 'amount', e.target.value)}
-                        className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-                {items.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeItem(index)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <FiTrash2 className="w-5 h-5" />
-                  </button>
-                )}
+        <Reveal>
+          <div className="glass rounded-2xl p-6 shadow-card">
+            <h3 className="mb-4 font-head text-lg font-semibold text-foreground">
+              Appointment Details
+            </h3>
+            <div className="grid grid-cols-1 gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+              <p><span className="font-medium text-foreground">Patient:</span> {appointment.patientId?.name}</p>
+              <p><span className="font-medium text-foreground">Date:</span> {new Date(appointment.date).toLocaleDateString()}</p>
+              <p><span className="font-medium text-foreground">Time:</span> {appointment.timeSlot}</p>
+              <p><span className="font-medium text-foreground">Status:</span> {appointment.status}</p>
+            </div>
+          </div>
+        </Reveal>
+
+        <Reveal>
+          <form onSubmit={handleSubmit} className="glass space-y-6 rounded-2xl p-6 shadow-card">
+            <div>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 font-head text-xl font-semibold text-foreground">
+                  <FileText className="h-5 w-5 text-brand-cyan-fg" />
+                  Bill Items
+                </h2>
+                <Button
+                  type="button"
+                  onClick={addItem}
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Item
+                </Button>
               </div>
-            ))}
-          </div>
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium text-text-secondary mb-2">
-            Additional Notes (Optional)
-          </label>
-          <textarea
-            rows={3}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Add any additional notes or instructions..."
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
-          />
-        </div>
+              <div className="space-y-3">
+                {items.map((item, index) => (
+                  <div key={index} className="flex items-start gap-3">
+                    <div className="grid flex-1 grid-cols-1 gap-3 md:grid-cols-12">
+                      <div className="md:col-span-6">
+                        <input
+                          type="text"
+                          placeholder="Description (e.g., Consultation Fee, Medicine)"
+                          value={item.description}
+                          onChange={(e) => updateItem(index, 'description', e.target.value)}
+                          className={inputCls}
+                          required
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <input
+                          type="number"
+                          placeholder="Qty"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) => updateItem(index, 'quantity', e.target.value)}
+                          className={inputCls}
+                          required
+                        />
+                      </div>
+                      <div className="md:col-span-4">
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            placeholder="Amount (per item)"
+                            value={item.amount}
+                            onChange={(e) => updateItem(index, 'amount', e.target.value)}
+                            className="w-full rounded-xl bg-background/60 border border-border py-2 pl-8 pr-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    {items.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeItem(index)}
+                        className="p-2 text-error-fg transition-colors hover:bg-error/10 rounded-lg"
+                        aria-label="Remove item"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
 
-        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-          <div className="flex items-center justify-between text-lg">
-            <span className="font-semibold text-text-primary flex items-center gap-2">
-              <FiDollarSign className="text-green-600" />
-              Total Amount
-            </span>
-            <span className="text-2xl font-bold text-primary">
-              ₹{calculateTotal().toFixed(2)}
-            </span>
-          </div>
-        </div>
+            <div>
+              <label className="mb-2 block text-sm font-medium text-muted-foreground">
+                Additional Notes (Optional)
+              </label>
+              <textarea
+                rows={3}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Add any additional notes or instructions..."
+                className={inputCls}
+              />
+            </div>
 
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={() => navigate('/doctor/appointments')}
-            className="flex-1 px-6 py-3 border border-gray-300 text-text-primary font-semibold rounded-lg hover:bg-gray-50 transition-colors"
-            disabled={loading}
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="flex-1 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary-light transition-colors disabled:opacity-50"
-            disabled={loading}
-          >
-            {loading ? 'Creating Bill...' : 'Create Bill'}
-          </button>
-        </div>
-      </form>
+            <div className="rounded-xl border border-border bg-foreground/5 p-4">
+              <div className="flex items-center justify-between text-lg">
+                <span className="flex items-center gap-2 font-semibold text-foreground">
+                  <IndianRupee className="h-5 w-5 text-success-fg" />
+                  Total Amount
+                </span>
+                <span className="text-2xl font-bold text-foreground">
+                  ₹{calculateTotal().toFixed(2)}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={() => navigate('/doctor/appointments')}
+                disabled={loading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1"
+                disabled={loading}
+              >
+                {loading ? 'Creating Bill...' : 'Create Bill'}
+              </Button>
+            </div>
+          </form>
+        </Reveal>
+      </div>
     </div>
   );
 }

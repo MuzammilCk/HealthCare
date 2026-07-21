@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
-import { FiHeart, FiAlertTriangle, FiPlusCircle } from 'react-icons/fi';
+import { Heart, AlertTriangle, PlusCircle } from 'lucide-react';
+import { Button } from '../../components/ui';
 
 export default function MedicalHistory() {
   const [form, setForm] = useState({ bloodType: '', allergies: '', pastConditions: '' });
@@ -33,7 +34,7 @@ export default function MedicalHistory() {
     e.preventDefault();
     setSaving(true);
     const loadingToast = toast.loading('Saving medical history...');
-    
+
     try {
       await api.put('/patients/me/medical-history', {
         bloodType: form.bloodType,
@@ -51,58 +52,55 @@ export default function MedicalHistory() {
     }
   };
 
-  if (loading) return <div className="text-center p-6">Loading medical history...</div>;
+  if (loading) return <div className="text-center p-6 text-muted-foreground">Loading medical history...</div>;
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-text-primary dark:text-text-primary-dark mb-6">Medical History</h1>
-      
+    <div className="bg-background text-foreground">
+      <h1 className="text-2xl font-bold text-foreground mb-6">Medical History</h1>
+
       {notFound && (
-        <div className="mb-4 p-4 bg-yellow-50 text-yellow-800 border border-yellow-200 rounded-lg">
+        <div className="mb-4 p-4 bg-amber-400/10 text-amber-600 border border-amber-500/20 rounded-lg">
           No medical record found. Please fill out the form below to create one.
         </div>
       )}
 
-      <form onSubmit={onSubmit} className="space-y-6 max-w-2xl bg-white p-6 rounded-2xl shadow-card border border-slate-200/60">
+      <form onSubmit={onSubmit} className="space-y-6 max-w-2xl glass p-6 rounded-2xl shadow-card border border-border">
         <div className="relative">
-          <FiHeart className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
-          <input 
-            name="bloodType" 
-            value={form.bloodType} 
-            onChange={onChange} 
-            className="w-full bg-bg-page border border-gray-200 rounded-xl h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-sm" 
-            placeholder="Blood Type (e.g., O+)" 
+          <Heart className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            name="bloodType"
+            value={form.bloodType}
+            onChange={onChange}
+            className="w-full bg-background/60 border border-border rounded-xl h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-brand-cyan/30 focus:border-brand-cyan shadow-sm text-foreground"
+            placeholder="Blood Type (e.g., O+)"
           />
         </div>
 
         <div className="relative">
-          <FiAlertTriangle className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
-          <input 
-            name="allergies" 
-            value={form.allergies} 
-            onChange={onChange} 
-            className="w-full bg-bg-page border border-gray-200 rounded-xl h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-sm" 
-            placeholder="Allergies (comma-separated, e.g., Peanuts, Pollen)" 
+          <AlertTriangle className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            name="allergies"
+            value={form.allergies}
+            onChange={onChange}
+            className="w-full bg-background/60 border border-border rounded-xl h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-brand-cyan/30 focus:border-brand-cyan shadow-sm text-foreground"
+            placeholder="Allergies (comma-separated, e.g., Peanuts, Pollen)"
           />
         </div>
 
         <div className="relative">
-          <FiPlusCircle className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
-          <input 
-            name="pastConditions" 
-            value={form.pastConditions} 
-            onChange={onChange} 
-            className="w-full bg-bg-page border border-gray-200 rounded-xl h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-sm" 
-            placeholder="Past Conditions (comma-separated, e.g., Asthma)" 
+          <PlusCircle className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            name="pastConditions"
+            value={form.pastConditions}
+            onChange={onChange}
+            className="w-full bg-background/60 border border-border rounded-xl h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-brand-cyan/30 focus:border-brand-cyan shadow-sm text-foreground"
+            placeholder="Past Conditions (comma-separated, e.g., Asthma)"
           />
         </div>
 
-        <button 
-          disabled={saving} 
-          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold px-4 py-2 rounded-xl h-12 shadow-lg transition-all duration-200 hover:from-blue-600 hover:to-blue-700 focus:ring-2 focus:ring-blue-500/30 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
+        <Button type="submit" disabled={saving} className="w-full">
           {saving ? 'Saving…' : 'Save Medical History'}
-        </button>
+        </Button>
       </form>
     </div>
   );

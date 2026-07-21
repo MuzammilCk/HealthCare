@@ -1,124 +1,127 @@
-import { FiCheckCircle, FiUsers, FiHeart } from 'react-icons/fi';
+import Reveal from '../components/Reveal';
+import { CheckCircle, Users, Heart, Sparkles } from 'lucide-react';
 
 export default function AboutUs() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="relative min-h-screen overflow-hidden bg-background text-foreground transition-colors duration-300">
+      <div className="aura-bg pointer-events-none absolute inset-0 opacity-70" aria-hidden="true" />
+
+      <div className="relative z-10 mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-gray-900 dark:text-text-primary-dark mb-4">
-            ABOUT <span className="text-primary">US</span>
+        <Reveal className="mb-16 text-center">
+          <h1 className="font-head text-5xl font-bold tracking-tight text-foreground sm:text-6xl">
+            ABOUT <span className="text-aurora">US</span>
           </h1>
-          <div className="w-24 h-1 bg-primary mx-auto rounded-full"></div>
-        </div>
+          <div className="mx-auto mt-4 h-1 w-24 rounded-full bg-gradient-to-br from-brand-cyan to-brand-teal" />
+        </Reveal>
 
         {/* Main Content Section */}
-        <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
+        <Reveal className="mb-20 grid items-center gap-12 lg:grid-cols-2">
           {/* Left Side - Image */}
           <div className="relative">
-            <div className="rounded-2xl overflow-hidden shadow-2xl">
-              <img 
-                src="/src/assets/about.png" 
-                alt="Healthcare Professionals" 
-                className="w-full h-auto object-cover"
+            <div className="overflow-hidden rounded-2xl glass shadow-card">
+              <img
+                src="/src/assets/about.png"
+                alt="Healthcare Professionals"
+                className="h-auto w-full object-cover"
                 onError={(e) => {
                   e.target.src = 'https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=800&h=600&fit=crop';
                 }}
               />
             </div>
-            {/* Decorative Elements */}
-            <div className="absolute -top-6 -left-6 w-24 h-24 bg-primary/10 rounded-full blur-2xl"></div>
-            <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl"></div>
+            <div className="absolute -left-6 -top-6 h-24 w-24 rounded-full bg-brand-cyan/10 blur-2xl" />
+            <div className="absolute -bottom-6 -right-6 h-32 w-32 rounded-full bg-brand-violet/10 blur-2xl" />
           </div>
 
           {/* Right Side - Content */}
           <div className="space-y-6">
-            <div className="prose prose-lg">
-              <p className="text-gray-700 dark:text-text-secondary-dark leading-relaxed">
-                Welcome to <span className="font-bold text-primary">HealthSync</span>, your trusted partner in managing your healthcare needs conveniently and efficiently. At HealthSync, we understand the challenges individuals face when it comes to scheduling doctor appointments and managing their health records.
-              </p>
-              <p className="text-gray-700 dark:text-text-secondary-dark leading-relaxed mt-4">
-                HealthSync is committed to excellence in healthcare technology. We continuously strive to enhance our platform, integrating the latest advancements to improve user experience and deliver superior services. Whether you're booking your first appointment or managing ongoing care, HealthSync is here to support you every step of the way.
-              </p>
-            </div>
+            <p className="text-lg leading-relaxed text-muted-foreground">
+              Welcome to <span className="font-bold text-foreground">HealthSync</span>, your trusted
+              partner in managing your healthcare needs conveniently and efficiently. At HealthSync, we
+              understand the challenges individuals face when it comes to scheduling doctor appointments
+              and managing their health records.
+            </p>
+            <p className="mt-4 leading-relaxed text-muted-foreground">
+              HealthSync is committed to excellence in healthcare technology. We continuously strive to
+              enhance our platform, integrating the latest advancements to improve user experience and
+              deliver superior services. Whether you're booking your first appointment or managing
+              ongoing care, HealthSync is here to support you every step of the way.
+            </p>
 
             {/* Vision Section */}
-            <div className="bg-gradient-to-br from-primary/5 to-purple-500/5 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-6 border border-primary/10 dark:border-dark-border mt-8">
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-text-primary-dark mb-3 flex items-center">
-                <FiHeart className="mr-3 text-primary" />
+            <div className="mt-8 rounded-2xl glass border border-brand-cyan/10 p-6 shadow-card">
+              <h3 className="mb-3 flex items-center font-head text-2xl font-bold text-foreground">
+                <Heart className="mr-3 h-6 w-6 text-brand-cyan-fg" />
                 Our Vision
               </h3>
-              <p className="text-gray-700 dark:text-text-secondary-dark leading-relaxed">
-                Our vision at HealthSync is to create a seamless healthcare experience for every user. We aim to bridge the gap between patients and healthcare providers, making it easier for you to access the care you need, when you need it.
+              <p className="leading-relaxed text-muted-foreground">
+                Our vision at HealthSync is to create a seamless healthcare experience for every user. We
+                aim to bridge the gap between patients and healthcare providers, making it easier for you
+                to access the care you need, when you need it.
               </p>
             </div>
           </div>
-        </div>
+        </Reveal>
 
         {/* Why Choose Us Section */}
-        <div className="mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 dark:text-text-primary-dark mb-12 text-center">
+        <Reveal className="mb-16">
+          <h2 className="mb-12 text-center font-head text-4xl font-bold tracking-tight text-foreground">
             WHY CHOOSE US
           </h2>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Efficiency Card */}
-            <div className="group bg-white dark:bg-bg-card-dark rounded-2xl p-8 shadow-xl dark:shadow-card-dark hover:shadow-2xl transition-all duration-300 border border-gray-200 dark:border-dark-border hover:bg-gradient-to-br hover:from-primary hover:to-blue-600 hover:border-transparent transform hover:-translate-y-2">
-              <div className="w-16 h-16 bg-primary/10 group-hover:bg-white/20 rounded-full flex items-center justify-center mb-6 transition-colors duration-300">
-                <FiCheckCircle className="w-8 h-8 text-primary group-hover:text-white transition-colors duration-300" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-text-primary-dark group-hover:text-white mb-4 transition-colors duration-300">Efficiency:</h3>
-              <p className="text-gray-600 dark:text-text-secondary-dark group-hover:text-white/90 leading-relaxed transition-colors duration-300">
-                Streamlined appointment scheduling that fits into your busy lifestyle.
-              </p>
-            </div>
 
-            {/* Convenience Card */}
-            <div className="group bg-white dark:bg-bg-card-dark rounded-2xl p-8 shadow-xl dark:shadow-card-dark hover:shadow-2xl transition-all duration-300 border border-gray-200 dark:border-dark-border hover:bg-gradient-to-br hover:from-primary hover:to-blue-600 hover:border-transparent transform hover:-translate-y-2">
-              <div className="w-16 h-16 bg-primary/10 group-hover:bg-white/20 rounded-full flex items-center justify-center mb-6 transition-colors duration-300">
-                <FiUsers className="w-8 h-8 text-primary group-hover:text-white transition-colors duration-300" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-text-primary-dark group-hover:text-white mb-4 transition-colors duration-300">Convenience:</h3>
-              <p className="text-gray-600 dark:text-text-secondary-dark group-hover:text-white/90 leading-relaxed transition-colors duration-300">
-                Access to a network of trusted healthcare professionals in your area.
-              </p>
-            </div>
-
-            {/* Personalization Card */}
-            <div className="group bg-white dark:bg-bg-card-dark rounded-2xl p-8 shadow-xl dark:shadow-card-dark hover:shadow-2xl transition-all duration-300 border border-gray-200 dark:border-dark-border hover:bg-gradient-to-br hover:from-primary hover:to-blue-600 hover:border-transparent transform hover:-translate-y-2">
-              <div className="w-16 h-16 bg-primary/10 group-hover:bg-white/20 rounded-full flex items-center justify-center mb-6 transition-colors duration-300">
-                <FiHeart className="w-8 h-8 text-primary group-hover:text-white transition-colors duration-300" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-text-primary-dark group-hover:text-white mb-4 transition-colors duration-300">Personalization:</h3>
-              <p className="text-gray-600 dark:text-text-secondary-dark group-hover:text-white/90 leading-relaxed transition-colors duration-300">
-                Tailored recommendations and reminders to help you stay on top of your health.
-              </p>
-            </div>
+          <div className="grid gap-8 md:grid-cols-3">
+            <FeatureCard
+              Icon={CheckCircle}
+              title="Efficiency"
+              text="Streamlined appointment scheduling that fits into your busy lifestyle."
+            />
+            <FeatureCard
+              Icon={Users}
+              title="Convenience"
+              text="Access to a network of trusted healthcare professionals in your area."
+            />
+            <FeatureCard
+              Icon={Heart}
+              title="Personalization"
+              text="Tailored recommendations and reminders to help you stay on top of your health."
+            />
           </div>
-        </div>
+        </Reveal>
 
         {/* Stats Section */}
-        <div className="bg-gradient-to-r from-primary to-blue-600 rounded-3xl p-12 text-white shadow-2xl">
-          <div className="grid md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-5xl font-bold mb-2">500+</div>
-              <div className="text-white/80">Verified Doctors</div>
-            </div>
-            <div>
-              <div className="text-5xl font-bold mb-2">10K+</div>
-              <div className="text-white/80">Happy Patients</div>
-            </div>
-            <div>
-              <div className="text-5xl font-bold mb-2">50+</div>
-              <div className="text-white/80">Partner Hospitals</div>
-            </div>
-            <div>
-              <div className="text-5xl font-bold mb-2">24/7</div>
-              <div className="text-white/80">Support Available</div>
-            </div>
+        <Reveal className="relative overflow-hidden rounded-3xl glass-strong p-12 text-center shadow-glow">
+          <div className="aura-bg pointer-events-none absolute inset-0 opacity-80" aria-hidden="true" />
+          <div className="relative z-10 grid gap-8 text-center md:grid-cols-4">
+            <Stat value="500+" label="Verified Doctors" />
+            <Stat value="10K+" label="Happy Patients" />
+            <Stat value="50+" label="Partner Hospitals" />
+            <Stat value="24/7" label="Support Available" />
           </div>
-        </div>
+        </Reveal>
       </div>
+    </div>
+  );
+}
+
+function FeatureCard({ Icon, title, text }) {
+  return (
+    <div className="group rounded-2xl glass p-8 shadow-card transition-all duration-300 hover:-translate-y-2 hover:shadow-glow">
+      <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-brand-cyan/15 transition-colors duration-300 group-hover:bg-gradient-to-br group-hover:from-brand-cyan group-hover:to-brand-teal">
+        <Icon className="h-8 w-8 text-brand-cyan-fg transition-colors duration-300 group-hover:text-white" />
+      </div>
+      <h3 className="mb-4 font-head text-2xl font-bold text-foreground transition-colors duration-300">
+        {title}:
+      </h3>
+      <p className="leading-relaxed text-muted-foreground transition-colors duration-300">{text}</p>
+    </div>
+  );
+}
+
+function Stat({ value, label }) {
+  return (
+    <div>
+      <div className="font-head text-5xl font-bold text-aurora">{value}</div>
+      <div className="mt-2 text-sm font-medium text-muted-foreground">{label}</div>
     </div>
   );
 }

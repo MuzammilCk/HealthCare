@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useNavigate, Link, useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Button, buttonVariants } from '../../components/ui/Button';
+import { cn } from '../../utils/cn';
 
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const { role, setRole } = useOutletContext(); // Get context from ModernAuthLayout
+  const { role, setRole } = useOutletContext();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -23,7 +25,6 @@ export default function Login() {
     setError('');
     try {
       const user = await login(form.email, form.password, role);
-      // The role from the server response is the source of truth
       navigate(`/${user.role}`);
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
@@ -31,66 +32,89 @@ export default function Login() {
       setLoading(false);
     }
   };
-  
-  const btnBase = "w-full px-4 py-2 rounded-lg font-semibold transition-all duration-300 ease-in-out";
-  const btnActive = `bg-primary text-white shadow-md`;
-  const btnInactive = `bg-bg-page text-text-secondary hover:bg-slate-200`;
+
+  const inputCls =
+    'w-full rounded-xl h-12 bg-background/60 border border-border pl-11 pr-11 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors';
 
   return (
     <div className="flex flex-col">
-      {/* Role Switcher */}
-      <div className="grid grid-cols-2 gap-2 p-1 bg-bg-page rounded-lg mb-6">
-        <button onClick={() => setRole('patient')} className={`${btnBase} ${role === 'patient' ? btnActive : btnInactive}`}>
-          I'm a Patient
-        </button>
-        <button onClick={() => setRole('doctor')} className={`${btnBase} ${role === 'doctor' ? btnActive : btnInactive}`}>
-          I'm a Doctor
-        </button>
+      {/* Role switcher */}
+      <div className="mx-auto mb-6 grid w-full max-w-xs grid-cols-2 gap-1 rounded-xl bg-foreground/5 p-1">
+        {['patient', 'doctor'].map((r) => (
+          <button
+            key={r}
+            type="button"
+            onClick={() => setRole(r)}
+            className={cn(
+              'rounded-lg px-4 py-2 text-sm font-semibold capitalize transition-all',
+              role === r
+                ? 'bg-gradient-to-br from-brand-cyan to-brand-teal text-white shadow-glow'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            I'm a {r}
+          </button>
+        ))}
       </div>
 
-      <form onSubmit={onSubmit} className="space-y-4 bg-white dark:bg-bg-card-dark p-6 rounded-2xl shadow-card dark:shadow-card-dark border border-slate-200/60 dark:border-dark-border transition-colors duration-300">
-        {error && <div className="bg-error/10 border border-error/20 text-error text-sm rounded-lg p-3 text-center">{error}</div>}
+      <form
+        onSubmit={onSubmit}
+        className="space-y-4 rounded-2xl glass p-6 shadow-card dark:shadow-card-dark"
+      >
+        {error && (
+          <div className="rounded-lg border border-error/20 bg-error/10 p-3 text-center text-sm text-error-fg">
+            {error}
+          </div>
+        )}
 
         <div className="relative">
-          <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             type="email"
             name="email"
             value={form.email}
             onChange={onChange}
-            className="w-full bg-bg-page dark:bg-dark-input border border-slate-300/70 dark:border-dark-border rounded-lg py-2 h-12 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-primary/50 text-text-primary dark:text-text-primary-dark transition-colors duration-300"
-            placeholder="your@email.com"
+            className={inputCls}
+            placeholder="you@email.com"
+            aria-label="Email"
             required
           />
         </div>
+
         <div className="relative">
-          <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
+          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             type={showPassword ? 'text' : 'password'}
             name="password"
             value={form.password}
             onChange={onChange}
-            className="w-full bg-bg-page dark:bg-dark-input border border-slate-300/70 dark:border-dark-border rounded-lg py-2 h-12 pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-primary/50 text-text-primary dark:text-text-primary-dark transition-colors duration-300"
+            className={inputCls}
             placeholder="Password"
+            aria-label="Password"
             required
           />
           <button
             type="button"
             aria-label={showPassword ? 'Hide password' : 'Show password'}
-            onClick={() => setShowPassword(v => !v)}
-            className="absolute inset-y-0 right-0 flex items-center pr-3 text-text-secondary hover:text-text-primary"
+            onClick={() => setShowPassword((v) => !v)}
+            className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
           >
-            {showPassword ? <FiEyeOff /> : <FiEye />}
+            {showPassword ? <EyeOff /> : <Eye />}
           </button>
         </div>
-        <button
-          disabled={loading}
-          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold px-4 py-2 rounded-xl h-12 shadow-lg transition-all duration-200 hover:from-blue-600 hover:to-blue-700 focus:ring-2 focus:ring-blue-500/30 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? 'Signing In…' : 'Sign In'}
-        </button>
-        <div className="text-sm text-center text-text-secondary dark:text-text-secondary-dark">
-          No account? <Link to="/auth/register" className="font-medium text-primary dark:text-primary-light hover:underline">Register here</Link>
+
+        <Button type="submit" disabled={loading} className="w-full" size="lg">
+          {loading ? 'Signing in…' : 'Sign In'}
+        </Button>
+
+        <div className="text-center text-sm text-muted-foreground">
+          No account?{' '}
+          <Link
+            to="/auth/register"
+            className={cn(buttonVariants({ variant: 'link' }), 'px-0')}
+          >
+            Register here
+          </Link>
         </div>
       </form>
     </div>
