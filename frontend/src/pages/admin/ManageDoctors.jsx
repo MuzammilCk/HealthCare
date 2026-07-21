@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FiUser, FiMail, FiBriefcase, FiMapPin, FiStar, FiTrash2, FiFilter } from 'react-icons/fi';
+import { User, Mail, Briefcase, MapPin, Star, Trash2, Filter } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 import {
@@ -12,8 +12,11 @@ import {
   ActionButton,
   EmptyState,
   LoadingState,
-  MobileCard
+  MobileCard,
+  AppSelect
 } from '../../components/ui';
+import { cn } from '../../utils/cn';
+import Reveal from '../../components/Reveal';
 
 export default function ManageDoctors() {
   const [doctors, setDoctors] = useState([]);
@@ -39,10 +42,10 @@ export default function ManageDoctors() {
 
   const onRemove = async (userId) => {
     if (!confirm('Remove this doctor? This action cannot be undone.')) return;
-    
+
     setRemovingId(userId);
     const loadingToast = toast.loading('Removing doctor...');
-    
+
     try {
       await api.delete(`/admin/doctors/${userId}`);
       toast.dismiss(loadingToast);
@@ -57,13 +60,13 @@ export default function ManageDoctors() {
   };
 
   const columns = [
-    { label: 'Doctor', icon: <FiUser className="w-4 h-4 text-blue-500" /> },
-    { label: 'Contact', icon: <FiMail className="w-4 h-4 text-green-500" /> },
-    { label: 'Specialization', icon: <FiBriefcase className="w-4 h-4 text-purple-500" /> },
-    { label: 'Hospital', icon: <FiMapPin className="w-4 h-4 text-teal-500" /> },
-    { label: 'Location', icon: <FiMapPin className="w-4 h-4 text-orange-500" /> },
-    { label: 'Rating', icon: <FiStar className="w-4 h-4 text-yellow-500" /> },
-    { label: 'Actions', icon: <FiTrash2 className="w-4 h-4 text-red-500" /> }
+    { label: 'Doctor', icon: <User className="w-4 h-4 text-brand-cyan-fg" /> },
+    { label: 'Contact', icon: <Mail className="w-4 h-4 text-brand-teal" /> },
+    { label: 'Specialization', icon: <Briefcase className="w-4 h-4 text-brand-violet" /> },
+    { label: 'Hospital', icon: <MapPin className="w-4 h-4 text-brand-sky-fg" /> },
+    { label: 'Location', icon: <MapPin className="w-4 h-4 text-brand-indigo" /> },
+    { label: 'Rating', icon: <Star className="w-4 h-4 text-brand-cyan-fg" /> },
+    { label: 'Actions', icon: <Trash2 className="w-4 h-4 text-brand-cyan-fg" /> }
   ];
 
   const sortOptions = [
@@ -73,150 +76,148 @@ export default function ManageDoctors() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-6 bg-background text-foreground">
+      <Reveal className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Manage Doctors</h1>
-          <p className="text-gray-600">View and manage registered doctors in the system</p>
+          <h1 className="mb-2 font-head text-3xl font-bold tracking-tight text-foreground">Manage Doctors</h1>
+          <p className="text-muted-foreground">View and manage registered doctors in the system</p>
         </div>
-        
+
         <div className="flex items-center gap-3">
-          <FiFilter className="w-5 h-5 text-gray-400" />
-          <select 
-            value={sortBy} 
-            onChange={(e) => setSortBy(e.target.value)} 
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
-          >
-            {sortOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <Filter className="w-5 h-5 text-muted-foreground" />
+          <AppSelect
+            value={sortBy}
+            onChange={setSortBy}
+            options={sortOptions}
+            placeholder="Sort doctors"
+            className="min-w-[200px]"
+          />
         </div>
-      </div>
+      </Reveal>
 
       {/* Desktop Table View */}
       <div className="hidden lg:block">
-        <ModernTableContainer
-          title="Registered Doctors"
-          subtitle={`${doctors.length} doctor${doctors.length !== 1 ? 's' : ''} in the system`}
-        >
-          {loading ? (
-            <LoadingState rows={5} />
-          ) : doctors.length === 0 ? (
-            <EmptyState
-              icon={<FiUser className="w-8 h-8 text-gray-400" />}
-              title="No Doctors Found"
-              description="No doctors are registered in the system yet."
-            />
-          ) : (
-            <table className="min-w-full">
-              <ModernTableHeader columns={columns} />
-              <tbody>
-                {doctors.map((doctor, index) => (
-                  <ModernTableRow key={doctor._id} isEven={index % 2 === 0}>
-                    <ModernTableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar 
-                          src={doctor.photoUrl ? `http://localhost:5000${doctor.photoUrl}` : null}
-                          name={doctor.userId?.name || 'Unknown Doctor'} 
+        <Reveal>
+          <ModernTableContainer
+            title="Registered Doctors"
+            subtitle={`${doctors.length} doctor${doctors.length !== 1 ? 's' : ''} in the system`}
+          >
+            {loading ? (
+              <LoadingState rows={5} />
+            ) : doctors.length === 0 ? (
+              <EmptyState
+                icon={<User className="w-8 h-8 text-muted-foreground" />}
+                title="No Doctors Found"
+                description="No doctors are registered in the system yet."
+              />
+            ) : (
+              <table className="min-w-full">
+                <ModernTableHeader columns={columns} />
+                <tbody>
+                  {doctors.map((doctor, index) => (
+                    <ModernTableRow key={doctor._id} isEven={index % 2 === 0}>
+                      <ModernTableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar
+                            src={doctor.photoUrl ? `http://localhost:5000${doctor.photoUrl}` : null}
+                            name={doctor.userId?.name || 'Unknown Doctor'}
+                            size="sm"
+                          />
+                          <div>
+                            <div className="font-medium text-foreground">
+                              {doctor.userId?.name || 'Unknown Doctor'}
+                            </div>
+                            <div className="text-sm text-muted-foreground">Doctor</div>
+                          </div>
+                        </div>
+                      </ModernTableCell>
+
+                      <ModernTableCell>
+                        <div className="flex items-center gap-2">
+                          <Mail className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-foreground">
+                            {doctor.userId?.email || 'No email'}
+                          </span>
+                        </div>
+                      </ModernTableCell>
+
+                      <ModernTableCell>
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-violet/15">
+                            <Briefcase className="w-4 h-4 text-brand-violet" />
+                          </div>
+                          <span className="text-foreground">
+                            {doctor.specializationId?.name || 'Not specified'}
+                          </span>
+                        </div>
+                      </ModernTableCell>
+
+                      <ModernTableCell>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-foreground">
+                            {doctor.hospitalId?.name || 'Not assigned'}
+                          </span>
+                          {doctor.hospitalId?.district && (
+                            <span className="text-xs text-muted-foreground">
+                              {doctor.hospitalId.district}
+                            </span>
+                          )}
+                        </div>
+                      </ModernTableCell>
+
+                      <ModernTableCell>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-foreground">
+                            {doctor.userId?.district || doctor.district || 'Not specified'}
+                          </span>
+                        </div>
+                      </ModernTableCell>
+
+                      <ModernTableCell>
+                        <StarRating
+                          rating={doctor.averageRating || 0}
                           size="sm"
                         />
-                        <div>
-                          <div className="font-medium text-gray-900">
-                            {doctor.userId?.name || 'Unknown Doctor'}
-                          </div>
-                          <div className="text-sm text-gray-500">Doctor</div>
-                        </div>
-                      </div>
-                    </ModernTableCell>
-                    
-                    <ModernTableCell>
-                      <div className="flex items-center gap-2">
-                        <FiMail className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-700">
-                          {doctor.userId?.email || 'No email'}
-                        </span>
-                      </div>
-                    </ModernTableCell>
-                    
-                    <ModernTableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center">
-                          <FiBriefcase className="w-4 h-4 text-purple-600" />
-                        </div>
-                        <span className="text-gray-700">
-                          {doctor.specializationId?.name || 'Not specified'}
-                        </span>
-                      </div>
-                    </ModernTableCell>
-                    
-                    <ModernTableCell>
-                      <div className="flex flex-col">
-                        <span className="text-gray-900 font-medium text-sm">
-                          {doctor.hospitalId?.name || 'Not assigned'}
-                        </span>
-                        {doctor.hospitalId?.district && (
-                          <span className="text-xs text-gray-500">
-                            {doctor.hospitalId.district}
-                          </span>
-                        )}
-                      </div>
-                    </ModernTableCell>
-                    
-                    <ModernTableCell>
-                      <div className="flex items-center gap-2">
-                        <FiMapPin className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-700">
-                          {doctor.userId?.district || doctor.district || 'Not specified'}
-                        </span>
-                      </div>
-                    </ModernTableCell>
-                    
-                    <ModernTableCell>
-                      <StarRating 
-                        rating={doctor.averageRating || 0} 
-                        size="sm"
-                      />
-                    </ModernTableCell>
-                    
-                    <ModernTableCell>
-                      <ActionButton
-                        variant="danger"
-                        size="xs"
-                        icon={<FiTrash2 className="w-3 h-3" />}
-                        onClick={() => onRemove(doctor.userId?._id)}
-                        disabled={removingId === doctor.userId?._id}
-                      >
-                        {removingId === doctor.userId?._id ? 'Removing...' : 'Remove'}
-                      </ActionButton>
-                    </ModernTableCell>
-                  </ModernTableRow>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </ModernTableContainer>
+                      </ModernTableCell>
+
+                      <ModernTableCell>
+                        <ActionButton
+                          variant="danger"
+                          size="xs"
+                          icon={<Trash2 className="w-3 h-3" />}
+                          onClick={() => onRemove(doctor.userId?._id)}
+                          disabled={removingId === doctor.userId?._id}
+                        >
+                          {removingId === doctor.userId?._id ? 'Removing...' : 'Remove'}
+                        </ActionButton>
+                      </ModernTableCell>
+                    </ModernTableRow>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </ModernTableContainer>
+        </Reveal>
       </div>
 
       {/* Mobile Card View */}
-      <div className="lg:hidden space-y-4">
+      <div className="space-y-4 lg:hidden">
         {loading ? (
           <div className="space-y-4">
             {Array.from({ length: 3 }).map((_, index) => (
               <MobileCard key={index}>
                 <div className="animate-pulse">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
+                  <div className="mb-4 flex items-center gap-3">
+                    <div className="h-12 w-12 rounded-full bg-foreground/10"></div>
                     <div className="flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                      <div className="mb-2 h-4 w-3/4 rounded bg-foreground/10"></div>
+                      <div className="h-3 w-1/2 rounded bg-foreground/10"></div>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <div className="h-3 bg-gray-200 rounded w-full"></div>
-                    <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                    <div className="h-3 w-full rounded bg-foreground/10"></div>
+                    <div className="h-3 w-2/3 rounded bg-foreground/10"></div>
                   </div>
                 </div>
               </MobileCard>
@@ -225,7 +226,7 @@ export default function ManageDoctors() {
         ) : doctors.length === 0 ? (
           <MobileCard>
             <EmptyState
-              icon={<FiUser className="w-8 h-8 text-gray-400" />}
+              icon={<User className="w-8 h-8 text-muted-foreground" />}
               title="No Doctors Found"
               description="No doctors are registered in the system yet."
             />
@@ -236,65 +237,65 @@ export default function ManageDoctors() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Avatar 
+                    <Avatar
                       src={doctor.photoUrl ? `http://localhost:5000${doctor.photoUrl}` : null}
-                      name={doctor.userId?.name || 'Unknown Doctor'} 
+                      name={doctor.userId?.name || 'Unknown Doctor'}
                       size="md"
                     />
                     <div>
-                      <h3 className="font-semibold text-gray-900">
+                      <h3 className="font-semibold text-foreground">
                         {doctor.userId?.name || 'Unknown Doctor'}
                       </h3>
-                      <p className="text-sm text-gray-500">Doctor</p>
+                      <p className="text-sm text-muted-foreground">Doctor</p>
                     </div>
                   </div>
                   <ActionButton
                     variant="danger"
                     size="sm"
-                    icon={<FiTrash2 className="w-4 h-4" />}
+                    icon={<Trash2 className="w-4 h-4" />}
                     onClick={() => onRemove(doctor.userId?._id)}
                     disabled={removingId === doctor.userId?._id}
                   >
                     {removingId === doctor.userId?._id ? 'Removing...' : 'Remove'}
                   </ActionButton>
                 </div>
-                
+
                 <div className="grid grid-cols-1 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Email</label>
+                    <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Email</label>
                     <div className="mt-1 flex items-center gap-2">
-                      <FiMail className="w-4 h-4 text-gray-400" />
-                      <span className="text-gray-700">
+                      <Mail className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-foreground">
                         {doctor.userId?.email || 'No email'}
                       </span>
                     </div>
                   </div>
-                  
+
                   <div>
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Specialization</label>
+                    <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Specialization</label>
                     <div className="mt-1 flex items-center gap-2">
-                      <FiBriefcase className="w-4 h-4 text-purple-500" />
-                      <span className="text-gray-700">
+                      <Briefcase className="w-4 h-4 text-brand-violet" />
+                      <span className="text-foreground">
                         {doctor.specializationId?.name || 'Not specified'}
                       </span>
                     </div>
                   </div>
-                  
+
                   <div>
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Location</label>
+                    <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Location</label>
                     <div className="mt-1 flex items-center gap-2">
-                      <FiMapPin className="w-4 h-4 text-orange-500" />
-                      <span className="text-gray-700">
+                      <MapPin className="w-4 h-4 text-brand-indigo" />
+                      <span className="text-foreground">
                         {doctor.userId?.district || doctor.district || 'Not specified'}
                       </span>
                     </div>
                   </div>
-                  
+
                   <div>
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Rating</label>
+                    <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Rating</label>
                     <div className="mt-1">
-                      <StarRating 
-                        rating={doctor.averageRating || 0} 
+                      <StarRating
+                        rating={doctor.averageRating || 0}
                         size="sm"
                       />
                     </div>

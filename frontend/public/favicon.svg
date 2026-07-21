@@ -1,0 +1,16 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="HealthSync">
+  <defs>
+    <linearGradient id="hs-g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="55%" stop-color="#2dd4bf"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+  </defs>
+  <rect x="6" y="6" width="52" height="52" rx="16" fill="url(#hs-g)"/>
+  <!-- medical cross -->
+  <rect x="28" y="15" width="8" height="34" rx="4" fill="#ffffff"/>
+  <rect x="15" y="28" width="34" height="8" rx="4" fill="#ffffff"/>
+  <!-- orbit -->
+  <circle cx="32" cy="32" r="23" fill="none" stroke="#ffffff" stroke-opacity="0.28" stroke-width="2" stroke-dasharray="3 7"/>
+  <circle cx="49" cy="15" r="4" fill="#ffffff"/>
+</svg>

@@ -1,4 +1,7 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+let stripe = null;
+if (process.env.STRIPE_SECRET_KEY) {
+  stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+}
 const Payment = require('../models/Payment');
 const Appointment = require('../models/Appointment');
 const Bill = require('../models/Bill');
@@ -12,6 +15,10 @@ exports.createBookingCheckoutSession = async (req, res) => {
   try {
     const { appointmentId } = req.body;
     const patientId = req.user.id;
+
+    if (!stripe) {
+      return res.status(503).json({ success: false, message: 'Stripe payments are not configured on this server' });
+    }
 
     // Validate appointment
     const appointment = await Appointment.findById(appointmentId).populate('doctorId', 'name');
@@ -90,6 +97,10 @@ exports.createBillCheckoutSession = async (req, res) => {
   try {
     const { billId } = req.body;
     const patientId = req.user.id;
+
+    if (!stripe) {
+      return res.status(503).json({ success: false, message: 'Stripe payments are not configured on this server' });
+    }
 
     // Validate bill
     const bill = await Bill.findById(billId)
@@ -171,6 +182,10 @@ exports.stripeWebhook = async (req, res) => {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   let event;
+
+  if (!stripe) {
+    return res.status(503).send('Stripe payments are not configured on this server');
+  }
 
   try {
     // Verify webhook signature

@@ -2,6 +2,17 @@ import { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { Link, useNavigate } from 'react-router-dom';
 import { DashboardStatsSkeleton, AppointmentSkeleton } from '../../components/ui/SkeletonLoader';
+import Reveal from '../../components/Reveal';
+import { Card } from '../../components/ui/Card';
+import { Badge } from '../../components/ui/Badge';
+import { cn } from '../../utils/cn';
+import {
+  CalendarDays,
+  Clock,
+  CheckCircle2,
+  Calendar as CalendarIcon,
+  ArrowRight,
+} from 'lucide-react';
 
 export default function DoctorDashboard() {
   const [stats, setStats] = useState({ today: 0, scheduled: 0, completed: 0 });
@@ -49,7 +60,7 @@ export default function DoctorDashboard() {
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
     const startingDayOfWeek = firstDay.getDay();
-    
+
     return { daysInMonth, startingDayOfWeek };
   };
 
@@ -83,14 +94,14 @@ export default function DoctorDashboard() {
 
   const isToday = (day) => {
     const today = new Date();
-    return day === today.getDate() && 
-           currentMonth.getMonth() === today.getMonth() && 
+    return day === today.getDate() &&
+           currentMonth.getMonth() === today.getMonth() &&
            currentMonth.getFullYear() === today.getFullYear();
   };
 
   const isSelected = (day) => {
-    return day === selectedDate.getDate() && 
-           currentMonth.getMonth() === selectedDate.getMonth() && 
+    return day === selectedDate.getDate() &&
+           currentMonth.getMonth() === selectedDate.getMonth() &&
            currentMonth.getFullYear() === selectedDate.getFullYear();
   };
 
@@ -104,19 +115,19 @@ export default function DoctorDashboard() {
 
   if (loading) {
     return (
-      <div className="space-y-8">
+      <div className="space-y-8 bg-background text-foreground">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark mb-2">Doctor Dashboard</h1>
-          <p className="text-gray-600 dark:text-text-secondary-dark">Manage your practice and patient care</p>
+          <h1 className="mb-2 font-head text-3xl font-bold tracking-tight text-foreground">Doctor Dashboard</h1>
+          <p className="text-muted-foreground">Manage your practice and patient care</p>
         </div>
         <DashboardStatsSkeleton />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-text-primary-dark mb-4">Today's Appointments</h2>
+            <h2 className="mb-4 font-head text-xl font-semibold text-foreground">Today's Appointments</h2>
             <AppointmentSkeleton count={3} />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-text-primary-dark mb-4">Recent Activity</h2>
+            <h2 className="mb-4 font-head text-xl font-semibold text-foreground">Recent Activity</h2>
             <AppointmentSkeleton count={3} />
           </div>
         </div>
@@ -128,139 +139,172 @@ export default function DoctorDashboard() {
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
-    <div>
-      <h1 className="text-h2 font-bold mb-4 text-gray-900 dark:text-text-primary-dark">Doctor Dashboard</h1>
+    <div className="space-y-8 bg-background text-foreground">
+      <div>
+        <h1 className="font-head text-3xl font-bold tracking-tight text-foreground">Doctor Dashboard</h1>
+        <p className="text-muted-foreground">Manage your practice and patient care</p>
+      </div>
+
       {(verificationStatus === 'Pending' || verificationStatus === 'Rejected') && (
-        <div className={`mb-4 p-4 rounded-xl border ${verificationStatus === 'Rejected' ? 'bg-red-50 border-red-200 text-red-800' : 'bg-yellow-50 border-yellow-200 text-yellow-800'}`}>
-          <div className="font-semibold mb-1">
+        <div className={cn(
+          'mb-4 rounded-xl border p-4',
+          verificationStatus === 'Rejected'
+            ? 'border-error/40 bg-error/15 text-foreground'
+            : 'border-amber-400/40 bg-amber-400/15 text-foreground'
+        )}>
+          <div className="mb-1 font-semibold">
             {verificationStatus === 'Rejected' ? 'KYC Rejected' : 'Pending Verification'}
           </div>
           <div className="text-sm mb-2">
             {verificationStatus === 'Rejected' ? 'Your KYC was rejected. Please re-submit your documents.' : 'Your profile is not yet verified. Please submit KYC to get approved.'}
           </div>
-          <Link to="/doctor/kyc" className="inline-block px-4 py-2 bg-primary text-white rounded">Go to KYC</Link>
+          <Link to="/doctor/kyc" className="inline-block rounded-lg bg-gradient-to-br from-brand-cyan to-brand-teal px-4 py-2 text-sm font-semibold text-white shadow-glow hover:brightness-110">
+            Go to KYC
+          </Link>
         </div>
       )}
       {verificationStatus === 'Submitted' && (
-        <div className="mb-4 p-4 rounded-xl border bg-blue-50 border-blue-200 text-blue-800">
+        <div className="mb-4 rounded-xl border border-brand-sky/40 bg-brand-sky/15 p-4 text-foreground">
           Your KYC has been submitted and is under review.
         </div>
       )}
-      
+
       {/* Stats Cards - Clickable */}
-      <div className="grid sm:grid-cols-3 gap-4 mb-6">
+      <Reveal className="grid gap-4 sm:grid-cols-3">
         <button
           onClick={handleTodayClick}
-          className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-105 text-left group"
+          className="group relative overflow-hidden rounded-2xl glass p-6 text-left shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-glow"
         >
-          <div className="text-blue-100 text-sm font-medium mb-1">Today's Appointments</div>
-          <div className="text-4xl font-bold text-white mb-2">{stats.today}</div>
-          <div className="text-blue-100 text-xs flex items-center gap-1">
-            <span>Click to view</span>
+          <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-[radial-gradient(circle,rgba(34,211,238,0.25),transparent_70%)] blur-2xl opacity-70 transition-opacity duration-500 group-hover:opacity-100" />
+          <div className="relative z-10">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-cyan to-brand-teal text-white shadow-glow">
+              <CalendarDays className="h-5 w-5" />
+            </div>
+            <p className="text-sm font-medium text-muted-foreground">Today's Appointments</p>
+            <p className="mt-1 font-head text-4xl font-bold text-foreground">{stats.today}</p>
+            <p className="mt-2 text-xs text-muted-foreground">Click to view</p>
           </div>
         </button>
-        
+
         <button
           onClick={handleScheduledClick}
           disabled={stats.scheduled === 0}
-          className="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-105 text-left group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="group relative overflow-hidden rounded-2xl glass p-6 text-left shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-glow disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
         >
-          <div className="text-orange-100 text-sm font-medium mb-1">Scheduled</div>
-          <div className="text-4xl font-bold text-white mb-2">{stats.scheduled}</div>
-          <div className="text-orange-100 text-xs flex items-center gap-1">
-            <span>{stats.scheduled > 0 ? 'Click to view' : 'No appointments'}</span>
-            {stats.scheduled > 0 && <span className="group-hover:translate-x-1 transition-transform">→</span>}
+          <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-[radial-gradient(circle,rgba(139,92,246,0.25),transparent_70%)] blur-2xl opacity-70 transition-opacity duration-500 group-hover:opacity-100" />
+          <div className="relative z-10">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-violet to-brand-indigo text-white shadow-glow">
+              <Clock className="h-5 w-5" />
+            </div>
+            <p className="text-sm font-medium text-muted-foreground">Scheduled</p>
+            <p className="mt-1 font-head text-4xl font-bold text-foreground">{stats.scheduled}</p>
+            <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+              <span>{stats.scheduled > 0 ? 'Click to view' : 'No appointments'}</span>
+              {stats.scheduled > 0 && <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />}
+            </p>
           </div>
         </button>
-        
+
         <button
           onClick={handleCompletedClick}
           disabled={stats.completed === 0}
-          className="bg-gradient-to-br from-green-500 to-emerald-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-105 text-left group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="group relative overflow-hidden rounded-2xl glass p-6 text-left shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-glow disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
         >
-          <div className="text-green-100 text-sm font-medium mb-1">Completed</div>
-          <div className="text-4xl font-bold text-white mb-2">{stats.completed}</div>
-          <div className="text-green-100 text-xs flex items-center gap-1">
-            <span>{stats.completed > 0 ? 'Click to view' : 'No appointments'}</span>
-            {stats.completed > 0 && <span className="group-hover:translate-x-1 transition-transform">→</span>}
+          <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-[radial-gradient(circle,rgba(45,212,191,0.25),transparent_70%)] blur-2xl opacity-70 transition-opacity duration-500 group-hover:opacity-100" />
+          <div className="relative z-10">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-teal to-brand-cyan text-white shadow-glow">
+              <CheckCircle2 className="h-5 w-5" />
+            </div>
+            <p className="text-sm font-medium text-muted-foreground">Completed</p>
+            <p className="mt-1 font-head text-4xl font-bold text-foreground">{stats.completed}</p>
+            <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+              <span>{stats.completed > 0 ? 'Click to view' : 'No appointments'}</span>
+              {stats.completed > 0 && <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />}
+            </p>
           </div>
         </button>
-      </div>
+      </Reveal>
 
       {/* Calendar and Appointments */}
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid gap-6 lg:grid-cols-2">
         {/* Calendar */}
-        <div className="bg-white dark:bg-bg-card-dark p-6 rounded-xl shadow-card dark:shadow-card-dark">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-text-primary-dark">{monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}</h2>
+        <Card className="p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="font-head text-xl font-bold text-foreground">
+              {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+            </h2>
             <div className="flex gap-2">
-              <button onClick={handlePrevMonth} className="px-3 py-1 bg-gray-100 dark:bg-dark-surface hover:bg-gray-200 dark:hover:bg-dark-surface-hover text-gray-700 dark:text-text-primary-dark rounded">←</button>
-              <button onClick={handleNextMonth} className="px-3 py-1 bg-gray-100 dark:bg-dark-surface hover:bg-gray-200 dark:hover:bg-dark-surface-hover text-gray-700 dark:text-text-primary-dark rounded">→</button>
+              <button onClick={handlePrevMonth} aria-label="Previous month" className="rounded-lg bg-foreground/5 px-3 py-1 text-foreground transition-colors hover:bg-foreground/10">←</button>
+              <button onClick={handleNextMonth} aria-label="Next month" className="rounded-lg bg-foreground/5 px-3 py-1 text-foreground transition-colors hover:bg-foreground/10">→</button>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-7 gap-1">
             {dayNames.map(day => (
-              <div key={day} className="text-center text-sm font-semibold text-gray-600 py-2">{day}</div>
+              <div key={day} className="py-2 text-center text-sm font-semibold text-muted-foreground">{day}</div>
             ))}
-            
+
             {Array.from({ length: startingDayOfWeek }).map((_, i) => (
               <div key={`empty-${i}`} className="aspect-square"></div>
             ))}
-            
+
             {Array.from({ length: daysInMonth }).map((_, i) => {
               const day = i + 1;
               return (
                 <button
                   key={day}
                   onClick={() => handleDateClick(day)}
-                  className={`aspect-square flex items-center justify-center rounded-lg text-sm font-medium transition-colors relative
-                    ${isSelected(day) ? 'bg-primary text-white' : 
-                      isToday(day) ? 'bg-blue-100 text-blue-900' : 
-                      'hover:bg-gray-100'}
-                    ${hasAppointments(day) ? 'font-bold' : ''}
-                  `}
+                  aria-label={`${monthNames[currentMonth.getMonth()]} ${day}${hasAppointments(day) ? ', has appointments' : ''}`}
+                  aria-pressed={isSelected(day)}
+                  className={cn(
+                    'relative flex aspect-square items-center justify-center rounded-lg text-sm font-medium transition-colors',
+                    isSelected(day)
+                      ? 'bg-gradient-to-br from-brand-cyan to-brand-teal text-white shadow-glow'
+                      : isToday(day)
+                        ? 'bg-brand-cyan/15 text-brand-cyan-fg'
+                        : 'text-foreground hover:bg-foreground/5',
+                    hasAppointments(day) ? 'font-bold' : ''
+                  )}
                 >
                   {day}
                   {hasAppointments(day) && !isSelected(day) && (
-                    <span className="absolute bottom-1 w-1 h-1 bg-primary rounded-full"></span>
+                    <span aria-hidden="true" className="absolute bottom-1 h-1 w-1 rounded-full bg-brand-cyan"></span>
                   )}
                 </button>
               );
             })}
           </div>
-        </div>
+        </Card>
 
         {/* Appointments for Selected Date */}
-        <div className="bg-white dark:bg-bg-card-dark p-6 rounded-xl shadow-card dark:shadow-card-dark">
-          <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-text-primary-dark">
+        <Card className="p-6">
+          <h2 className="mb-4 font-head text-xl font-bold text-foreground">
             Appointments for {selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           </h2>
-          
+
           {filteredAppointments.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 dark:text-text-secondary-dark">
+            <div className="py-8 text-center text-muted-foreground">
               No appointments scheduled for this date
             </div>
           ) : (
             <div className="space-y-3">
               {filteredAppointments.map(apt => (
-                <div key={apt._id} className="p-4 border border-gray-200 dark:border-dark-border rounded-lg hover:border-primary dark:hover:border-primary-light transition-colors bg-white dark:bg-dark-surface">
-                  <div className="flex justify-between items-start mb-2">
+                <div key={apt._id} className="rounded-lg border border-border bg-foreground/5 p-4 transition-colors hover:border-brand-cyan">
+                  <div className="mb-2 flex items-start justify-between">
                     <div>
-                      <div className="font-semibold text-gray-900 dark:text-text-primary-dark">{apt.patientId?.name || 'Unknown Patient'}</div>
-                      <div className="text-sm text-gray-600 dark:text-text-secondary-dark">{apt.timeSlot}</div>
+                      <div className="font-semibold text-foreground">{apt.patientId?.name || 'Unknown Patient'}</div>
+                      <div className="text-sm text-muted-foreground">{apt.timeSlot}</div>
                     </div>
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      apt.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                      apt.status === 'Scheduled' ? 'bg-blue-100 text-blue-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
+                    <Badge variant={
+                      apt.status === 'Completed' ? 'success' :
+                      apt.status === 'Scheduled' ? 'default' : 'outline'
+                    }>
                       {apt.status}
-                    </span>
+                    </Badge>
                   </div>
                   <button
                     onClick={() => navigate('/doctor/appointments')}
-                    className="text-sm text-primary hover:underline"
+                    className="text-sm text-brand-cyan-fg hover:underline"
                   >
                     View Details →
                   </button>
@@ -268,7 +312,7 @@ export default function DoctorDashboard() {
               ))}
             </div>
           )}
-        </div>
+        </Card>
       </div>
     </div>
   );

@@ -19,7 +19,7 @@
   height: 42px;
   border-radius: 50%;
   border: 2px solid transparent;
-  background-color: #e2e8f0;
+  background-color: rgb(var(--input));
   cursor: pointer;
   overflow: hidden;
   display: flex;
@@ -29,7 +29,7 @@
 }
 
 .profile-avatar-button:hover {
-  border-color: #3b82f6;
+  border-color: #22d3ee;
 }
 
 .profile-menu {
@@ -39,10 +39,10 @@
   bottom: calc(100% + 3px); /* 5px closer to the button */
   top: auto;
   width: 350px; /* Increased width for more space */
-  background-color: white;
+  background-color: rgb(var(--popover));
   border-radius: 1rem;
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
-  border: 1px solid #f1f5f9;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgb(var(--border));
   z-index: 9999;
   max-height: 60vh; /* reduce vertical footprint */
   overflow-y: auto;
@@ -56,7 +56,7 @@
   align-items: center;
   gap: 1.25rem; /* Increased space between avatar and text */
   padding: 1rem; /* slightly tighter to reduce total height */
-  background-color: #f8fafc;
+  background-color: rgb(var(--muted));
 }
 
 .profile-info-details {
@@ -69,7 +69,7 @@
 .profile-menu-name {
   font-weight: 600;
   font-size: 1.125rem;
-  color: #1e293b;
+  color: rgb(var(--foreground));
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -78,7 +78,7 @@
 
 .profile-menu-email {
   font-size: 0.875rem;
-  color: #64748b;
+  color: rgb(var(--muted-foreground));
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -92,8 +92,8 @@
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: capitalize;
-  background-color: #e0f2fe;
-  color: #0c4a6e;
+  background-color: rgba(34, 211, 238, 0.15);
+  color: #22d3ee;
   align-self: flex-start;
 }
 /* --- END NEW HEADER STYLES --- */
@@ -116,7 +116,7 @@
   font-size: 0.95rem;
   transition: background-color 0.2s ease;
   text-decoration: none;
-  color: #1e293b;
+  color: rgb(var(--foreground));
   gap: 0.75rem;
 }
 
@@ -129,12 +129,12 @@
 }
 
 .profile-menu-item:hover {
-  background-color: #f8fafc;
+  background-color: rgb(var(--muted));
 }
 
 .profile-menu-divider {
   height: 1px;
-  background-color: #f1f5f9;
+  background-color: rgb(var(--border));
   margin: 0.5rem 0;
 }
 

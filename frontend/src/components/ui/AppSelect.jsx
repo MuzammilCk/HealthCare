@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { FiChevronDown, FiSearch, FiCheck, FiLoader } from 'react-icons/fi';
+import { ChevronDown, Search, Check, Loader } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
 /**
  * AppSelect - A modern, accessible dropdown component for healthcare SaaS
- * 
+ *
  * Features:
  * - Consistent styling across all dropdowns
  * - Keyboard navigation support
@@ -43,7 +43,7 @@ const AppSelect = ({
   const [internalValue, setInternalValue] = useState(value);
   const [openUp, setOpenUp] = useState(false);
   const [dropdownMax, setDropdownMax] = useState(256); // pixels
-  
+
   const selectRef = useRef(null);
   const searchRef = useRef(null);
   const optionRefs = useRef([]);
@@ -104,7 +104,7 @@ const AppSelect = ({
   // Filter options based on search term
   const filteredOptions = useMemo(() => {
     if (!searchable || !searchTerm) return options;
-    
+
     return options.filter(option => {
       const label = typeof option === 'string' ? option : option[optionLabel];
       return label.toLowerCase().includes(searchTerm.toLowerCase());
@@ -114,14 +114,14 @@ const AppSelect = ({
   // Group options if needed
   const groupedOptions = useMemo(() => {
     if (!grouped) return filteredOptions;
-    
+
     const groups = {};
     filteredOptions.forEach(option => {
       const group = option[groupKey] || 'Other';
       if (!groups[group]) groups[group] = [];
       groups[group].push(option);
     });
-    
+
     return Object.entries(groups).map(([groupName, groupOptions]) => ({
       group: groupName,
       options: groupOptions
@@ -131,12 +131,12 @@ const AppSelect = ({
   // Get display value
   const getDisplayValue = () => {
     if (!internalValue) return placeholder;
-    
+
     const option = options.find(opt => {
       const val = typeof opt === 'string' ? opt : opt[optionKey];
       return val === internalValue;
     });
-    
+
     if (!option) return placeholder;
     return typeof option === 'string' ? option : option[optionLabel];
   };
@@ -214,16 +214,16 @@ const AppSelect = ({
 
   // Variant classes
   const variantClasses = {
-    default: 'bg-white dark:bg-dark-surface border border-gray-300 dark:border-dark-border hover:border-gray-400 dark:hover:border-dark-surface-hover focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20',
-    outline: 'bg-transparent border-2 border-gray-300 dark:border-dark-border hover:border-gray-400 dark:hover:border-dark-surface-hover focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20',
-    ghost: 'bg-gray-50 dark:bg-dark-surface border border-transparent dark:border-dark-border hover:bg-gray-100 dark:hover:bg-dark-surface-hover focus:bg-white dark:focus:bg-dark-surface focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
+    default: 'bg-card border border-border hover:border-foreground/20 focus:border-ring focus:ring-2 focus:ring-ring/30',
+    outline: 'bg-transparent border-2 border-border hover:border-foreground/20 focus:border-ring focus:ring-2 focus:ring-ring/30',
+    ghost: 'bg-foreground/5 border border-transparent hover:bg-foreground/10 focus:bg-card focus:border-ring focus:ring-2 focus:ring-ring/30'
   };
 
   return (
     <div className={cn('relative', className)} ref={selectRef}>
       {/* Label */}
       {label && (
-        <label className="block text-sm font-medium text-gray-700 dark:text-text-secondary-dark mb-1">
+        <label className="block text-sm font-medium text-muted-foreground mb-1">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
@@ -237,13 +237,13 @@ const AppSelect = ({
         disabled={disabled || loading}
         className={cn(
           'w-full flex items-center justify-between rounded-lg transition-all duration-150 ease-in-out',
-          'focus:outline-none focus:ring-2 focus:ring-blue-500/20',
+          'focus:outline-none focus:ring-2 focus:ring-ring/30',
           sizeClasses[size],
           variantClasses[variant],
-          disabled && 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-dark-surface',
+          disabled && 'opacity-50 cursor-not-allowed bg-foreground/5',
           loading && 'opacity-75 cursor-wait',
           error && 'border-red-500 focus:border-red-500 focus:ring-red-500/20',
-          isOpen && 'ring-2 ring-blue-500/20 border-blue-500'
+          isOpen && 'ring-2 ring-ring/30 border-ring'
         )}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
@@ -251,22 +251,22 @@ const AppSelect = ({
         {...props}
       >
         <div className="flex items-center flex-1 min-w-0">
-          {Icon && <Icon className="w-4 h-4 mr-2 text-gray-500 dark:text-text-secondary-dark flex-shrink-0" />}
+          {Icon && <Icon className="w-4 h-4 mr-2 text-muted-foreground flex-shrink-0" />}
           <span className={cn(
             'truncate',
-            !internalValue && 'text-gray-500 dark:text-text-secondary-dark',
-            internalValue && 'text-gray-900 dark:text-text-primary-dark font-medium'
+            !internalValue && 'text-muted-foreground',
+            internalValue && 'text-foreground font-medium'
           )}>
             {getDisplayValue()}
           </span>
         </div>
-        
+
         <div className="flex items-center ml-2">
           {loading ? (
-            <FiLoader className="w-4 h-4 text-gray-400 dark:text-text-secondary-dark animate-spin" />
+            <Loader className="w-4 h-4 text-muted-foreground animate-spin" />
           ) : (
-            <FiChevronDown className={cn(
-              'w-4 h-4 text-gray-400 dark:text-text-secondary-dark transition-transform duration-150',
+            <ChevronDown className={cn(
+              'w-4 h-4 text-muted-foreground transition-transform duration-150',
               isOpen && 'rotate-180'
             )} />
           )}
@@ -282,7 +282,7 @@ const AppSelect = ({
       {isOpen && (
         <div
           className={cn(
-            'absolute z-[999] w-full bg-white rounded-md shadow-lg border border-gray-200',
+            'absolute z-[999] w-full glass rounded-md shadow-card dark:shadow-card-dark border border-border',
             'sm:max-w-none max-w-[calc(100vw-2rem)]', // Responsive width
             openUp ? 'mb-2' : 'mt-2'
           )}
@@ -290,16 +290,16 @@ const AppSelect = ({
         >
           {/* Search Input */}
           {searchable && (
-            <div className="p-2 border-b border-gray-200">
+            <div className="p-2 border-b border-border">
               <div className="relative">
-                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
                   ref={searchRef}
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder={searchPlaceholder}
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className="w-full pl-9 pr-3 py-2 text-sm bg-background text-foreground placeholder:text-muted-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-ring"
                 />
               </div>
             </div>
@@ -309,17 +309,17 @@ const AppSelect = ({
           <div className="py-2 overflow-y-auto" style={{ maxHeight: dropdownMax }}>
             {loading ? (
               <div className="flex items-center justify-center py-4">
-                <FiLoader className="w-4 h-4 text-gray-400 animate-spin mr-2" />
-                <span className="text-sm text-gray-500">Loading...</span>
+                <Loader className="w-4 h-4 text-muted-foreground animate-spin mr-2" />
+                <span className="text-sm text-muted-foreground">Loading...</span>
               </div>
             ) : grouped ? (
               // Grouped Options
               groupedOptions.length === 0 ? (
-                <div className="px-3 py-2 text-sm text-gray-500">No options found</div>
+                <div className="px-3 py-2 text-sm text-muted-foreground">No options found</div>
               ) : (
                 groupedOptions.map((group, groupIndex) => (
                   <div key={group.group}>
-                    <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide bg-gray-50">
+                    <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide bg-foreground/5">
                       {group.group}
                     </div>
                     {group.options.map((option, optionIndex) => {
@@ -328,7 +328,7 @@ const AppSelect = ({
                       const label = option[optionLabel];
                       const isSelected = val === internalValue;
                       const isFocused = index === focusedIndex;
-                      
+
                       return (
                         <button
                           key={val}
@@ -337,14 +337,14 @@ const AppSelect = ({
                           onClick={() => handleSelect(option)}
                           className={cn(
                             'w-full text-left px-3 py-2 text-sm transition-colors duration-150',
-                            'hover:bg-blue-50 hover:text-blue-600',
-                            isSelected && 'bg-blue-50 text-blue-600 font-medium',
-                            isFocused && 'bg-blue-50 text-blue-600'
+                            'hover:bg-foreground/5 hover:text-brand-cyan-fg',
+                            isSelected && 'bg-brand-cyan/10 text-brand-cyan-fg font-medium',
+                            isFocused && 'bg-foreground/5 text-brand-cyan-fg'
                           )}
                         >
                           <div className="flex items-center justify-between">
                             <span>{label}</span>
-                            {isSelected && <FiCheck className="w-4 h-4" />}
+                            {isSelected && <Check className="w-4 h-4" />}
                           </div>
                         </button>
                       );
@@ -355,14 +355,14 @@ const AppSelect = ({
             ) : (
               // Regular Options
               filteredOptions.length === 0 ? (
-                <div className="px-3 py-2 text-sm text-gray-500">No options found</div>
+                <div className="px-3 py-2 text-sm text-muted-foreground">No options found</div>
               ) : (
                 filteredOptions.map((option, index) => {
                   const val = typeof option === 'string' ? option : option[optionKey];
                   const label = typeof option === 'string' ? option : option[optionLabel];
                   const isSelected = val === internalValue;
                   const isFocused = index === focusedIndex;
-                  
+
                   return (
                     <button
                       key={val}
@@ -371,14 +371,14 @@ const AppSelect = ({
                       onClick={() => handleSelect(option)}
                       className={cn(
                         'w-full text-left px-3 py-2 text-sm transition-colors duration-150',
-                        'hover:bg-blue-50 hover:text-blue-600',
-                        isSelected && 'bg-blue-50 text-blue-600 font-medium',
-                        isFocused && 'bg-blue-50 text-blue-600'
+                        'hover:bg-foreground/5 hover:text-brand-cyan-fg',
+                        isSelected && 'bg-brand-cyan/10 text-brand-cyan-fg font-medium',
+                        isFocused && 'bg-foreground/5 text-brand-cyan-fg'
                       )}
                     >
                       <div className="flex items-center justify-between">
                         <span>{label}</span>
-                        {isSelected && <FiCheck className="w-4 h-4" />}
+                        {isSelected && <Check className="w-4 h-4" />}
                       </div>
                     </button>
                   );

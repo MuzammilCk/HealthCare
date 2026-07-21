@@ -4,11 +4,12 @@ const Doctor = require('../models/Doctor');
 const User = require('../models/User');
 const { createNotification, createRoleBasedNotifications } = require('../utils/createNotification');
 
-// Utility function to normalize date to UTC midnight
-const normalizeDateToUTC = (dateString) => {
-  const date = new Date(dateString);
-  return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0));
-};
+// Date normalization is centralized in utils/scheduling.js (was previously
+// duplicated in every controller with a local-timezone bug: constructing a
+// Date from the raw string and then reading getFullYear()/getMonth()/
+// getDate() - local-time getters - shifts the resulting "UTC midnight" by a
+// day whenever the server's TZ has a negative UTC offset. See that file.
+const { normalizeDateToUTC } = require('../utils/scheduling');
 
 exports.getDoctorProfile = async (req, res) => {
   try {
@@ -54,13 +55,33 @@ exports.updateAppointment = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid appointment status' });
     }
 
+    // SECURITY/DOMAIN: enforce a state machine. Previously this endpoint let
+    // a doctor set ANY of the 5 statuses regardless of the appointment's
+    // CURRENT status - e.g. a 'Rejected' or 'Cancelled' appointment could be
+    // flipped to 'Completed', which downstream unlocks prescription/bill
+    // generation for an appointment that was never actually held.
+    // 'Scheduled' is the only status this generic endpoint may transition
+    // OUT of; every other status here is terminal (rescheduling has its own
+    // dedicated endpoint that explicitly re-opens a new Scheduled record).
+    if (status && status !== appt.status && appt.status !== 'Scheduled') {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot change status: appointment is already ${appt.status}`
+      });
+    }
+
     // Prevent completing clearly future-dated appointments (but allow same-day regardless of time)
+    // NOTE: appt.date is stored as UTC midnight; use UTC-safe comparisons so
+    // this check doesn't shift by the server's timezone offset.
     if (status === 'Completed') {
       const now = new Date();
       const appointmentDate = new Date(appt.date);
       const endOfDay = new Date(appointmentDate);
-      endOfDay.setHours(23, 59, 59, 999);
-      if (endOfDay > now && appointmentDate.toDateString() !== now.toDateString()) {
+      endOfDay.setUTCHours(23, 59, 59, 999);
+      const isSameUTCDate = appointmentDate.getUTCFullYear() === now.getUTCFullYear() &&
+        appointmentDate.getUTCMonth() === now.getUTCMonth() &&
+        appointmentDate.getUTCDate() === now.getUTCDate();
+      if (endOfDay > now && !isSameUTCDate) {
         return res.status(400).json({
           success: false,
           message: 'Cannot complete a future-dated appointment.'
@@ -456,78 +477,20 @@ exports.getAvailableSlots = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Date parameter is required' });
     }
 
-    // Parse the date and get day of week
-    const dateObj = normalizeDateToUTC(date);
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const dayName = dayNames[dateObj.getDay()];
+    // SINGLE SOURCE OF TRUTH: shared with patients.js so both endpoints can
+    // never disagree on slot duration/format again (was 60min here vs 30min
+    // in patients.js, which allowed the same real-world time window to be
+    // double-booked through the two endpoints - see utils/scheduling.js).
+    const { getAvailableSlotsForDate } = require('../utils/scheduling');
+    const { doctor, availableSlots } = await getAvailableSlotsForDate(doctorId, date);
 
-    // Find the doctor
-    const doctor = await Doctor.findOne({ userId: doctorId });
     if (!doctor) {
       return res.status(404).json({ success: false, message: 'Doctor not found' });
     }
 
-    // Find doctor's availability for this day
-    const dayAvailability = doctor.availability.find(av => 
-      (av.day || '').toLowerCase() === dayName.toLowerCase()
-    );
-
-    if (!dayAvailability || !dayAvailability.slots) {
-      return res.json({ success: true, data: [] });
-    }
-
-    // Expand time ranges into individual slots
-    const expandTimeRange = (timeRange) => {
-      const [startTime, endTime] = timeRange.split('-');
-      const slots = [];
-      
-      const parseTime = (timeStr) => {
-        const [hours, minutes] = timeStr.split(':').map(Number);
-        return hours * 60 + minutes;
-      };
-      
-      const formatTime = (minutes) => {
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
-      };
-      
-      const startMinutes = parseTime(startTime);
-      const endMinutes = parseTime(endTime);
-      
-      // Generate 1-hour slots as requested
-      for (let time = startMinutes; time < endMinutes; time += 60) {
-        const slotStart = formatTime(time);
-        const slotEnd = formatTime(time + 60);
-        slots.push(`${slotStart}-${slotEnd}`);
-      }
-      
-      return slots;
-    };
-
-    // Expand all time ranges into individual slots
-    const allAvailableSlots = [];
-    dayAvailability.slots.forEach(range => {
-      allAvailableSlots.push(...expandTimeRange(range));
-    });
-
-    // Get all scheduled appointments for this doctor on this date
-    const bookedAppointments = await Appointment.find({
-      doctorId: doctorId,
-      date: dateObj,
-      status: 'Scheduled'
-    }).select('timeSlot');
-
-    const bookedSlots = bookedAppointments.map(apt => apt.timeSlot);
-
-    // Filter out booked slots from available slots
-    const availableSlots = allAvailableSlots.filter(slot => 
-      !bookedSlots.includes(slot)
-    );
-
     // Return all structurally available (unbooked) slots for the requested date
     // Client-side will handle any time-based filtering based on user's local time
-    res.json({ data: availableSlots });
+    res.json({ success: true, data: availableSlots });
   } catch (error) {
     console.error('Error fetching available slots:', error);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -836,6 +799,10 @@ exports.markAppointmentMissed = async (req, res) => {
     }
 
     // Verify that appointment time has passed
+    // NOTE: appointment.date is stored as UTC midnight (see
+    // utils/scheduling.js normalizeDateToUTC), so we must use setUTCHours
+    // here, not the local-time setHours - otherwise this cutoff silently
+    // shifts by the server's timezone offset.
     const now = new Date();
     const appointmentDate = new Date(appointment.date);
     
@@ -844,7 +811,7 @@ exports.markAppointmentMissed = async (req, res) => {
       const [hours, minutes] = endTimeString.split(':').map(Number);
       
       const appointmentEndTime = new Date(appointmentDate);
-      appointmentEndTime.setHours(hours, minutes, 0, 0);
+      appointmentEndTime.setUTCHours(hours, minutes, 0, 0);
       
       if (appointmentEndTime > now) {
         return res.status(400).json({ 
@@ -923,20 +890,57 @@ exports.rejectAppointment = async (req, res) => {
     // Mark appointment as rejected
     appointment.status = 'Rejected';
     appointment.rejectionReason = reason;
+
+    // DOMAIN/BILLING: a doctor-initiated rejection is never the patient's
+    // fault, so if the booking fee was already paid it must be refunded in
+    // full. Previously this function never touched Payment/bookingFeeStatus
+    // at all, so a rejected-but-paid appointment just left the patient's
+    // money in limbo with no refund record - contrast with the patient's
+    // own cancelAppointment, which always creates a refund or explicitly
+    // marks 'no refund'.
+    let refundIssued = false;
+    let refundAmount = 0;
+    if (appointment.bookingFeeStatus === 'paid') {
+      const Payment = require('../models/Payment');
+      const doctorProfile = await Doctor.findOne({ userId: appointment.doctorId._id });
+      refundAmount = doctorProfile?.consultationFee || 25000;
+
+      await Payment.create({
+        patientId: appointment.patientId._id,
+        doctorId: appointment.doctorId._id,
+        appointmentId: appointment._id,
+        amount: refundAmount,
+        paymentType: 'refund',
+        stripeSessionId: `refund_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        stripePaymentIntentId: `refund_pay_${Date.now()}`,
+        status: 'completed',
+        paymentDate: new Date(),
+        metadata: {
+          reason: 'Appointment rejected by doctor',
+          refundPercentage: 100,
+          originalAmount: refundAmount
+        }
+      });
+      appointment.bookingFeeStatus = 'unpaid';
+      refundIssued = true;
+    }
+
     await appointment.save();
 
     // Notify patient
     await createNotification(
       appointment.patientId._id,
-      `Your appointment with Dr. ${appointment.doctorId.name} on ${new Date(appointment.date).toLocaleDateString()} at ${appointment.timeSlot} has been rejected. Reason: ${reason}`,
+      `Your appointment with Dr. ${appointment.doctorId.name} on ${new Date(appointment.date).toLocaleDateString()} at ${appointment.timeSlot} has been rejected. Reason: ${reason}${refundIssued ? ' A full refund has been issued.' : ''}`,
       '/patient/appointments',
       'appointment',
-      { appointmentId: appointment._id, action: 'rejected', reason }
+      { appointmentId: appointment._id, action: 'rejected', reason, refundIssued, refundAmount }
     );
 
     res.json({ 
       success: true, 
       message: 'Appointment rejected successfully',
+      refundIssued,
+      refundAmount: refundIssued ? refundAmount : undefined,
       data: appointment 
     });
   } catch (error) {

@@ -7,11 +7,9 @@ const Bill = require('../models/Bill');
 const User = require('../models/User');
 const { createNotification } = require('../utils/createNotification');
 
-// Utility function to normalize date to UTC midnight
-const normalizeDateToUTC = (dateString) => {
-  const date = new Date(dateString);
-  return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0));
-};
+// Date normalization is centralized in utils/scheduling.js (was previously
+// duplicated here with a timezone bug - see that file's docstring).
+const { normalizeDateToUTC } = require('../utils/scheduling');
 
 exports.getMedicalHistory = async (req, res) => {
   try {
@@ -181,67 +179,18 @@ exports.getAvailableSlots = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Date is required' });
     }
 
-    const doctor = await Doctor.findOne({ userId: doctorId });
+    // SINGLE SOURCE OF TRUTH: shared with doctors.js's public available-slots
+    // endpoint. Previously this generated 30-minute slots while doctors.js
+    // generated 60-minute slots from the same underlying availability data;
+    // since booked slots are matched by exact string equality, that let the
+    // same real-world time window be booked twice through the two different
+    // endpoints. See utils/scheduling.js.
+    const { getAvailableSlotsForDate } = require('../utils/scheduling');
+    const { doctor, availableSlots } = await getAvailableSlotsForDate(doctorId, date);
+
     if (!doctor) {
       return res.status(404).json({ success: false, message: 'Doctor not found' });
     }
-
-    const dateObj = normalizeDateToUTC(date);
-    const dayIndex = dateObj.getDay();
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const dayName = dayNames[dayIndex];
-
-    const dayAvailability = doctor.availability.find(av =>
-      (av.day || '').toLowerCase() === dayName.toLowerCase()
-    );
-
-    if (!dayAvailability || !dayAvailability.slots) {
-      return res.json({ success: true, data: [] });
-    }
-    
-    const expandTimeRange = (timeRange) => {
-      const [startTime, endTime] = timeRange.split('-');
-      const slots = [];
-      
-      const parseTime = (timeStr) => {
-        const [hours, minutes] = timeStr.split(':').map(Number);
-        return hours * 60 + minutes;
-      };
-      
-      const formatTime = (minutes) => {
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
-      };
-      
-      const startMinutes = parseTime(startTime);
-      const endMinutes = parseTime(endTime);
-      
-      for (let time = startMinutes; time < endMinutes; time += 30) {
-        const slotStart = formatTime(time);
-        const slotEnd = formatTime(time + 30);
-        slots.push(`${slotStart}-${slotEnd}`);
-      }
-      
-      return slots;
-    };
-
-    const allAvailableSlots = [];
-    dayAvailability.slots.forEach(range => {
-      allAvailableSlots.push(...expandTimeRange(range));
-    });
-
-    const bookedAppointments = await Appointment.find({
-      doctorId: doctorId,
-      date: dateObj,
-      status: 'Scheduled'
-    }).select('timeSlot');
-
-    const bookedSlots = bookedAppointments.map(apt => apt.timeSlot);
-
-    const availableSlots = allAvailableSlots.filter(slot =>
-      !bookedSlots.includes(slot)
-    );
 
     res.json({
       success: true,
@@ -256,9 +205,22 @@ exports.getAvailableSlots = async (req, res) => {
 exports.bookAppointment = async (req, res) => {
   const { doctorId, date, timeSlot } = req.body;
   try {
+    if (!doctorId || !date || !timeSlot) {
+      return res.status(400).json({ success: false, message: 'doctorId, date, and timeSlot are required' });
+    }
+
+    // SECURITY/DOMAIN: verify the doctor is KYC-approved and that timeSlot is
+    // actually within their declared availability before creating anything -
+    // see utils/scheduling.js:validateBookingRequest for why this matters.
+    const { validateBookingRequest } = require('../utils/scheduling');
+    const validation = await validateBookingRequest(doctorId, date, timeSlot);
+    if (!validation.ok) {
+      return res.status(validation.status).json({ success: false, message: validation.message });
+    }
+
     // Normalize date to UTC midnight for consistent storage
     const normalizedDate = normalizeDateToUTC(date);
-    
+
     const existing = await Appointment.findOne({ doctorId, date: normalizedDate, timeSlot, status: 'Scheduled' });
     if (existing) return res.status(400).json({ success: false, message: 'Time slot not available' });
 
@@ -505,122 +467,13 @@ exports.getPrescriptionById = async (req, res) => {
   }
 };
 
-exports.cancelAppointment = async (req, res) => {
-  try {
-    const { appointmentId } = req.params;
-
-    const appointment = await Appointment.findById(appointmentId)
-      .populate('patientId', 'name')
-      .populate('doctorId', 'name');
-
-    if (!appointment) {
-      return res.status(404).json({ success: false, message: 'Appointment not found' });
-    }
-
-    if (appointment.patientId._id.toString() !== req.user.id) {
-      return res.status(403).json({ success: false, message: 'Unauthorized to cancel this appointment' });
-    }
-
-    if (appointment.status === 'Cancelled') {
-      return res.status(400).json({ success: false, message: 'Appointment is already cancelled' });
-    }
-
-    if (appointment.status === 'Completed') {
-      return res.status(400).json({ success: false, message: 'Cannot cancel a completed appointment' });
-    }
-
-    try {
-      const now = new Date();
-      
-      let appointmentDate;
-      if (typeof appointment.date === 'string') {
-        appointmentDate = new Date(appointment.date + 'T00:00:00');
-      } else {
-        appointmentDate = new Date(appointment.date);
-      }
-      
-      let timeSlot = appointment.timeSlot || '';
-      
-      let startTime = timeSlot;
-      if (timeSlot.includes('-')) {
-        startTime = timeSlot.split('-')[0].trim();
-      }
-      
-      if (!startTime.includes(':')) {
-        startTime = startTime + ':00';
-      }
-      
-      const appointmentDateTime = new Date(appointmentDate);
-      const [hours, minutes] = startTime.split(':').map(Number);
-      appointmentDateTime.setHours(hours, minutes, 0, 0);
-      
-      const timeDiffMs = appointmentDateTime.getTime() - now.getTime();
-      const timeDiffHours = timeDiffMs / (1000 * 60 * 60);
-
-      if (timeDiffMs < 0) {
-        return res.status(400).json({
-          success: false,
-          message: 'Cannot cancel a past appointment'
-        });
-      }
-
-      if (timeDiffHours < 1) {
-        const minutesRemaining = Math.max(0, Math.floor(timeDiffMs / (1000 * 60)));
-        return res.status(400).json({
-          success: false,
-          message: `Cannot cancel appointment. Only ${minutesRemaining} minutes remaining.`
-        });
-      }
-    } catch (error) {
-      console.error('Error checking appointment cancellation eligibility in backend:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Error validating appointment cancellation time'
-      });
-    }
-
-    appointment.status = 'Cancelled';
-    await appointment.save();
-
-    await createNotification(
-      appointment.doctorId._id,
-      `Appointment with ${appointment.patientId.name} on ${new Date(appointment.date).toLocaleDateString()} at ${appointment.timeSlot} has been cancelled`,
-      '/doctor/appointments',
-      'appointment',
-      {
-        appointmentId: appointment._id,
-        patientName: appointment.patientId.name,
-        date: appointment.date,
-        timeSlot: appointment.timeSlot,
-        action: 'cancelled'
-      }
-    );
-
-    await createNotification(
-      req.user.id,
-      `Your appointment with Dr. ${appointment.doctorId.name} for ${new Date(appointment.date).toLocaleDateString()} has been cancelled`,
-      '/patient/appointments',
-      'appointment',
-      {
-        appointmentId: appointment._id,
-        doctorName: appointment.doctorId.name,
-        date: appointment.date,
-        timeSlot: appointment.timeSlot,
-        action: 'cancelled'
-      }
-    );
-
-    res.json({
-      success: true,
-      message: 'Appointment cancelled successfully',
-      data: appointment
-    });
-  } catch (error) {
-    console.error('Error cancelling appointment:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-};
-
+// NOTE: a second, unreachable definition of exports.cancelAppointment used
+// to live here (~115 lines). In CommonJS, assigning to exports.X twice just
+// silently overwrites the first with the second - so this simpler,
+// no-refund-policy version was DEAD CODE; only the refund-policy version
+// below (matching the route's :id param) ever actually ran. Removed as a
+// maintenance hazard: it read like working code and could easily mislead a
+// future edit into changing the wrong copy.
 exports.rateAppointment = async (req, res) => {
   try {
     const { appointmentId } = req.params;
@@ -827,6 +680,18 @@ exports.getPatientFile = async (req, res) => {
       return res.status(404).json({ 
         success: false, 
         message: 'Patient not found' 
+      });
+    }
+
+    // SECURITY: a doctor may only open patient files for patients who have
+    // actually booked with them. Without this, role check alone ('doctor')
+    // let ANY doctor read ANY patient's full clinical record by guessing a
+    // patientId - see utils/authorization.js for details.
+    const { hasCareRelationship } = require('../utils/authorization');
+    if (!(await hasCareRelationship(doctorId, patientId))) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only view files for patients who have an appointment with you'
       });
     }
 

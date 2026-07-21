@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FiArrowLeft, FiCalendar, FiUser, FiFileText, FiDollarSign, FiTag } from 'react-icons/fi';
+import { ArrowLeft, Calendar, User, FileText, IndianRupee, Tag } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
+import { cn } from '../../utils/cn';
+import { Button, buttonVariants } from '../../components/ui/Button';
+import Reveal from '../../components/Reveal';
 
 export default function ViewPrescription() {
   const { id } = useParams();
@@ -28,8 +31,8 @@ export default function ViewPrescription() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-cyan/30 border-t-brand-cyan"></div>
       </div>
     );
   }
@@ -42,173 +45,179 @@ export default function ViewPrescription() {
   const prescribedOnlyMedicines = prescription.medicines.filter(m => !m.purchaseFromHospital);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => navigate('/doctor/appointments')}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          <FiArrowLeft className="w-5 h-5" />
-        </button>
-        <div className="flex items-center gap-2">
-          <h1 className="text-3xl font-bold text-gray-900">Prescription Details</h1>
-          <p className="text-gray-600">Read-only view</p>
-          <span className="ml-auto inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border bg-gray-100 text-gray-800 border-gray-200">
-            <FiTag className="w-3 h-3" /> {prescription.status || 'New'}
-          </span>
-        </div>
-      </div>
-
-      {/* Prescription Card */}
-      <div className="bg-white rounded-xl shadow-card p-6 space-y-6">
-        {/* Patient & Appointment Info */}
-        <div className="grid md:grid-cols-2 gap-6 pb-6 border-b border-gray-200">
-          <div className="flex items-start gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <FiUser className="w-5 h-5 text-blue-600" />
-            </div>
-            <div>
-              <div className="text-sm text-gray-600">Patient</div>
-              <div className="font-semibold text-gray-900">{prescription.patientId?.name}</div>
-              <div className="text-sm text-gray-500">{prescription.patientId?.email}</div>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <FiCalendar className="w-5 h-5 text-green-600" />
-            </div>
-            <div>
-              <div className="text-sm text-gray-600">Appointment</div>
-              <div className="font-semibold text-gray-900">
-                {new Date(prescription.appointmentId?.date).toLocaleDateString()}
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="mx-auto max-w-4xl space-y-8 p-6">
+        <Reveal>
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => navigate('/doctor/appointments')}
+              className="flex h-11 w-11 items-center justify-center rounded-xl border border-border text-foreground transition-colors hover:bg-foreground/5"
+              aria-label="Back"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div className="flex items-center gap-2">
+              <div>
+                <h1 className="font-head text-3xl font-bold tracking-tight text-foreground">Prescription Details</h1>
+                <p className="text-muted-foreground">Read-only view</p>
               </div>
-              <div className="text-sm text-gray-500">{prescription.appointmentId?.timeSlot}</div>
+              <span className="ml-auto inline-flex items-center gap-2 rounded-full border border-border bg-foreground/5 px-3 py-1 text-xs font-semibold text-muted-foreground">
+                <Tag className="h-3 w-3" /> {prescription.status || 'New'}
+              </span>
             </div>
           </div>
+        </Reveal>
 
-          <div className="flex items-start gap-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <FiFileText className="w-5 h-5 text-purple-600" />
-            </div>
-            <div>
-              <div className="text-sm text-gray-600">Date Issued</div>
-              <div className="font-semibold text-gray-900">
-                {new Date(prescription.dateIssued).toLocaleDateString()}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className="p-2 bg-orange-100 rounded-lg">
-              <FiDollarSign className="w-5 h-5 text-orange-600" />
-            </div>
-            <div>
-              <div className="text-sm text-gray-600">Doctor Fee</div>
-              <div className="font-semibold text-gray-900">
-                ₹{(prescription.consultationFee / 100).toFixed(2)}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Diagnosis */}
-        {prescription.diagnosis && (
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-2">Diagnosis</h3>
-            <p className="text-gray-700 bg-gray-50 p-4 rounded-lg">{prescription.diagnosis}</p>
-          </div>
-        )}
-
-        {/* Billed Medicines */}
-        {billedMedicines.length > 0 && (
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-3">Billed Medicines (From Hospital Inventory)</h3>
-            <div className="space-y-3">
-              {billedMedicines.map((med, index) => (
-                <div key={index} className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="font-semibold text-gray-900">{med.medicineName}</div>
-                    <span className="px-2 py-1 bg-blue-600 text-white text-xs rounded-full">
-                      Qty: {med.quantity}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div>
-                      <span className="text-gray-600">Dosage:</span> {med.dosage}
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Frequency:</span> {med.frequency}
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Duration:</span> {med.duration}
-                    </div>
-                  </div>
-                  {med.instructions && (
-                    <div className="mt-2 text-sm text-gray-700">
-                      <span className="font-medium">Instructions:</span> {med.instructions}
-                    </div>
-                  )}
+        <Reveal>
+          <div className="glass space-y-6 rounded-2xl p-6 shadow-card">
+            {/* Patient & Appointment Info */}
+            <div className="grid gap-6 border-b border-border pb-6 md:grid-cols-2">
+              <div className="flex items-start gap-3">
+                <div className="rounded-lg bg-brand-cyan/15 p-2 text-brand-cyan-fg">
+                  <User className="h-5 w-5" />
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Prescribed-Only Medicines */}
-        {prescribedOnlyMedicines.length > 0 && (
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-3">Prescribed Medicines (Not Billed)</h3>
-            <div className="space-y-3">
-              {prescribedOnlyMedicines.map((med, index) => (
-                <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <div className="font-semibold text-gray-900 mb-2">{med.medicineName}</div>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div>
-                      <span className="text-gray-600">Dosage:</span> {med.dosage}
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Frequency:</span> {med.frequency}
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Duration:</span> {med.duration}
-                    </div>
-                  </div>
-                  {med.instructions && (
-                    <div className="mt-2 text-sm text-gray-700">
-                      <span className="font-medium">Instructions:</span> {med.instructions}
-                    </div>
-                  )}
+                <div>
+                  <div className="text-sm text-muted-foreground">Patient</div>
+                  <div className="font-semibold text-foreground">{prescription.patientId?.name}</div>
+                  <div className="text-sm text-muted-foreground">{prescription.patientId?.email}</div>
                 </div>
-              ))}
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="rounded-lg bg-success/15 p-2 text-success-fg">
+                  <Calendar className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Appointment</div>
+                  <div className="font-semibold text-foreground">
+                    {new Date(prescription.appointmentId?.date).toLocaleDateString()}
+                  </div>
+                  <div className="text-sm text-muted-foreground">{prescription.appointmentId?.timeSlot}</div>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="rounded-lg bg-brand-violet/15 p-2 text-brand-violet">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Date Issued</div>
+                  <div className="font-semibold text-foreground">
+                    {new Date(prescription.dateIssued).toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="rounded-lg bg-amber-400/15 p-2 text-amber-500">
+                  <IndianRupee className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Doctor Fee</div>
+                  <div className="font-semibold text-foreground">
+                    ₹{(prescription.consultationFee / 100).toFixed(2)}
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
 
-        {/* Notes */}
-        {prescription.notes && (
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-2">Additional Notes</h3>
-            <p className="text-gray-700 bg-gray-50 p-4 rounded-lg">{prescription.notes}</p>
-          </div>
-        )}
-      </div>
+            {/* Diagnosis */}
+            {prescription.diagnosis && (
+              <div>
+                <h3 className="mb-2 font-head font-semibold text-foreground">Diagnosis</h3>
+                <p className="rounded-lg bg-foreground/5 p-4 text-foreground">{prescription.diagnosis}</p>
+              </div>
+            )}
 
-      {/* Action Buttons */}
-      <div className="flex gap-3">
-        <button
-          onClick={() => navigate('/doctor/appointments')}
-          className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
-        >
-          Back to Appointments
-        </button>
-        <button
-          onClick={() => window.print()}
-          className="px-6 py-3 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium transition-colors"
-        >
-          Print Prescription
-        </button>
+            {/* Billed Medicines */}
+            {billedMedicines.length > 0 && (
+              <div>
+                <h3 className="mb-3 font-head font-semibold text-foreground">Billed Medicines (From Hospital Inventory)</h3>
+                <div className="space-y-3">
+                  {billedMedicines.map((med, index) => (
+                    <div key={index} className="rounded-lg border border-brand-cyan/20 bg-brand-cyan/10 p-4">
+                      <div className="mb-2 flex items-start justify-between">
+                        <div className="font-semibold text-foreground">{med.medicineName}</div>
+                        <span className="rounded-full bg-brand-cyan px-2 py-1 text-xs text-white">
+                          Qty: {med.quantity}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
+                        <div>
+                          <span className="text-muted-foreground">Dosage:</span> {med.dosage}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Frequency:</span> {med.frequency}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Duration:</span> {med.duration}
+                        </div>
+                      </div>
+                      {med.instructions && (
+                        <div className="mt-2 text-sm text-muted-foreground">
+                          <span className="font-medium text-foreground">Instructions:</span> {med.instructions}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Prescribed-Only Medicines */}
+            {prescribedOnlyMedicines.length > 0 && (
+              <div>
+                <h3 className="mb-3 font-head font-semibold text-foreground">Prescribed Medicines (Not Billed)</h3>
+                <div className="space-y-3">
+                  {prescribedOnlyMedicines.map((med, index) => (
+                    <div key={index} className="rounded-lg border border-border bg-foreground/5 p-4">
+                      <div className="mb-2 font-semibold text-foreground">{med.medicineName}</div>
+                      <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
+                        <div>
+                          <span className="text-muted-foreground">Dosage:</span> {med.dosage}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Frequency:</span> {med.frequency}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Duration:</span> {med.duration}
+                        </div>
+                      </div>
+                      {med.instructions && (
+                        <div className="mt-2 text-sm text-muted-foreground">
+                          <span className="font-medium text-foreground">Instructions:</span> {med.instructions}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Notes */}
+            {prescription.notes && (
+              <div>
+                <h3 className="mb-2 font-head font-semibold text-foreground">Additional Notes</h3>
+                <p className="rounded-lg bg-foreground/5 p-4 text-muted-foreground">{prescription.notes}</p>
+              </div>
+            )}
+          </div>
+        </Reveal>
+
+        <Reveal>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/doctor/appointments')}
+            >
+              Back to Appointments
+            </Button>
+            <Button onClick={() => window.print()}>
+              Print Prescription
+            </Button>
+          </div>
+        </Reveal>
       </div>
     </div>
   );

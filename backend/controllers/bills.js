@@ -303,6 +303,16 @@ exports.updateBill = async (req, res) => {
 
     await bill.save();
 
+    // BUG FIX: createBill() (above in this file) refuses to generate a bill
+    // for an appointment when appointment.finalBillGenerated is already
+    // true. Cancelling a bill never reset that flag, so a doctor who
+    // cancelled a bill (e.g. to fix a mistake) could NEVER issue a
+    // corrected one for the same appointment again - a permanent workflow
+    // dead-end. Reset it on cancellation so a new bill can be created.
+    if (status === 'cancelled') {
+      await Appointment.findByIdAndUpdate(bill.appointmentId, { finalBillGenerated: false });
+    }
+
     res.json({ 
       success: true, 
       message: 'Bill updated successfully',
@@ -322,7 +332,7 @@ exports.getDoctorBillStats = async (req, res) => {
     const doctorId = req.user.id;
 
     const stats = await Bill.aggregate([
-      { $match: { doctorId: require('mongoose').Types.ObjectId(doctorId) } },
+      { $match: { doctorId: new (require('mongoose').Types.ObjectId)(doctorId) } },
       {
         $group: {
           _id: '$status',

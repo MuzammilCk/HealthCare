@@ -2,6 +2,7 @@
 
 const axios = require("axios");
 const SymptomCheckLog = require("../models/SymptomCheckLog");
+const { screenForEmergency } = require("../utils/emergencyScreening");
 
 exports.checkSymptoms = async (req, res) => {
   try {
@@ -33,6 +34,47 @@ exports.checkSymptoms = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Sex must be 'male', 'female', or 'other'.",
+      });
+    }
+
+    // HEALTHCARE-DOMAIN SAFETY: screen for emergency red-flag symptoms
+    // BEFORE calling the LLM at all. This does not depend on the model
+    // reliably following prompt instructions - see utils/emergencyScreening.js.
+    // The LLM is not asked to override or second-guess this; if it fires,
+    // we respond immediately and skip the model call entirely.
+    const screening = screenForEmergency(symptoms);
+    if (screening.isEmergency) {
+      const emergencyData = {
+        isEmergency: true,
+        category: screening.category,
+        message: screening.message,
+        recommendedAction:
+          screening.category === 'self_harm'
+            ? 'Please reach out right now to a crisis line or emergency services in your area, or go to the nearest emergency room. You do not have to go through this alone.'
+            : 'This may be a medical emergency. Please call your local emergency number or go to the nearest emergency room immediately. Do not wait to book an appointment through this app.',
+        disclaimer: 'This is an automated screening, not a medical diagnosis, and it can miss things. When in doubt, always seek emergency care.',
+      };
+
+      try {
+        await SymptomCheckLog.create({
+          userId: req.user.id,
+          input: { symptoms: symptoms.trim(), age, sex: sex.toLowerCase() },
+          resultSummary: { emergency: true, category: screening.category },
+          response: emergencyData,
+          meta: { ip: req.ip, userAgent: req.headers["user-agent"] },
+        });
+      } catch (logErr) {
+        console.error("Failed to save emergency SymptomCheckLog:", logErr.message);
+      }
+
+      console.warn(
+        `AI Symptom Check - EMERGENCY SCREEN TRIGGERED - User: ${req.user?.id || "guest"}, category: ${screening.category}`
+      );
+
+      return res.status(200).json({
+        success: true,
+        data: emergencyData,
+        timestamp: new Date().toISOString(),
       });
     }
 
@@ -74,8 +116,25 @@ If the input clearly **does not describe a medical symptom** (e.g., “I like pi
 
 ---
 
+### 🚨 Step 2.5: Emergency Red-Flag Screening (do this BEFORE Step 3, always)
+Before generating any "possible conditions" list, check whether the description matches signs of a medical emergency - for example: chest pain/pressure spreading to the arm, jaw, or back; sudden facial drooping, slurred speech, or one-sided weakness/numbness; severe difficulty breathing or throat swelling; uncontrolled or heavy bleeding; coughing or vomiting blood; loss of consciousness or a seizure; or any mention of wanting to harm oneself or end one's life.
+
+If ANY of these are present, do **not** produce a "possible causes" list at all. Respond **only** with this exact JSON shape instead:
+
+{
+  "isEmergency": true,
+  "category": "short category label, e.g. cardiac, stroke, breathing, bleeding_or_trauma, consciousness, self_harm",
+  "message": "One calm sentence naming what these symptoms can be associated with.",
+  "recommendedAction": "Tell them plainly to call emergency services or go to the nearest emergency room right now (or, for self-harm mentions, to reach out to a crisis line or emergency services immediately) - do not tell them to book an appointment through this app instead.",
+  "disclaimer": "This is an automated screening, not a medical diagnosis, and it can miss things. When in doubt, always seek emergency care."
+}
+
+When genuinely uncertain whether something rises to this level, err on the side of flagging it as a possible emergency rather than downplaying it.
+
+---
+
 ### ⚙️ Step 3: Generate a Safe, Helpful Response
-If the symptoms are valid:
+If the symptoms are valid AND Step 2.5 did not flag an emergency:
 - Identify **3–6 common potential conditions** that could *possibly* cause such symptoms.
 - For each, provide:
   - **name** – the condition (simple, recognizable terms)
@@ -96,7 +155,7 @@ If the symptoms are valid:
 ---
 
 ### 🧾 Step 5: Output Format
-Your entire response **must** be valid JSON and nothing else:
+Your entire response **must** be valid JSON and nothing else. Use ONE of these three shapes: the invalid-input shape (Step 2), the emergency shape (Step 2.5), or this normal shape:
 
 {
   "potentialConditions": [
@@ -112,14 +171,13 @@ Your entire response **must** be valid JSON and nothing else:
 `;
 
     console.log(
-      `AI Symptom Check Request - User: ${
-        req.user?.id || "guest"
+      `AI Symptom Check Request - User: ${req.user?.id || "guest"
       }, Symptoms: ${symptoms.substring(0, 60)}...`
     );
 
     // ------------------ OPENROUTER REQUEST ------------------
     const requestPayload = {
-      model: "x-ai/grok-code-fast-1", // Reliable & fast model
+      model: "tencent/hy3:free", // Reliable & fast model
       messages: [{ role: "user", content: masterPrompt }],
     };
 
@@ -175,6 +233,33 @@ Your entire response **must** be valid JSON and nothing else:
       });
     }
 
+    // HEALTHCARE-DOMAIN SAFETY: handle the LLM's own emergency flag too (Step
+    // 2.5 in the prompt) - this is the second, model-level screening layer,
+    // independent of the deterministic pre-check above. Must be handled
+    // before the potentialConditions check below, which would otherwise
+    // reject this shape as "unexpected format".
+    if (jsonResponse.isEmergency) {
+      try {
+        await SymptomCheckLog.create({
+          userId: req.user.id,
+          input: { symptoms: symptoms.trim(), age, sex: sex.toLowerCase() },
+          resultSummary: { emergency: true, category: jsonResponse.category, source: 'llm' },
+          response: jsonResponse,
+          meta: { ip: req.ip, userAgent: req.headers["user-agent"] },
+        });
+      } catch (logErr) {
+        console.error("Failed to save LLM-flagged emergency SymptomCheckLog:", logErr.message);
+      }
+      console.warn(
+        `AI Symptom Check - EMERGENCY FLAGGED BY MODEL - User: ${req.user?.id || "guest"}, category: ${jsonResponse.category}`
+      );
+      return res.status(200).json({
+        success: true,
+        data: jsonResponse,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
     if (
       !jsonResponse.potentialConditions ||
       !Array.isArray(jsonResponse.potentialConditions)
@@ -187,8 +272,7 @@ Your entire response **must** be valid JSON and nothing else:
     }
 
     console.log(
-      `AI Symptom Check Success - User: ${
-        req.user?.id || "guest"
+      `AI Symptom Check Success - User: ${req.user?.id || "guest"
       }, Conditions found: ${jsonResponse.potentialConditions.length}`
     );
 

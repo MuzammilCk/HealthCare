@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { FiActivity, FiAlertTriangle, FiUser, FiCalendar, FiLoader, FiCheckCircle } from 'react-icons/fi';
+import { Activity, AlertTriangle, User, Calendar, Loader2, CheckCircle } from 'lucide-react';
 import api from '../../services/api';
-import { AppSelect } from '../../components/ui';
+import { AppSelect, Button, Badge } from '../../components/ui';
 
 export default function SymptomChecker() {
   const [formData, setFormData] = useState({
@@ -25,7 +25,7 @@ export default function SymptomChecker() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validation
     if (!formData.symptoms.trim()) {
       setError('Please describe your symptoms');
@@ -68,12 +68,12 @@ export default function SymptomChecker() {
     }
   };
 
-  const getProbabilityColor = (probability) => {
+  const getProbabilityVariant = (probability) => {
     switch (probability.toLowerCase()) {
-      case 'high': return 'text-red-600 bg-red-50 border-red-200';
-      case 'medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      case 'low': return 'text-green-600 bg-green-50 border-green-200';
-      default: return 'text-gray-600 bg-gray-50 border-gray-200';
+      case 'high': return 'danger';
+      case 'medium': return 'warning';
+      case 'low': return 'success';
+      default: return 'outline';
     }
   };
 
@@ -84,28 +84,28 @@ export default function SymptomChecker() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-background text-foreground">
       {/* Header */}
       <div>
         <div className="flex items-center gap-4 mb-2">
-          <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl">
-            <FiActivity className="w-8 h-8 text-blue-600" />
+          <div className="flex items-center justify-center w-16 h-16 bg-brand-cyan/15 rounded-2xl">
+            <Activity className="w-8 h-8 text-brand-cyan-fg" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-text-primary-dark">Symptom Checker</h1>
+          <h1 className="text-3xl font-bold text-foreground">Symptom Checker</h1>
         </div>
-        <p className="text-gray-600 dark:text-text-secondary-dark max-w-2xl">
+        <p className="text-muted-foreground max-w-2xl">
           Get preliminary insights about your symptoms using AI technology. This tool provides informational guidance only and should not replace professional medical advice.
         </p>
       </div>
 
       {/* Important Disclaimer */}
-      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 transition-colors duration-300">
+      <div className="bg-amber-400/10 border border-amber-500/20 rounded-xl p-4 transition-colors duration-300">
         <div className="flex items-start gap-3">
-          <FiAlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+          <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
           <div>
-            <h3 className="font-semibold text-amber-800 dark:text-amber-200 mb-1">Important Medical Disclaimer</h3>
-            <p className="text-sm text-amber-700 dark:text-amber-200/90">
-              This AI tool is for informational purposes only and does not provide medical diagnosis. 
+            <h3 className="font-semibold text-amber-600 mb-1">Important Medical Disclaimer</h3>
+            <p className="text-sm text-muted-foreground">
+              This AI tool is for informational purposes only and does not provide medical diagnosis.
               Always consult with a qualified healthcare professional for proper medical evaluation and treatment.
             </p>
           </div>
@@ -114,16 +114,16 @@ export default function SymptomChecker() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Input Form */}
-        <div className="bg-white dark:bg-bg-card-dark rounded-2xl shadow-xl dark:shadow-card-dark shadow-slate-900/5 border border-slate-200/60 dark:border-dark-border p-6 transition-colors duration-300">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-text-primary-dark mb-6 flex items-center gap-2">
-            <FiUser className="w-5 h-5 text-blue-600" />
+        <div className="glass rounded-2xl shadow-card border border-border p-6 transition-colors duration-300">
+          <h2 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
+            <User className="w-5 h-5 text-brand-cyan-fg" />
             Tell us about your symptoms
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Symptoms Input */}
             <div>
-              <label htmlFor="symptoms" className="block text-sm font-medium text-gray-700 dark:text-text-secondary-dark mb-2">
+              <label htmlFor="symptoms" className="block text-sm font-medium text-muted-foreground mb-2">
                 Describe your symptoms in detail
               </label>
               <textarea
@@ -133,10 +133,10 @@ export default function SymptomChecker() {
                 value={formData.symptoms}
                 onChange={handleInputChange}
                 placeholder="e.g., I have been experiencing headaches, nausea, and sensitivity to light for the past 2 days..."
-                className="w-full px-4 py-3 border border-gray-200 dark:border-dark-border rounded-xl bg-white dark:bg-dark-surface text-gray-900 dark:text-text-primary-dark placeholder:text-gray-400 dark:placeholder:text-text-secondary-dark focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none shadow-sm"
+                className="w-full px-4 py-3 border border-border rounded-xl bg-background/60 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-brand-cyan/30 focus:border-brand-cyan resize-none shadow-sm"
                 disabled={loading}
               />
-              <p className="text-xs text-gray-500 dark:text-text-secondary-dark mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Be as specific as possible about your symptoms, duration, and severity.
               </p>
             </div>
@@ -144,8 +144,8 @@ export default function SymptomChecker() {
             {/* Age and Sex */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="age" className="block text-sm font-medium text-gray-700 dark:text-text-secondary-dark mb-2">
-                  <FiCalendar className="w-4 h-4 inline mr-1" />
+                <label htmlFor="age" className="block text-sm font-medium text-muted-foreground mb-2">
+                  <Calendar className="w-4 h-4 inline mr-1" />
                   Age
                 </label>
                 <input
@@ -157,7 +157,7 @@ export default function SymptomChecker() {
                   value={formData.age}
                   onChange={handleInputChange}
                   placeholder="Enter your age"
-                  className="w-full px-4 py-3 border border-gray-200 dark:border-dark-border rounded-xl bg-white dark:bg-dark-surface text-gray-900 dark:text-text-primary-dark placeholder:text-gray-400 dark:placeholder:text-text-secondary-dark focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm"
+                  className="w-full px-4 py-3 border border-border rounded-xl bg-background/60 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-brand-cyan/30 focus:border-brand-cyan shadow-sm"
                   disabled={loading}
                 />
               </div>
@@ -180,48 +180,48 @@ export default function SymptomChecker() {
 
             {/* Error Message */}
             {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="bg-error/10 border border-error/20 rounded-lg p-4">
                 <div className="flex items-center gap-2">
-                  <FiAlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />
-                  <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
+                  <AlertTriangle className="w-4 h-4 text-error-fg" />
+                  <p className="text-sm text-error-fg">{error}</p>
                 </div>
               </div>
             )}
 
             {/* Submit Button */}
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3.5 px-6 rounded-xl font-semibold shadow-lg hover:from-blue-600 hover:to-blue-700 focus:ring-2 focus:ring-blue-500/30 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+              className="w-full"
             >
               {loading ? (
                 <>
-                  <FiLoader className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                   Analyzing symptoms...
                 </>
               ) : (
                 <>
-                  <FiActivity className="w-4 h-4" />
+                  <Activity className="w-4 h-4" />
                   Check Symptoms
                 </>
               )}
-            </button>
+            </Button>
           </form>
         </div>
 
         {/* Results Panel */}
-        <div className="bg-white dark:bg-bg-card-dark rounded-2xl shadow-xl dark:shadow-card-dark shadow-slate-900/5 border border-slate-200/60 dark:border-dark-border p-6 transition-colors duration-300">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-text-primary-dark mb-6 flex items-center gap-2">
-            <FiCheckCircle className="w-5 h-5 text-green-600" />
+        <div className="glass rounded-2xl shadow-card border border-border p-6 transition-colors duration-300">
+          <h2 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
+            <CheckCircle className="w-5 h-5 text-success-fg" />
             Analysis Results
           </h2>
 
           {!results && !loading && (
             <div className="text-center py-12">
-              <div className="w-16 h-16 bg-gray-100 dark:bg-dark-surface rounded-full flex items-center justify-center mx-auto mb-4">
-                <FiActivity className="w-8 h-8 text-gray-400 dark:text-text-secondary-dark" />
+              <div className="w-16 h-16 bg-foreground/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Activity className="w-8 h-8 text-muted-foreground" />
               </div>
-              <p className="text-gray-500 dark:text-text-secondary-dark">
+              <p className="text-muted-foreground">
                 Enter your symptoms and click "Check Symptoms" to get AI-powered insights.
               </p>
             </div>
@@ -229,11 +229,11 @@ export default function SymptomChecker() {
 
           {loading && (
             <div className="text-center py-12">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FiLoader className="w-8 h-8 text-blue-600 animate-spin" />
+              <div className="w-16 h-16 bg-brand-cyan/15 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Loader2 className="w-8 h-8 text-brand-cyan-fg animate-spin" />
               </div>
-              <p className="text-gray-600 font-medium">Analyzing your symptoms...</p>
-              <p className="text-sm text-gray-500 mt-1">This may take a few seconds</p>
+              <p className="text-foreground font-medium">Analyzing your symptoms...</p>
+              <p className="text-sm text-muted-foreground mt-1">This may take a few seconds</p>
             </div>
           )}
 
@@ -241,17 +241,17 @@ export default function SymptomChecker() {
               <div className="space-y-6">
               {/* Potential Conditions */}
               <div>
-                <h3 className="font-semibold text-gray-900 dark:text-text-primary-dark mb-4">Potential Conditions</h3>
+                <h3 className="font-semibold text-foreground mb-4">Potential Conditions</h3>
                 <div className="space-y-3">
                   {results.potentialConditions?.map((condition, index) => (
-                      <div key={index} className="border border-gray-200 dark:border-dark-border rounded-lg p-4 bg-white dark:bg-dark-surface">
+                      <div key={index} className="border border-border rounded-lg p-4 bg-foreground/5">
                       <div className="flex items-start justify-between mb-2">
-                        <h4 className="font-medium text-gray-900 dark:text-text-primary-dark">{condition.name}</h4>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getProbabilityColor(condition.probability)}`}>
+                        <h4 className="font-medium text-foreground">{condition.name}</h4>
+                        <Badge variant={getProbabilityVariant(condition.probability)}>
                           {condition.probability} Probability
-                        </span>
+                        </Badge>
                       </div>
-                        <p className="text-sm text-gray-600 dark:text-text-secondary-dark">{condition.description}</p>
+                        <p className="text-sm text-muted-foreground">{condition.description}</p>
                     </div>
                   ))}
                 </div>
@@ -259,31 +259,33 @@ export default function SymptomChecker() {
 
               {/* First Aid Suggestion */}
               {results.firstAidSuggestion && (
-                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                  <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">General Care Suggestion</h3>
-                  <p className="text-sm text-green-700 dark:text-green-200/90">{results.firstAidSuggestion}</p>
+                <div className="bg-success/10 border border-success/20 rounded-lg p-4">
+                  <h3 className="font-semibold text-success-fg mb-2">General Care Suggestion</h3>
+                  <p className="text-sm text-muted-foreground">{results.firstAidSuggestion}</p>
                 </div>
               )}
 
               {/* Disclaimer */}
-              <div className="bg-gray-50 dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg p-4">
-                <p className="text-sm text-gray-600 dark:text-text-secondary-dark font-medium">{results.disclaimer}</p>
+              <div className="bg-foreground/5 border border-border rounded-lg p-4">
+                <p className="text-sm text-muted-foreground font-medium">{results.disclaimer}</p>
               </div>
 
               {/* Action Buttons */}
               <div className="flex gap-3">
-                <button
+                <Button
+                  variant="ghost"
                   onClick={resetForm}
-                  className="flex-1 bg-gray-100 dark:bg-dark-surface text-gray-700 dark:text-text-primary-dark py-2 px-4 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-dark-surface-hover transition-colors duration-200"
+                  className="flex-1"
                 >
                   Check New Symptoms
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="outline"
                   onClick={() => window.print()}
-                  className="flex-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 py-2 px-4 rounded-lg font-medium hover:bg-blue-200 dark:hover:bg-blue-900/30 transition-colors duration-200"
+                  className="flex-1"
                 >
                   Print Results
-                </button>
+                </Button>
               </div>
             </div>
           )}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FiUser, FiCalendar, FiBriefcase, FiFileText, FiCheck, FiX, FiClock, FiFilter, FiExternalLink } from 'react-icons/fi';
+import { User, Calendar, Briefcase, FileText, Check, X, Clock, Filter, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 import {
@@ -13,8 +13,11 @@ import {
   DateTimeDisplay,
   EmptyState,
   LoadingState,
-  MobileCard
+  MobileCard,
+  AppSelect
 } from '../../components/ui';
+import { cn } from '../../utils/cn';
+import Reveal from '../../components/Reveal';
 
 export default function KycRequests() {
   const [loading, setLoading] = useState(true);
@@ -41,11 +44,11 @@ export default function KycRequests() {
   const updateStatus = async (doctorId, status) => {
     const reason = status === 'Rejected' ? prompt('Provide a rejection reason (optional):', '') : undefined;
     setUpdatingId(doctorId);
-    
+
     try {
       await api.put(`/admin/kyc-requests/${doctorId}`, { status, reason });
       await fetchData();
-      
+
       if (status === 'Approved') {
         toast.success("Doctor's KYC has been approved.");
       } else if (status === 'Rejected') {
@@ -59,12 +62,12 @@ export default function KycRequests() {
   };
 
   const columns = [
-    { label: 'Doctor', icon: <FiUser className="w-4 h-4 text-blue-500" /> },
-    { label: 'Specialization', icon: <FiBriefcase className="w-4 h-4 text-purple-500" /> },
-    { label: 'Submitted', icon: <FiCalendar className="w-4 h-4 text-green-500" /> },
-    { label: 'Status', icon: <FiClock className="w-4 h-4 text-orange-500" /> },
-    { label: 'Documents', icon: <FiFileText className="w-4 h-4 text-teal-500" /> },
-    { label: 'Actions', icon: <FiCheck className="w-4 h-4 text-red-500" /> }
+    { label: 'Doctor', icon: <User className="w-4 h-4 text-brand-cyan-fg" /> },
+    { label: 'Specialization', icon: <Briefcase className="w-4 h-4 text-brand-violet" /> },
+    { label: 'Submitted', icon: <Calendar className="w-4 h-4 text-brand-teal" /> },
+    { label: 'Status', icon: <Clock className="w-4 h-4 text-brand-sky-fg" /> },
+    { label: 'Documents', icon: <FileText className="w-4 h-4 text-brand-indigo" /> },
+    { label: 'Actions', icon: <Check className="w-4 h-4 text-brand-cyan-fg" /> }
   ];
 
   const filterOptions = [
@@ -81,10 +84,10 @@ export default function KycRequests() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 bg-background text-foreground">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">KYC Verification Requests</h1>
-          <p className="text-gray-600">Review and manage doctor verification requests</p>
+          <h1 className="mb-2 font-head text-3xl font-bold tracking-tight text-foreground">KYC Verification Requests</h1>
+          <p className="text-muted-foreground">Review and manage doctor verification requests</p>
         </div>
         <ModernTableContainer>
           <LoadingState rows={5} />
@@ -94,203 +97,195 @@ export default function KycRequests() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-background text-foreground">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <Reveal className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">KYC Verification Requests</h1>
-          <p className="text-gray-600">Review and manage doctor verification requests</p>
+          <h1 className="mb-2 font-head text-3xl font-bold tracking-tight text-foreground">KYC Verification Requests</h1>
+          <p className="text-muted-foreground">Review and manage doctor verification requests</p>
         </div>
-        
+
         <div className="flex items-center gap-3">
-          <FiFilter className="w-5 h-5 text-gray-400" />
-          <select
+          <Filter className="w-5 h-5 text-muted-foreground" />
+          <AppSelect
             value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-dark-input text-gray-900 dark:text-text-primary-dark"
-          >
-            {filterOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+            onChange={setFilter}
+            options={filterOptions}
+            placeholder="Filter requests"
+            className="min-w-[200px]"
+          />
         </div>
-      </div>
+      </Reveal>
 
       {/* Stats Dashboard */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-2xl p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-yellow-800">Pending Review</p>
-              <p className="text-2xl font-bold text-yellow-900">
-                {items.filter(item => item.verificationStatus === 'Submitted').length}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-yellow-200 rounded-xl flex items-center justify-center">
-              <FiClock className="w-6 h-6 text-yellow-700" />
-            </div>
+      <Reveal className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="flex items-center justify-between gap-4 rounded-2xl glass p-6 shadow-card">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Pending Review</p>
+            <p className="font-head text-2xl font-bold text-foreground">
+              {items.filter(item => item.verificationStatus === 'Submitted').length}
+            </p>
+          </div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-cyan/15 text-brand-cyan-fg">
+            <Clock className="w-6 h-6" />
           </div>
         </div>
-        
-        <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-2xl p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-green-800">Approved</p>
-              <p className="text-2xl font-bold text-green-900">
-                {items.filter(item => item.verificationStatus === 'Approved').length}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-green-200 rounded-xl flex items-center justify-center">
-              <FiCheck className="w-6 h-6 text-green-700" />
-            </div>
+
+        <div className="flex items-center justify-between gap-4 rounded-2xl glass p-6 shadow-card">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Approved</p>
+            <p className="font-head text-2xl font-bold text-foreground">
+              {items.filter(item => item.verificationStatus === 'Approved').length}
+            </p>
+          </div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-success/15 text-success-fg">
+            <Check className="w-6 h-6" />
           </div>
         </div>
-        
-        <div className="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-2xl p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-red-800">Rejected</p>
-              <p className="text-2xl font-bold text-red-900">
-                {items.filter(item => item.verificationStatus === 'Rejected').length}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-red-200 rounded-xl flex items-center justify-center">
-              <FiX className="w-6 h-6 text-red-700" />
-            </div>
+
+        <div className="flex items-center justify-between gap-4 rounded-2xl glass p-6 shadow-card">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Rejected</p>
+            <p className="font-head text-2xl font-bold text-foreground">
+              {items.filter(item => item.verificationStatus === 'Rejected').length}
+            </p>
+          </div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-error/15 text-error-fg">
+            <X className="w-6 h-6" />
           </div>
         </div>
-      </div>
+      </Reveal>
 
       {/* Desktop Table View */}
       <div className="hidden lg:block">
-        <ModernTableContainer
-          title="KYC Verification Requests"
-          subtitle={`${filteredItems.length} request${filteredItems.length !== 1 ? 's' : ''} found`}
-        >
-          {filteredItems.length === 0 ? (
-            <EmptyState
-              icon={<FiFileText className="w-8 h-8 text-gray-400" />}
-              title="No KYC Requests Found"
-              description={filter === 'all' ? 'No KYC submissions found.' : `No ${filter} requests found.`}
-            />
-          ) : (
-            <table className="min-w-full">
-              <ModernTableHeader columns={columns} />
-              <tbody>
-                {filteredItems.map((request, index) => (
-                  <ModernTableRow key={request._id} isEven={index % 2 === 0}>
-                    <ModernTableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar 
-                          name={request?.userId?.name || 'Unknown Doctor'} 
-                          size="sm"
-                        />
-                        <div>
-                          <div className="font-medium text-gray-900">
-                            {request?.userId?.name || 'Unknown Doctor'}
+        <Reveal>
+          <ModernTableContainer
+            title="KYC Verification Requests"
+            subtitle={`${filteredItems.length} request${filteredItems.length !== 1 ? 's' : ''} found`}
+          >
+            {filteredItems.length === 0 ? (
+              <EmptyState
+                icon={<FileText className="w-8 h-8 text-muted-foreground" />}
+                title="No KYC Requests Found"
+                description={filter === 'all' ? 'No KYC submissions found.' : `No ${filter} requests found.`}
+              />
+            ) : (
+              <table className="min-w-full">
+                <ModernTableHeader columns={columns} />
+                <tbody>
+                  {filteredItems.map((request, index) => (
+                    <ModernTableRow key={request._id} isEven={index % 2 === 0}>
+                      <ModernTableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar
+                            name={request?.userId?.name || 'Unknown Doctor'}
+                            size="sm"
+                          />
+                          <div>
+                            <div className="font-medium text-foreground">
+                              {request?.userId?.name || 'Unknown Doctor'}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {request?.userId?.email || 'No email'}
+                            </div>
                           </div>
-                          <div className="text-sm text-gray-500">
-                            {request?.userId?.email || 'No email'}
-                          </div>
                         </div>
-                      </div>
-                    </ModernTableCell>
-                    
-                    <ModernTableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center">
-                          <FiBriefcase className="w-4 h-4 text-purple-600" />
-                        </div>
-                        <span className="text-gray-700">
-                          {request?.specializationId?.name || 'Not specified'}
-                        </span>
-                      </div>
-                    </ModernTableCell>
-                    
-                    <ModernTableCell>
-                      {request?.kyc?.submittedAt ? (
-                        <DateTimeDisplay 
-                          date={request.kyc.submittedAt} 
-                          format="date-only"
-                        />
-                      ) : (
-                        <span className="text-gray-400 italic">Not submitted</span>
-                      )}
-                    </ModernTableCell>
-                    
-                    <ModernTableCell>
-                      <StatusBadge status={request.verificationStatus} type="kyc" />
-                    </ModernTableCell>
-                    
-                    <ModernTableCell>
-                      {request?.kyc?.documents && request.kyc.documents.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {request.kyc.documents.slice(0, 2).map((url, idx) => (
-                            <a
-                              key={idx}
-                              href={url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors"
-                            >
-                              <FiExternalLink className="w-3 h-3" />
-                              Doc {idx + 1}
-                            </a>
-                          ))}
-                          {request.kyc.documents.length > 2 && (
-                            <span className="text-xs text-gray-500">
-                              +{request.kyc.documents.length - 2} more
-                            </span>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-gray-400 italic">No documents</span>
-                      )}
-                    </ModernTableCell>
-                    
-                    <ModernTableCell>
-                      {request.verificationStatus === 'Submitted' && (
+                      </ModernTableCell>
+
+                      <ModernTableCell>
                         <div className="flex items-center gap-2">
-                          <ActionButton
-                            variant="success"
-                            size="xs"
-                            icon={<FiCheck className="w-3 h-3" />}
-                            onClick={() => updateStatus(request._id, 'Approved')}
-                            disabled={updatingId === request._id}
-                          >
-                            Approve
-                          </ActionButton>
-                          <ActionButton
-                            variant="danger"
-                            size="xs"
-                            icon={<FiX className="w-3 h-3" />}
-                            onClick={() => updateStatus(request._id, 'Rejected')}
-                            disabled={updatingId === request._id}
-                          >
-                            Reject
-                          </ActionButton>
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-violet/15">
+                            <Briefcase className="w-4 h-4 text-brand-violet" />
+                          </div>
+                          <span className="text-foreground">
+                            {request?.specializationId?.name || 'Not specified'}
+                          </span>
                         </div>
-                      )}
-                      {updatingId === request._id && (
-                        <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
-                      )}
-                    </ModernTableCell>
-                  </ModernTableRow>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </ModernTableContainer>
+                      </ModernTableCell>
+
+                      <ModernTableCell>
+                        {request?.kyc?.submittedAt ? (
+                          <DateTimeDisplay
+                            date={request.kyc.submittedAt}
+                            format="date-only"
+                          />
+                        ) : (
+                          <span className="text-muted-foreground italic">Not submitted</span>
+                        )}
+                      </ModernTableCell>
+
+                      <ModernTableCell>
+                        <StatusBadge status={request.verificationStatus} type="kyc" />
+                      </ModernTableCell>
+
+                      <ModernTableCell>
+                        {request?.kyc?.documents && request.kyc.documents.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {request.kyc.documents.slice(0, 2).map((url, idx) => (
+                              <a
+                                key={idx}
+                                href={url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 rounded-md bg-brand-cyan/15 px-2 py-1 text-xs font-medium text-brand-cyan-fg transition-colors hover:bg-brand-cyan/25"
+                              >
+                                <ExternalLink className="w-3 h-3" />
+                                Doc {idx + 1}
+                              </a>
+                            ))}
+                            {request.kyc.documents.length > 2 && (
+                              <span className="text-xs text-muted-foreground">
+                                +{request.kyc.documents.length - 2} more
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground italic">No documents</span>
+                        )}
+                      </ModernTableCell>
+
+                      <ModernTableCell>
+                        {request.verificationStatus === 'Submitted' && (
+                          <div className="flex items-center gap-2">
+                            <ActionButton
+                              variant="success"
+                              size="xs"
+                              icon={<Check className="w-3 h-3" />}
+                              onClick={() => updateStatus(request._id, 'Approved')}
+                              disabled={updatingId === request._id}
+                            >
+                              Approve
+                            </ActionButton>
+                            <ActionButton
+                              variant="danger"
+                              size="xs"
+                              icon={<X className="w-3 h-3" />}
+                              onClick={() => updateStatus(request._id, 'Rejected')}
+                              disabled={updatingId === request._id}
+                            >
+                              Reject
+                            </ActionButton>
+                          </div>
+                        )}
+                        {updatingId === request._id && (
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-cyan/40 border-t-brand-cyan"></div>
+                        )}
+                      </ModernTableCell>
+                    </ModernTableRow>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </ModernTableContainer>
+        </Reveal>
       </div>
 
       {/* Mobile Card View */}
-      <div className="lg:hidden space-y-4">
+      <div className="space-y-4 lg:hidden">
         {filteredItems.length === 0 ? (
           <MobileCard>
             <EmptyState
-              icon={<FiFileText className="w-8 h-8 text-gray-400" />}
+              icon={<FileText className="w-8 h-8 text-muted-foreground" />}
               title="No KYC Requests Found"
               description={filter === 'all' ? 'No KYC submissions found.' : `No ${filter} requests found.`}
             />
@@ -301,50 +296,50 @@ export default function KycRequests() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Avatar 
-                      name={request?.userId?.name || 'Unknown Doctor'} 
+                    <Avatar
+                      name={request?.userId?.name || 'Unknown Doctor'}
                       size="md"
                     />
                     <div>
-                      <h3 className="font-semibold text-gray-900">
+                      <h3 className="font-semibold text-foreground">
                         {request?.userId?.name || 'Unknown Doctor'}
                       </h3>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         {request?.userId?.email || 'No email'}
                       </p>
                     </div>
                   </div>
                   <StatusBadge status={request.verificationStatus} type="kyc" />
                 </div>
-                
+
                 <div className="grid grid-cols-1 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Specialization</label>
+                    <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Specialization</label>
                     <div className="mt-1 flex items-center gap-2">
-                      <FiBriefcase className="w-4 h-4 text-purple-500" />
-                      <span className="text-gray-700">
+                      <Briefcase className="w-4 h-4 text-brand-violet" />
+                      <span className="text-foreground">
                         {request?.specializationId?.name || 'Not specified'}
                       </span>
                     </div>
                   </div>
-                  
+
                   <div>
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Submitted</label>
+                    <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Submitted</label>
                     <div className="mt-1">
                       {request?.kyc?.submittedAt ? (
-                        <DateTimeDisplay 
-                          date={request.kyc.submittedAt} 
+                        <DateTimeDisplay
+                          date={request.kyc.submittedAt}
                           format="date-only"
                         />
                       ) : (
-                        <span className="text-gray-400 italic">Not submitted</span>
+                        <span className="text-muted-foreground italic">Not submitted</span>
                       )}
                     </div>
                   </div>
-                  
+
                   {request?.kyc?.documents && request.kyc.documents.length > 0 && (
                     <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Documents</label>
+                      <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Documents</label>
                       <div className="mt-1 flex flex-wrap gap-2">
                         {request.kyc.documents.map((url, idx) => (
                           <a
@@ -352,9 +347,9 @@ export default function KycRequests() {
                             href={url}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors"
+                            className="inline-flex items-center gap-1 rounded-full bg-brand-cyan/15 px-3 py-1 text-xs font-medium text-brand-cyan-fg transition-colors hover:bg-brand-cyan/25"
                           >
-                            <FiExternalLink className="w-3 h-3" />
+                            <ExternalLink className="w-3 h-3" />
                             Document {idx + 1}
                           </a>
                         ))}
@@ -364,20 +359,20 @@ export default function KycRequests() {
 
                   {request?.kyc?.rejectedReason && (
                     <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Rejection Reason</label>
-                      <div className="mt-1 p-3 bg-red-50 border border-red-200 rounded-lg">
-                        <p className="text-sm text-red-700">{request.kyc.rejectedReason}</p>
+                      <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Rejection Reason</label>
+                      <div className="mt-1 rounded-lg border border-error/20 bg-error/10 p-3">
+                        <p className="text-sm text-error-fg">{request.kyc.rejectedReason}</p>
                       </div>
                     </div>
                   )}
                 </div>
-                
+
                 {request.verificationStatus === 'Submitted' && (
                   <div className="flex gap-2 pt-2">
                     <ActionButton
                       variant="success"
                       size="sm"
-                      icon={<FiCheck className="w-4 h-4" />}
+                      icon={<Check className="w-4 h-4" />}
                       onClick={() => updateStatus(request._id, 'Approved')}
                       disabled={updatingId === request._id}
                       className="flex-1 justify-center"
@@ -387,7 +382,7 @@ export default function KycRequests() {
                     <ActionButton
                       variant="danger"
                       size="sm"
-                      icon={<FiX className="w-4 h-4" />}
+                      icon={<X className="w-4 h-4" />}
                       onClick={() => updateStatus(request._id, 'Rejected')}
                       disabled={updatingId === request._id}
                       className="flex-1 justify-center"

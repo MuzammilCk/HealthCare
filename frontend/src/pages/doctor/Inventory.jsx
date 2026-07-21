@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
-import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiAlertCircle, FiPackage, FiX } from 'react-icons/fi';
+import { Plus, Pencil, Trash2, Search, AlertTriangle, Package, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
+import { cn } from '../../utils/cn';
+import { Button, buttonVariants } from '../../components/ui/Button';
+import Reveal from '../../components/Reveal';
 
 export default function Inventory() {
   const [inventory, setInventory] = useState([]);
@@ -24,6 +27,10 @@ export default function Inventory() {
     minStockLevel: '10',
     notes: ''
   });
+
+  const inputCls =
+    'w-full rounded-xl bg-background/60 border border-border px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors';
+  const labelCls = 'mb-1 block text-sm font-medium text-muted-foreground';
 
   // Helper to convert paise to rupees
   const formatPrice = (paise) => `₹${(paise / 100).toFixed(2)}`;
@@ -69,7 +76,7 @@ export default function Inventory() {
 
   const handleAddMedicine = async (e) => {
     e.preventDefault();
-    
+
     try {
       const data = {
         ...formData,
@@ -91,7 +98,7 @@ export default function Inventory() {
 
   const handleEditMedicine = async (e) => {
     e.preventDefault();
-    
+
     try {
       const data = {
         ...formData,
@@ -146,47 +153,47 @@ export default function Inventory() {
 
   const MedicineForm = ({ onSubmit, onCancel, isEdit = false }) => (
     <form onSubmit={onSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className={labelCls}>
             Medicine Name *
           </label>
           <input
             type="text"
             value={formData.medicineName}
             onChange={(e) => setFormData({ ...formData, medicineName: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            className={inputCls}
             required
             disabled={isEdit}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className={labelCls}>
             Generic Name
           </label>
           <input
             type="text"
             value={formData.genericName}
             onChange={(e) => setFormData({ ...formData, genericName: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            className={inputCls}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className={labelCls}>
             Manufacturer
           </label>
           <input
             type="text"
             value={formData.manufacturer}
             onChange={(e) => setFormData({ ...formData, manufacturer: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            className={inputCls}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className={labelCls}>
             Stock Quantity *
           </label>
           <input
@@ -194,13 +201,13 @@ export default function Inventory() {
             min="0"
             value={formData.stockQuantity}
             onChange={(e) => setFormData({ ...formData, stockQuantity: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            className={inputCls}
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className={labelCls}>
             Price per Unit (₹) *
           </label>
           <input
@@ -209,19 +216,19 @@ export default function Inventory() {
             min="0"
             value={formData.price}
             onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            className={inputCls}
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className={labelCls}>
             Unit *
           </label>
           <select
             value={formData.unit}
             onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            className={inputCls}
           >
             <option value="tablet">Tablet</option>
             <option value="capsule">Capsule</option>
@@ -235,31 +242,31 @@ export default function Inventory() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className={labelCls}>
             Batch Number
           </label>
           <input
             type="text"
             value={formData.batchNumber}
             onChange={(e) => setFormData({ ...formData, batchNumber: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            className={inputCls}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className={labelCls}>
             Expiry Date
           </label>
           <input
             type="date"
             value={formData.expiryDate}
             onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            className={inputCls}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className={labelCls}>
             Min Stock Level *
           </label>
           <input
@@ -267,262 +274,259 @@ export default function Inventory() {
             min="0"
             value={formData.minStockLevel}
             onChange={(e) => setFormData({ ...formData, minStockLevel: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            className={inputCls}
             required
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className={labelCls}>
           Notes
         </label>
         <textarea
           value={formData.notes}
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
           rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+          className={inputCls}
         />
       </div>
 
       <div className="flex justify-end gap-3 pt-4">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
-        >
+        <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
-        </button>
-        <button
-          type="submit"
-          className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-light"
-        >
+        </Button>
+        <Button type="submit">
           {isEdit ? 'Update Medicine' : 'Add Medicine'}
-        </button>
+        </Button>
       </div>
     </form>
   );
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-text-primary">Inventory Management</h1>
-        <p className="text-text-secondary">Manage your hospital's pharmacy inventory</p>
-      </div>
-
-      {/* Actions Bar */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex-1 w-full sm:w-auto">
-          <div className="relative">
-            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search medicines..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="mx-auto max-w-6xl space-y-8 p-6">
+        <Reveal>
+          <div>
+            <h1 className="font-head text-3xl font-bold tracking-tight text-foreground">Inventory Management</h1>
+            <p className="text-muted-foreground">Manage your hospital's pharmacy inventory</p>
           </div>
-        </div>
+        </Reveal>
 
-        <div className="flex gap-3">
-          <button
-            onClick={() => setShowLowStock(!showLowStock)}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              showLowStock
-                ? 'bg-orange-100 text-orange-700 border-2 border-orange-300'
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            <FiAlertCircle className="inline mr-2" />
-            Low Stock
-          </button>
+        <Reveal>
+          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+            <div className="w-full sm:w-auto sm:flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search medicines..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full rounded-xl bg-background/60 border border-border py-2 pl-10 pr-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
+                />
+              </div>
+            </div>
 
-          <button
-            onClick={() => {
-              resetForm();
-              setShowAddModal(true);
-            }}
-            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-light font-medium"
-          >
-            <FiPlus className="inline mr-2" />
-            Add Medicine
-          </button>
-        </div>
-      </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowLowStock(!showLowStock)}
+                className={cn(
+                  'flex items-center rounded-lg px-4 py-2 font-medium transition-colors',
+                  showLowStock
+                    ? 'bg-gradient-to-br from-brand-cyan to-brand-teal text-white shadow-glow'
+                    : 'glass text-foreground hover:bg-foreground/5'
+                )}
+              >
+                <AlertTriangle className="mr-2 h-4 w-4" />
+                Low Stock
+              </button>
 
-      {/* Inventory Table */}
-      {loading ? (
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-text-secondary">Loading inventory...</p>
-        </div>
-      ) : inventory.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-card p-12 text-center">
-          <FiPackage className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-text-primary mb-2">No Medicines Found</h3>
-          <p className="text-text-secondary mb-4">
-            {searchQuery || showLowStock
-              ? 'No medicines match your filters'
-              : 'Start by adding medicines to your inventory'}
-          </p>
-          {!searchQuery && !showLowStock && (
-            <button
-              onClick={() => {
-                resetForm();
-                setShowAddModal(true);
-              }}
-              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-light"
-            >
-              Add First Medicine
-            </button>
+              <Button
+                onClick={() => {
+                  resetForm();
+                  setShowAddModal(true);
+                }}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Medicine
+              </Button>
+            </div>
+          </div>
+        </Reveal>
+
+        <Reveal>
+          {loading ? (
+            <div className="py-12 text-center">
+              <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-2 border-brand-cyan/30 border-t-brand-cyan"></div>
+              <p className="text-muted-foreground">Loading inventory...</p>
+            </div>
+          ) : inventory.length === 0 ? (
+            <div className="glass rounded-2xl p-12 text-center shadow-card">
+              <Package className="mx-auto mb-4 h-16 w-16 text-muted-foreground/50" />
+              <h3 className="mb-2 font-head text-xl font-semibold text-foreground">No Medicines Found</h3>
+              <p className="mb-4 text-muted-foreground">
+                {searchQuery || showLowStock
+                  ? 'No medicines match your filters'
+                  : 'Start by adding medicines to your inventory'}
+              </p>
+              {!searchQuery && !showLowStock && (
+                <Button
+                  onClick={() => {
+                    resetForm();
+                    setShowAddModal(true);
+                  }}
+                >
+                  Add First Medicine
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="glass overflow-hidden rounded-2xl shadow-card">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="border-b border-border bg-foreground/5">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        Medicine
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        Stock
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        Price
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        Unit
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        Expiry
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {inventory.map((item) => (
+                      <tr key={item._id} className="transition-colors hover:bg-foreground/5">
+                        <td className="px-6 py-4">
+                          <div>
+                            <div className="font-medium text-foreground">{item.medicineName}</div>
+                            {item.genericName && (
+                              <div className="text-sm text-muted-foreground">{item.genericName}</div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-foreground">{item.stockQuantity}</span>
+                            {item.isLowStock && (
+                              <span className="rounded-full bg-amber-400/15 px-2 py-1 text-xs font-semibold text-amber-500">
+                                Low
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 font-semibold text-foreground">
+                          {formatPrice(item.price)}
+                        </td>
+                        <td className="px-6 py-4 capitalize text-muted-foreground">
+                          {item.unit}
+                        </td>
+                        <td className="px-6 py-4 text-muted-foreground">
+                          {item.expiryDate
+                            ? new Date(item.expiryDate).toLocaleDateString()
+                            : '-'}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => openEditModal(item)}
+                              className="rounded-lg p-2 text-brand-cyan-fg transition-colors hover:bg-brand-cyan/10"
+                              title="Edit"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteMedicine(item)}
+                              className="rounded-lg p-2 text-error-fg transition-colors hover:bg-error/10"
+                              title="Delete"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           )}
-        </div>
-      ) : (
-        <div className="bg-white rounded-xl shadow-card overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Medicine
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Stock
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Price
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Unit
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Expiry
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {inventory.map((item) => (
-                  <tr key={item._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div>
-                        <div className="font-medium text-gray-900">{item.medicineName}</div>
-                        {item.genericName && (
-                          <div className="text-sm text-gray-500">{item.genericName}</div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold">{item.stockQuantity}</span>
-                        {item.isLowStock && (
-                          <span className="px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-700 rounded-full">
-                            Low
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 font-semibold text-gray-900">
-                      {formatPrice(item.price)}
-                    </td>
-                    <td className="px-6 py-4 text-gray-500 capitalize">
-                      {item.unit}
-                    </td>
-                    <td className="px-6 py-4 text-gray-500">
-                      {item.expiryDate
-                        ? new Date(item.expiryDate).toLocaleDateString()
-                        : '-'}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => openEditModal(item)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                          title="Edit"
-                        >
-                          <FiEdit2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteMedicine(item)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                          title="Delete"
-                        >
-                          <FiTrash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+        </Reveal>
 
-      {/* Add Medicine Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-text-primary">Add New Medicine</h2>
-              <button
-                onClick={() => {
-                  setShowAddModal(false);
-                  resetForm();
-                }}
-                className="p-2 hover:bg-gray-100 rounded-lg"
-              >
-                <FiX className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-6">
-              <MedicineForm
-                onSubmit={handleAddMedicine}
-                onCancel={() => {
-                  setShowAddModal(false);
-                  resetForm();
-                }}
-              />
+        {/* Add Medicine Modal */}
+        {showAddModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+            <div className="glass-strong max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl shadow-glow">
+              <div className="sticky top-0 flex items-center justify-between border-b border-border bg-background/80 p-6 backdrop-blur">
+                <h2 className="font-head text-2xl font-bold text-foreground">Add New Medicine</h2>
+                <button
+                  onClick={() => {
+                    setShowAddModal(false);
+                    resetForm();
+                  }}
+                  className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="p-6">
+                <MedicineForm
+                  onSubmit={handleAddMedicine}
+                  onCancel={() => {
+                    setShowAddModal(false);
+                    resetForm();
+                  }}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Edit Medicine Modal */}
-      {showEditModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-text-primary">Edit Medicine</h2>
-              <button
-                onClick={() => {
-                  setShowEditModal(false);
-                  setSelectedItem(null);
-                  resetForm();
-                }}
-                className="p-2 hover:bg-gray-100 rounded-lg"
-              >
-                <FiX className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-6">
-              <MedicineForm
-                onSubmit={handleEditMedicine}
-                onCancel={() => {
-                  setShowEditModal(false);
-                  setSelectedItem(null);
-                  resetForm();
-                }}
-                isEdit={true}
-              />
+        {/* Edit Medicine Modal */}
+        {showEditModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+            <div className="glass-strong max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl shadow-glow">
+              <div className="sticky top-0 flex items-center justify-between border-b border-border bg-background/80 p-6 backdrop-blur">
+                <h2 className="font-head text-2xl font-bold text-foreground">Edit Medicine</h2>
+                <button
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setSelectedItem(null);
+                    resetForm();
+                  }}
+                  className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="p-6">
+                <MedicineForm
+                  onSubmit={handleEditMedicine}
+                  onCancel={() => {
+                    setShowEditModal(false);
+                    setSelectedItem(null);
+                    resetForm();
+                  }}
+                  isEdit={true}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

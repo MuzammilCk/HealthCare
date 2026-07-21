@@ -1,38 +1,28 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { FileText, User, Plus, Trash2, Calendar, Search, ShoppingCart, Pencil, Package, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
-import { 
-  FiFileText, 
-  FiUser, 
-  FiPlus, 
-  FiTrash2, 
-  FiCalendar, 
-  FiSearch,
-  FiShoppingCart,
-  FiEdit,
-  FiPackage,
-  FiAlertCircle
-} from 'react-icons/fi';
 import { AppSelect } from '../../components/ui';
+import Reveal from '../../components/Reveal';
 
 export default function CreatePrescriptionNew() {
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // State
   const [appointments, setAppointments] = useState([]);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  
+
   // Prescription data
   const [billedMedicines, setBilledMedicines] = useState([]);
   const [prescribedOnlyMedicines, setPrescribedOnlyMedicines] = useState([]);
   const [diagnosis, setDiagnosis] = useState('');
   const [notes, setNotes] = useState('');
   // Doctor fee is prepaid at appointment booking; no manual entry here
-  
+
   // Inventory search
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -162,19 +152,19 @@ export default function CreatePrescriptionNew() {
   // Submit prescription
   const onSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!selectedAppointment) {
       toast.error('Please select an appointment');
       return;
     }
 
     // Validate billed medicines
-    const validBilledMeds = billedMedicines.filter(m => 
+    const validBilledMeds = billedMedicines.filter(m =>
       m.medicineName && m.dosage && m.frequency && m.duration && m.quantity > 0
     );
 
     // Validate prescribed-only medicines
-    const validPrescribedOnly = prescribedOnlyMedicines.filter(m => 
+    const validPrescribedOnly = prescribedOnlyMedicines.filter(m =>
       m.medicineName && m.dosage && m.frequency && m.duration
     );
 
@@ -197,11 +187,11 @@ export default function CreatePrescriptionNew() {
       };
 
       const res = await api.post('/doctors/prescriptions', payload);
-      
+
       toast.dismiss(loadingToast);
-      
+
       console.log('Prescription response:', res.data);
-      
+
       if (res.data.data.billGenerated && res.data.data.bill) {
         toast.success('Prescription created and bill generated successfully!');
         console.log('Redirecting to bill:', res.data.data.bill._id);
@@ -221,18 +211,22 @@ export default function CreatePrescriptionNew() {
   };
 
   if (loading) {
-    return <div className="text-center p-6">Loading appointments...</div>;
+    return <div className="bg-background p-6 text-center text-muted-foreground">Loading appointments...</div>;
   }
 
+  const inputCls = 'w-full rounded-lg border border-border bg-background/60 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-cyan/30 focus:border-brand-cyan';
+
   return (
-    <div className="max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold text-text-primary mb-6 flex items-center">
-        <FiFileText className="mr-3 text-primary" />
-        Create Smart Prescription
-      </h1>
+    <div className="mx-auto max-w-6xl space-y-6 bg-background text-foreground">
+      <Reveal>
+        <h1 className="flex items-center font-head text-3xl font-bold tracking-tight text-foreground">
+          <FileText className="mr-3 text-brand-cyan-fg" />
+          Create Smart Prescription
+        </h1>
+      </Reveal>
 
       {/* Appointment Selection */}
-      <div className="bg-white dark:bg-bg-card-dark p-6 rounded-xl shadow-card dark:shadow-card-dark mb-6">
+      <Reveal className="glass rounded-xl p-6 shadow-card">
         <AppSelect
           label="Select Completed Appointment"
           placeholder="-- Select an appointment --"
@@ -242,134 +236,136 @@ export default function CreatePrescriptionNew() {
             value: a._id,
             label: `${new Date(a.date).toLocaleDateString()} - ${a.timeSlot} - ${a.patientId?.name}`
           }))}
-          icon={FiCalendar}
+          icon={Calendar}
           searchable
           searchPlaceholder="Search appointments..."
         />
-        
+
         {appointments.length === 0 && (
-          <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start">
-            <FiAlertCircle className="text-yellow-600 mt-1 mr-3 flex-shrink-0" />
-            <div className="text-sm text-yellow-800">
+          <div className="mt-4 flex items-start rounded-lg border border-amber-400/30 bg-amber-400/10 p-4">
+            <AlertCircle className="mr-3 mt-1 flex-shrink-0 text-amber-500" />
+            <div className="text-sm text-amber-600">
               No eligible appointments found. Only completed appointments without prescriptions can be selected.
             </div>
           </div>
         )}
-      </div>
+      </Reveal>
 
       {selectedAppointment && (
         <form onSubmit={onSubmit} className="space-y-6">
           {/* Patient Details */}
-          <div className="bg-white dark:bg-bg-card-dark p-6 rounded-xl shadow-card dark:shadow-card-dark">
-            <h3 className="font-semibold text-lg flex items-center mb-4">
-              <FiUser className="mr-2 text-primary" /> Patient Details
+          <Reveal className="glass rounded-xl p-6 shadow-card">
+            <h3 className="mb-4 flex items-center font-semibold text-lg text-foreground">
+              <User className="mr-2 text-brand-cyan-fg" /> Patient Details
             </h3>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="font-medium text-text-secondary">Name:</span>{' '}
-                <span className="text-text-primary">{selectedAppointment.patientId?.name}</span>
+                <span className="font-medium text-muted-foreground">Name:</span>{' '}
+                <span className="text-foreground">{selectedAppointment.patientId?.name}</span>
               </div>
               <div>
-                <span className="font-medium text-text-secondary">Email:</span>{' '}
-                <span className="text-text-primary">{selectedAppointment.patientId?.email}</span>
+                <span className="font-medium text-muted-foreground">Email:</span>{' '}
+                <span className="text-foreground">{selectedAppointment.patientId?.email}</span>
               </div>
               <div>
-                <span className="font-medium text-text-secondary">Date:</span>{' '}
-                <span className="text-text-primary">
+                <span className="font-medium text-muted-foreground">Date:</span>{' '}
+                <span className="text-foreground">
                   {new Date(selectedAppointment.date).toLocaleDateString()}
                 </span>
               </div>
               <div>
-                <span className="font-medium text-text-secondary">Time:</span>{' '}
-                <span className="text-text-primary">{selectedAppointment.timeSlot}</span>
+                <span className="font-medium text-muted-foreground">Time:</span>{' '}
+                <span className="text-foreground">{selectedAppointment.timeSlot}</span>
               </div>
             </div>
-          </div>
+          </Reveal>
 
           {/* Diagnosis & Notes */}
-          <div className="bg-white p-6 rounded-xl shadow-card space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-text-secondary mb-2">
-                Diagnosis
-              </label>
-              <input
-                type="text"
-                value={diagnosis}
-                onChange={(e) => setDiagnosis(e.target.value)}
-                placeholder="Enter diagnosis"
-                className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 px-4 focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
+          <Reveal className="glass rounded-xl p-6 shadow-card">
+            <div className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-muted-foreground">
+                  Diagnosis
+                </label>
+                <input
+                  type="text"
+                  value={diagnosis}
+                  onChange={(e) => setDiagnosis(e.target.value)}
+                  placeholder="Enter diagnosis"
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium text-muted-foreground">
+                  Additional Notes
+                </label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Any additional notes or instructions"
+                  rows={3}
+                  className={`${inputCls} p-4`}
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-text-secondary mb-2">
-                Additional Notes
-              </label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Any additional notes or instructions"
-                rows={3}
-                className="w-full bg-bg-page border border-slate-300/70 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
-            </div>
-          </div>
+          </Reveal>
 
           {/* Billed Items Section */}
-          <div className="bg-white dark:bg-bg-card-dark p-6 rounded-xl shadow-card dark:shadow-card-dark">
-            <h3 className="font-semibold text-lg flex items-center mb-4">
-              <FiShoppingCart className="mr-2 text-primary" /> 
+          <Reveal className="glass rounded-xl p-6 shadow-card">
+            <h3 className="mb-4 flex items-center font-semibold text-lg text-foreground">
+              <ShoppingCart className="mr-2 text-brand-cyan-fg" />
               Billed Items (From Hospital Inventory)
             </h3>
 
             {/* Inventory Search */}
-            <div className="mb-6 relative">
-              <label className="block text-sm font-medium text-text-secondary mb-2">
+            <div className="relative mb-6">
+              <label className="mb-2 block text-sm font-medium text-muted-foreground">
                 Search Hospital Inventory
               </label>
               <div className="relative">
-                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => searchQuery && setShowSearchResults(true)}
                   placeholder="Type medicine name to search..."
-                  className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-12 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  className="h-12 w-full rounded-lg border border-border bg-background/60 pl-12 pr-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-cyan/30 focus:border-brand-cyan"
                 />
                 {searching && (
                   <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                    <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full" />
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-brand-cyan border-t-transparent" />
                   </div>
                 )}
               </div>
 
               {/* Search Results Dropdown */}
               {showSearchResults && searchResults.length > 0 && (
-                <div className="absolute z-10 w-full mt-2 bg-white border border-slate-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                <div className="glass absolute z-10 mt-2 max-h-64 w-full overflow-y-auto rounded-lg border border-border shadow-glow">
                   {searchResults.map((item) => (
                     <button
                       key={item._id}
                       type="button"
                       onClick={() => addBilledMedicine(item)}
-                      className="w-full p-4 hover:bg-slate-50 text-left border-b last:border-b-0 transition-colors"
+                      className="w-full border-b border-border p-4 text-left transition-colors last:border-b-0 hover:bg-foreground/5"
                     >
-                      <div className="flex justify-between items-start">
+                      <div className="flex items-start justify-between">
                         <div>
-                          <div className="font-medium text-text-primary">{item.medicineName}</div>
+                          <div className="font-medium text-foreground">{item.medicineName}</div>
                           {item.genericName && (
-                            <div className="text-sm text-text-secondary">{item.genericName}</div>
+                            <div className="text-sm text-muted-foreground">{item.genericName}</div>
                           )}
-                          <div className="text-sm text-text-secondary mt-1">
+                          <div className="mt-1 text-sm text-muted-foreground">
                             ₹{(item.price / 100).toFixed(2)} per {item.unit}
                           </div>
                         </div>
                         <div className="text-right">
                           <div className={`text-sm font-medium ${
-                            item.stockQuantity > 10 ? 'text-green-600' : 'text-orange-600'
+                            item.stockQuantity > 10 ? 'text-success-fg' : 'text-amber-500'
                           }`}>
                             {item.stockQuantity > 0 ? 'In Stock' : 'Out of Stock'}
                           </div>
-                          <div className="text-xs text-text-secondary">
+                          <div className="text-xs text-muted-foreground">
                             {item.stockQuantity} available
                           </div>
                         </div>
@@ -380,7 +376,7 @@ export default function CreatePrescriptionNew() {
               )}
 
               {showSearchResults && searchQuery && searchResults.length === 0 && !searching && (
-                <div className="absolute z-10 w-full mt-2 bg-white border border-slate-200 rounded-lg shadow-lg p-4 text-center text-text-secondary">
+                <div className="glass absolute z-10 mt-2 w-full rounded-lg border border-border p-4 text-center text-muted-foreground shadow-glow">
                   No medicines found
                 </div>
               )}
@@ -390,32 +386,32 @@ export default function CreatePrescriptionNew() {
             {billedMedicines.length > 0 ? (
               <div className="space-y-4">
                 {billedMedicines.map((med, index) => (
-                  <div key={index} className="border border-slate-200 rounded-lg p-4 relative">
+                  <div key={index} className="relative rounded-lg border border-border p-4">
                     <button
                       type="button"
                       onClick={() => removeBilledMedicine(index)}
-                      className="absolute top-2 right-2 text-red-500 hover:text-red-700 p-1"
+                      className="absolute right-2 top-2 p-1 text-error-fg transition-colors hover:text-error-fg hover:bg-error/10"
                     >
-                      <FiTrash2 />
+                      <Trash2 />
                     </button>
-                    
+
                     <div className="mb-3">
-                      <div className="font-medium text-text-primary flex items-center">
-                        <FiPackage className="mr-2 text-primary" />
+                      <div className="flex items-center font-medium text-foreground">
+                        <Package className="mr-2 text-brand-cyan-fg" />
                         {med.medicineName}
                       </div>
-                      <div className="text-sm text-text-secondary">
+                      <div className="text-sm text-muted-foreground">
                         ₹{(med.price / 100).toFixed(2)} per {med.unit} • Stock: {med.stockQuantity}
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
                       <input
                         type="text"
                         placeholder="Dosage"
                         value={med.dosage}
                         onChange={(e) => updateBilledMedicine(index, 'dosage', e.target.value)}
-                        className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-10 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        className={`${inputCls} h-10`}
                         required
                       />
                       <input
@@ -423,7 +419,7 @@ export default function CreatePrescriptionNew() {
                         placeholder="Frequency"
                         value={med.frequency}
                         onChange={(e) => updateBilledMedicine(index, 'frequency', e.target.value)}
-                        className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-10 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        className={`${inputCls} h-10`}
                         required
                       />
                       <input
@@ -431,7 +427,7 @@ export default function CreatePrescriptionNew() {
                         placeholder="Duration"
                         value={med.duration}
                         onChange={(e) => updateBilledMedicine(index, 'duration', e.target.value)}
-                        className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-10 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        className={`${inputCls} h-10`}
                         required
                       />
                       <input
@@ -441,7 +437,7 @@ export default function CreatePrescriptionNew() {
                         onChange={(e) => updateBilledMedicine(index, 'quantity', parseInt(e.target.value) || 1)}
                         min="1"
                         max={med.stockQuantity}
-                        className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-10 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        className={`${inputCls} h-10`}
                         required
                       />
                       <input
@@ -449,50 +445,50 @@ export default function CreatePrescriptionNew() {
                         placeholder="Instructions"
                         value={med.instructions}
                         onChange={(e) => updateBilledMedicine(index, 'instructions', e.target.value)}
-                        className="w-full bg-bg-page border border-slate-300/70 rounded-lg h-10 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        className={`${inputCls} h-10`}
                       />
                     </div>
-                    
-                    <div className="mt-2 text-right text-sm font-medium text-primary">
+
+                    <div className="mt-2 text-right text-sm font-medium text-brand-cyan-fg">
                       Subtotal: ₹{((med.price * med.quantity) / 100).toFixed(2)}
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-text-secondary">
-                <FiPackage className="mx-auto text-4xl mb-2 opacity-50" />
+              <div className="py-8 text-center text-muted-foreground">
+                <Package className="mx-auto mb-2 text-4xl opacity-50" />
                 <p>No billed items added yet. Search inventory to add medicines.</p>
               </div>
             )}
-          </div>
+          </Reveal>
 
           {/* Prescribed-Only Items Section */}
-          <div className="bg-white dark:bg-bg-card-dark p-6 rounded-xl shadow-card dark:shadow-card-dark">
-            <h3 className="font-semibold text-lg flex items-center mb-4">
-              <FiEdit className="mr-2 text-primary" /> 
+          <Reveal className="glass rounded-xl p-6 shadow-card">
+            <h3 className="mb-4 flex items-center font-semibold text-lg text-foreground">
+              <Pencil className="mr-2 text-brand-cyan-fg" />
               Prescribed-Only Items (Not Billed)
             </h3>
-            
+
             {prescribedOnlyMedicines.length > 0 ? (
-              <div className="space-y-4 mb-4">
+              <div className="mb-4 space-y-4">
                 {prescribedOnlyMedicines.map((med, index) => (
-                  <div key={index} className="border border-slate-200 rounded-lg p-4 relative bg-slate-50">
+                  <div key={index} className="relative rounded-lg border border-border bg-foreground/5 p-4">
                     <button
                       type="button"
                       onClick={() => removePrescribedOnly(index)}
-                      className="absolute top-2 right-2 text-red-500 hover:text-red-700 p-1"
+                      className="absolute right-2 top-2 p-1 text-error-fg transition-colors hover:text-error-fg hover:bg-error/10"
                     >
-                      <FiTrash2 />
+                      <Trash2 />
                     </button>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-5">
                       <input
                         type="text"
                         placeholder="Medicine Name"
                         value={med.medicineName}
                         onChange={(e) => updatePrescribedOnly(index, 'medicineName', e.target.value)}
-                        className="w-full bg-white border border-slate-300/70 rounded-lg h-10 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        className={`${inputCls} h-10`}
                         required
                       />
                       <input
@@ -500,7 +496,7 @@ export default function CreatePrescriptionNew() {
                         placeholder="Dosage"
                         value={med.dosage}
                         onChange={(e) => updatePrescribedOnly(index, 'dosage', e.target.value)}
-                        className="w-full bg-white border border-slate-300/70 rounded-lg h-10 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        className={`${inputCls} h-10`}
                         required
                       />
                       <input
@@ -508,7 +504,7 @@ export default function CreatePrescriptionNew() {
                         placeholder="Frequency"
                         value={med.frequency}
                         onChange={(e) => updatePrescribedOnly(index, 'frequency', e.target.value)}
-                        className="w-full bg-white border border-slate-300/70 rounded-lg h-10 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        className={`${inputCls} h-10`}
                         required
                       />
                       <input
@@ -516,7 +512,7 @@ export default function CreatePrescriptionNew() {
                         placeholder="Duration"
                         value={med.duration}
                         onChange={(e) => updatePrescribedOnly(index, 'duration', e.target.value)}
-                        className="w-full bg-white border border-slate-300/70 rounded-lg h-10 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        className={`${inputCls} h-10`}
                         required
                       />
                       <input
@@ -524,46 +520,46 @@ export default function CreatePrescriptionNew() {
                         placeholder="Instructions"
                         value={med.instructions}
                         onChange={(e) => updatePrescribedOnly(index, 'instructions', e.target.value)}
-                        className="w-full bg-white border border-slate-300/70 rounded-lg h-10 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        className={`${inputCls} h-10`}
                       />
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-6 text-text-secondary">
+              <div className="py-6 text-center text-muted-foreground">
                 No prescribed-only medicines added
               </div>
             )}
             <button
               type="button"
               onClick={addPrescribedOnly}
-              className="flex items-center text-sm font-semibold text-primary hover:text-primary-light transition-colors"
+              className="flex items-center text-sm font-semibold text-brand-cyan-fg transition-colors hover:text-brand-cyan-fg"
             >
-              <FiPlus className="mr-1" /> Add Prescribed-Only Medicine
+              <Plus className="mr-1" /> Add Prescribed-Only Medicine
             </button>
-          </div>
+          </Reveal>
 
           {/* Doctor Fee removed: prepaid at booking */}
 
           {/* Bill Summary */}
           {billedMedicines.length > 0 && (
-            <div className="bg-gradient-to-br from-primary/5 to-primary/10 p-6 rounded-xl border border-primary/20">
-              <h3 className="font-semibold text-lg mb-4">Bill Summary</h3>
+            <Reveal className="rounded-xl border border-brand-cyan/20 bg-brand-cyan/5 p-6">
+              <h3 className="mb-4 font-semibold text-lg text-foreground">Bill Summary</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span>Medicines Total:</span>
-                  <span className="font-medium">
+                  <span className="text-muted-foreground">Medicines Total:</span>
+                  <span className="font-medium text-foreground">
                     ₹{(billedMedicines.reduce((sum, m) => sum + (m.price * m.quantity), 0) / 100).toFixed(2)}
                   </span>
                 </div>
                 {/* Doctor fee removed from summary */}
-                <div className="border-t border-primary/20 pt-2 mt-2 flex justify-between text-lg font-bold text-primary">
+                <div className="mt-2 flex justify-between border-t border-brand-cyan/20 pt-2 text-lg font-bold text-brand-cyan-fg">
                   <span>Total Amount:</span>
                   <span>₹{(calculateTotal() / 100).toFixed(2)}</span>
                 </div>
               </div>
-            </div>
+            </Reveal>
           )}
 
           {/* Submit Button */}
@@ -571,14 +567,14 @@ export default function CreatePrescriptionNew() {
             <button
               type="button"
               onClick={() => navigate('/doctor/appointments')}
-              className="flex-1 bg-slate-200 text-slate-700 font-bold h-12 rounded-lg hover:bg-slate-300 transition-all"
+              className="flex-1 rounded-lg bg-foreground/10 font-bold h-12 text-foreground transition-all hover:bg-foreground/15"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 bg-primary text-white font-bold h-12 rounded-lg disabled:opacity-50 hover:bg-primary-light transition-all"
+              className="flex-1 rounded-lg bg-gradient-to-br from-brand-cyan to-brand-teal font-bold h-12 text-white shadow-glow transition-all hover:brightness-110 disabled:opacity-50"
             >
               {saving ? 'Creating...' : billedMedicines.length > 0 ? 'Create Prescription & Generate Bill' : 'Create Prescription'}
             </button>

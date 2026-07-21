@@ -174,11 +174,42 @@ exports.verifyMockPayment = async (req, res) => {
     if (appointmentDetails) {
       const { doctorId, date, timeSlot } = appointmentDetails;
 
-      // Double-check time slot is still available
+      if (!doctorId || !date || !timeSlot) {
+        return res.status(400).json({ success: false, message: 'doctorId, date, and timeSlot are required' });
+      }
+
+      // SECURITY/DOMAIN: this endpoint creates the Appointment directly and
+      // is reachable without ever calling createMockBookingOrder first, so
+      // every check needed for a safe booking must be re-verified HERE, not
+      // just at order-creation time. Previously this branch: (1) never
+      // checked doctor.verificationStatus, so unapproved/rejected doctors
+      // were bookable; (2) never checked timeSlot against the doctor's
+      // declared availability, so arbitrary times (e.g. 3am) were bookable;
+      // (3) never re-checked the "2+ unpaid bills" limit that
+      // createMockBookingOrder enforces, so that limit was bypassable by
+      // calling this endpoint directly.
+      const { validateBookingRequest, normalizeDateToUTC } = require('../utils/scheduling');
+      const validation = await validateBookingRequest(doctorId, date, timeSlot);
+      if (!validation.ok) {
+        return res.status(validation.status).json({ success: false, message: validation.message });
+      }
+      const doctorProfile = validation.doctor;
+
+      const unpaidBillsCount = await Bill.countDocuments({ patientId: userId, status: 'unpaid' });
+      if (unpaidBillsCount >= 2) {
+        return res.status(400).json({
+          success: false,
+          message: 'You must clear your pending dues to book further appointments. You have ' + unpaidBillsCount + ' unpaid bills.'
+        });
+      }
+
+      const normalizedDate = normalizeDateToUTC(date);
+
+      // Double-check time slot is still available (race against other bookings)
       const Appointment = require('../models/Appointment');
       const existingAppointment = await Appointment.findOne({
         doctorId,
-        date: new Date(date),
+        date: normalizedDate,
         timeSlot,
         status: { $nin: ['Cancelled', 'cancelled_refunded', 'cancelled_no_refund'] }
       });
@@ -190,16 +221,13 @@ exports.verifyMockPayment = async (req, res) => {
         });
       }
 
-      // Get doctor's consultation fee
-      const Doctor = require('../models/Doctor');
-      const doctorProfile = await Doctor.findOne({ userId: doctorId });
       const consultationFee = doctorProfile?.consultationFee || 25000;
 
       // Step 1: Create the appointment with 'paid' status
       const appointment = new Appointment({
         patientId: userId,
         doctorId,
-        date: new Date(date),
+        date: normalizedDate,
         timeSlot,
         status: 'Scheduled',
         bookingFeeStatus: 'paid', // Already paid!

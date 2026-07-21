@@ -2,6 +2,7 @@ const Doctor = require('../models/Doctor');
 const User = require('../models/User');
 const Hospital = require('../models/Hospital');
 const Inventory = require('../models/Inventory');
+const Appointment = require('../models/Appointment');
 const { createNotification } = require('../utils/createNotification');
 
 // GET /api/admin/kyc-requests
@@ -45,10 +46,29 @@ exports.getAllDoctors = async (req, res) => {
 exports.deleteDoctor = async (req, res) => {
   try {
     const { userId } = req.params;
+
+    // BUG FIX: deleteHospital already guards against orphaning by refusing
+    // to delete a hospital that still has doctors/inventory attached.
+    // deleteDoctor had no equivalent check - deleting a doctor with
+    // appointment history left Appointment/Prescription/Bill/MedicalHistory
+    // documents pointing at a doctorId whose User no longer exists, so a
+    // patient's own appointment/prescription/bill history would silently
+    // show a null/broken doctor reference. Mirror deleteHospital's pattern:
+    // require appointment history to be empty (or use KYC rejection instead
+    // of hard delete for a doctor who has already seen patients).
+    const appointmentCount = await Appointment.countDocuments({ doctorId: userId });
+    if (appointmentCount > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot delete doctor. ${appointmentCount} appointment(s) exist in their history. Reject or deactivate the account instead of deleting it.`
+      });
+    }
+
     await Doctor.findOneAndDelete({ userId });
     await User.findByIdAndDelete(userId);
     res.json({ success: true, message: 'Doctor removed successfully' });
   } catch (e) {
+    console.error('Delete doctor error:', e);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };

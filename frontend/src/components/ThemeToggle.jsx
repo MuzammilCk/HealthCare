@@ -1,5 +1,5 @@
 import { useTheme } from '../contexts/ThemeContext';
-import { FiSun, FiMoon } from 'react-icons/fi';
+import { Sun, Moon } from 'lucide-react';
 
 export default function ThemeToggle({ className = '' }) {
   const { theme, toggleTheme, isDark } = useTheme();
@@ -9,10 +9,10 @@ export default function ThemeToggle({ className = '' }) {
       onClick={toggleTheme}
       className={`
         relative p-2 rounded-full transition-all duration-300 ease-in-out
-        bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border
-        hover:bg-gray-50 dark:hover:bg-dark-surface-hover
+        glass border border-border
+        hover:bg-foreground/5
         shadow-sm hover:shadow-md
-        focus:outline-none focus:ring-2 focus:ring-primary/50
+        focus:outline-none focus:ring-2 focus:ring-ring/50
         ${className}
       `}
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} theme`}
@@ -20,17 +20,17 @@ export default function ThemeToggle({ className = '' }) {
     >
       <div className="relative w-5 h-5">
         {/* Sun Icon */}
-        <FiSun 
+        <Sun
           className={`
-            absolute inset-0 w-5 h-5 text-yellow-500 transition-all duration-300
+            absolute inset-0 w-5 h-5 text-amber-400 transition-all duration-300
             ${isDark ? 'opacity-0 rotate-90 scale-0' : 'opacity-100 rotate-0 scale-100'}
           `}
         />
-        
+
         {/* Moon Icon */}
-        <FiMoon 
+        <Moon
           className={`
-            absolute inset-0 w-5 h-5 text-blue-400 transition-all duration-300
+            absolute inset-0 w-5 h-5 text-brand-sky-fg transition-all duration-300
             ${isDark ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 -rotate-90 scale-0'}
           `}
         />

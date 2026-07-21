@@ -1,6 +1,14 @@
 import { useState } from 'react';
-import { FiUser, FiMapPin, FiBriefcase, FiCalendar, FiClock, FiSearch, FiFilter } from 'react-icons/fi';
-import { AppSelect } from '../../components/ui';
+import {
+  User,
+  MapPin,
+  Briefcase,
+  Calendar,
+  Clock,
+  Search,
+  Filter,
+} from 'lucide-react';
+import { AppSelect, Button } from '../../components/ui';
 import { KERALA_DISTRICTS } from '../../constants';
 
 const specializations = [
@@ -45,59 +53,59 @@ export default function DropdownDemo() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
+    <div className="mx-auto max-w-4xl space-y-8 bg-background p-6 text-foreground">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">AppSelect Component Demo</h1>
-        <p className="text-gray-600">Modern, accessible dropdown design system for healthcare SaaS</p>
+        <h1 className="font-head text-3xl font-bold tracking-tight text-foreground">AppSelect Component Demo</h1>
+        <p className="text-muted-foreground">Modern, accessible dropdown design system for healthcare SaaS</p>
       </div>
 
       {/* Basic Examples */}
-      <div className="bg-white p-6 rounded-xl shadow-card">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Basic Examples</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="rounded-xl glass p-6 shadow-card">
+        <h2 className="mb-4 font-head text-xl font-semibold text-foreground">Basic Examples</h2>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <AppSelect
             label="District"
             placeholder="Select your district"
             value={selectedDistrict}
             onChange={setSelectedDistrict}
             options={KERALA_DISTRICTS.map(d => ({ value: d, label: d }))}
-            icon={FiMapPin}
+            icon={MapPin}
             required
           />
-          
+
           <AppSelect
             label="Specialization"
             placeholder="Choose specialization"
             value={selectedSpecialization}
             onChange={setSelectedSpecialization}
             options={specializations}
-            icon={FiBriefcase}
+            icon={Briefcase}
           />
         </div>
       </div>
 
       {/* Searchable Examples */}
-      <div className="bg-white p-6 rounded-xl shadow-card">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Searchable Dropdowns</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="rounded-xl glass p-6 shadow-card">
+        <h2 className="mb-4 font-head text-xl font-semibold text-foreground">Searchable Dropdowns</h2>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <AppSelect
             label="Search Districts"
             placeholder="Search and select district"
             value={selectedDistrict}
             onChange={setSelectedDistrict}
             options={KERALA_DISTRICTS.map(d => ({ value: d, label: d }))}
-            icon={FiSearch}
+            icon={Search}
             searchable
             searchPlaceholder="Type to search districts..."
           />
-          
+
           <AppSelect
             label="Time Slots"
             placeholder="Select appointment time"
             value={selectedTimeSlot}
             onChange={setSelectedTimeSlot}
             options={timeSlots.map(slot => ({ value: slot, label: slot }))}
-            icon={FiClock}
+            icon={Clock}
             searchable
             searchPlaceholder="Search time slots..."
           />
@@ -105,15 +113,15 @@ export default function DropdownDemo() {
       </div>
 
       {/* Grouped Options */}
-      <div className="bg-white p-6 rounded-xl shadow-card">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Grouped Options</h2>
+      <div className="rounded-xl glass p-6 shadow-card">
+        <h2 className="mb-4 font-head text-xl font-semibold text-foreground">Grouped Options</h2>
         <AppSelect
           label="Cities by State"
           placeholder="Select a city"
           value={selectedGrouped}
           onChange={setSelectedGrouped}
           options={groupedOptions}
-          icon={FiMapPin}
+          icon={MapPin}
           grouped
           groupKey="group"
           searchable
@@ -122,113 +130,110 @@ export default function DropdownDemo() {
       </div>
 
       {/* Size Variants */}
-      <div className="bg-white p-6 rounded-xl shadow-card">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Size Variants</h2>
+      <div className="rounded-xl glass p-6 shadow-card">
+        <h2 className="mb-4 font-head text-xl font-semibold text-foreground">Size Variants</h2>
         <div className="space-y-4">
           <AppSelect
             label="Small Size"
             placeholder="Small dropdown"
             options={specializations}
             size="sm"
-            icon={FiUser}
+            icon={User}
           />
-          
+
           <AppSelect
             label="Medium Size (Default)"
             placeholder="Medium dropdown"
             options={specializations}
             size="md"
-            icon={FiUser}
+            icon={User}
           />
-          
+
           <AppSelect
             label="Large Size"
             placeholder="Large dropdown"
             options={specializations}
             size="lg"
-            icon={FiUser}
+            icon={User}
           />
         </div>
       </div>
 
       {/* Style Variants */}
-      <div className="bg-white p-6 rounded-xl shadow-card">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Style Variants</h2>
+      <div className="rounded-xl glass p-6 shadow-card">
+        <h2 className="mb-4 font-head text-xl font-semibold text-foreground">Style Variants</h2>
         <div className="space-y-4">
           <AppSelect
             label="Default Style"
             placeholder="Default variant"
             options={specializations}
             variant="default"
-            icon={FiFilter}
+            icon={Filter}
           />
-          
+
           <AppSelect
             label="Outline Style"
             placeholder="Outline variant"
             options={specializations}
             variant="outline"
-            icon={FiFilter}
+            icon={Filter}
           />
-          
+
           <AppSelect
             label="Ghost Style"
             placeholder="Ghost variant"
             options={specializations}
             variant="ghost"
-            icon={FiFilter}
+            icon={Filter}
           />
         </div>
       </div>
 
       {/* Loading States */}
-      <div className="bg-white p-6 rounded-xl shadow-card">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Loading States</h2>
+      <div className="rounded-xl glass p-6 shadow-card">
+        <h2 className="mb-4 font-head text-xl font-semibold text-foreground">Loading States</h2>
         <div className="space-y-4">
           <AppSelect
             label="Loading Dropdown"
             placeholder="Loading options..."
             options={[]}
             loading={loading}
-            icon={FiCalendar}
+            icon={Calendar}
           />
-          
-          <button
-            onClick={handleAsyncLoad}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-          >
+
+          <Button onClick={handleAsyncLoad}>
             {loading ? 'Loading...' : 'Simulate Async Load'}
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Disabled State */}
-      <div className="bg-white p-6 rounded-xl shadow-card">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Disabled State</h2>
+      <div className="rounded-xl glass p-6 shadow-card">
+        <h2 className="mb-4 font-head text-xl font-semibold text-foreground">Disabled State</h2>
         <AppSelect
           label="Disabled Dropdown"
           placeholder="This dropdown is disabled"
           options={specializations}
           disabled
-          icon={FiUser}
+          icon={User}
         />
       </div>
 
       {/* Error State */}
-      <div className="bg-white p-6 rounded-xl shadow-card">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Error State</h2>
+      <div className="rounded-xl glass p-6 shadow-card">
+        <h2 className="mb-4 font-head text-xl font-semibold text-foreground">Error State</h2>
         <AppSelect
           label="Dropdown with Error"
           placeholder="Select an option"
           options={specializations}
           error="This field is required"
-          icon={FiUser}
+          icon={User}
         />
       </div>
 
       {/* Current Selections */}
-      <div className="bg-gray-50 p-6 rounded-xl">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Current Selections</h2>
+      <div className="rounded-xl bg-foreground/5 p-6">
+        <h2 className="mb-4 font-head text-xl font-semibold text-foreground">Current Selections</h2>
         <div className="space-y-2 text-sm">
           <p><strong>District:</strong> {selectedDistrict || 'None selected'}</p>
           <p><strong>Specialization:</strong> {selectedSpecialization || 'None selected'}</p>

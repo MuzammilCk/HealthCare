@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { FiActivity, FiAlertTriangle, FiCalendar, FiCpu, FiDownload, FiSearch, FiUser, FiX } from 'react-icons/fi';
+import { Activity, AlertTriangle, Calendar, Cpu, Download, Search, User, X } from 'lucide-react';
 import api from '../../services/api';
+import { Button } from '../../components/ui/Button';
+import { cn } from '../../utils/cn';
+import Reveal from '../../components/Reveal';
 
 export default function SymptomHistory() {
   const [logs, setLogs] = useState([]);
@@ -50,7 +53,7 @@ export default function SymptomHistory() {
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
   const exportCsv = () => {
-    const headers = ['createdAt','userId','symptoms','age','sex','conditions','error'];
+    const headers = ['createdAt', 'userId', 'symptoms', 'age', 'sex', 'conditions', 'error'];
     const rows = filtered.map(l => [
       new Date(l.createdAt).toISOString(),
       l.userId,
@@ -60,7 +63,7 @@ export default function SymptomHistory() {
       l.resultSummary?.potentialConditionsCount ?? '',
       (l.error || '').replace(/\n/g, ' ')
     ]);
-    const csv = [headers.join(','), ...rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(','))].join('\n');
+    const csv = [headers.join(','), ...rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -71,42 +74,42 @@ export default function SymptomHistory() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-blue-200">
-          <FiActivity className="w-6 h-6 text-blue-600" />
+    <div className="space-y-6 bg-background text-foreground">
+      <Reveal className="flex items-center gap-4">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-cyan/15">
+          <Activity className="w-6 h-6 text-brand-cyan-fg" />
         </div>
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-text-primary-dark">Symptom Checker History</h1>
-          <p className="text-gray-600 dark:text-text-secondary-dark">Admin-only. Explore recent usage with search, details, and export.</p>
+          <h1 className="font-head text-2xl font-semibold tracking-tight text-foreground">Symptom Checker History</h1>
+          <p className="text-muted-foreground">Admin-only. Explore recent usage with search, details, and export.</p>
         </div>
-      </div>
+      </Reveal>
 
-      <div className="bg-white dark:bg-bg-card-dark rounded-2xl shadow-xl dark:shadow-card-dark border border-slate-200/60 dark:border-dark-border p-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-text-secondary-dark">
+      <Reveal className="rounded-2xl glass border border-border p-4 shadow-card">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>Total:</span>
-            <span className="font-medium text-gray-900 dark:text-text-primary-dark">{total}</span>
+            <span className="font-medium text-foreground">{total}</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <div className="relative">
-              <FiSearch className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search symptoms, user, error..."
-                className="pl-9 pr-8 py-2 w-72 border border-gray-200 dark:border-dark-border rounded-lg bg-white dark:bg-dark-surface text-sm"
+                className="w-72 rounded-lg border border-border bg-background/60 py-2 pl-9 pr-8 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-cyan/30 focus:border-brand-cyan"
               />
               {query && (
-                <button className="absolute right-2 top-2.5 text-gray-400" onClick={() => setQuery('')}>
-                  <FiX />
+                <button className="absolute right-2 top-2.5 text-muted-foreground hover:text-foreground" onClick={() => setQuery('')} aria-label="Clear search">
+                  <X />
                 </button>
               )}
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-sm">Per page</label>
+              <label className="text-sm text-muted-foreground">Per page</label>
               <select
-                className="border rounded px-2 py-2 bg-white dark:bg-dark-surface dark:border-dark-border text-sm"
+                className="rounded-lg border border-border bg-background/60 px-2 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-cyan/30"
                 value={limit}
                 onChange={(e) => {
                   const newLimit = parseInt(e.target.value) || 20;
@@ -119,88 +122,85 @@ export default function SymptomHistory() {
                 ))}
               </select>
             </div>
-            <button
-              className="inline-flex items-center gap-2 px-3 py-2 border rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-dark-surface"
-              onClick={exportCsv}
-            >
-              <FiDownload className="w-4 h-4" /> Export CSV
-            </button>
+            <Button variant="outline" size="sm" onClick={exportCsv}>
+              <Download className="w-4 h-4" /> Export CSV
+            </Button>
           </div>
         </div>
 
         {error && (
-          <div className="mb-3 text-sm text-red-600 dark:text-red-400">{error}</div>
+          <div className="mb-3 text-sm text-error-fg">{error}</div>
         )}
 
         {/* Card list */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {(loading ? Array.from({ length: 6 }) : filtered).map((log, idx) => (
-            <div key={log?._id || idx} className="rounded-xl border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-surface p-4 shadow-sm">
+            <div key={log?._id || idx} className="rounded-xl border border-border bg-card p-4 shadow-card">
               {loading ? (
                 <div className="animate-pulse space-y-3">
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
-                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
-                  <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="h-4 w-1/2 rounded bg-foreground/10" />
+                  <div className="h-3 w-2/3 rounded bg-foreground/10" />
+                  <div className="h-16 rounded bg-foreground/10" />
                 </div>
               ) : (
                 <>
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-0.5">
-                      <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-text-secondary-dark">
-                        <FiCalendar className="w-3.5 h-3.5" />
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Calendar className="w-3.5 h-3.5" />
                         <span>{new Date(log.createdAt).toLocaleString()}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-semibold">
-                          {String((log.userId?.name || log.userId || 'U')).slice(0,1).toUpperCase()}
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-cyan/15 text-xs font-semibold text-brand-cyan-fg">
+                          {String((log.userId?.name || log.userId || 'U')).slice(0, 1).toUpperCase()}
                         </div>
-                        <span className="font-medium text-gray-900 dark:text-text-primary-dark" title={typeof log.userId === 'object' ? (log.userId?.email || '') : String(log.userId)}>
+                        <span className="font-medium text-foreground" title={typeof log.userId === 'object' ? (log.userId?.email || '') : String(log.userId)}>
                           {typeof log.userId === 'object' ? (log.userId?.name || log.userId?._id) : String(log.userId)}
                         </span>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className={`inline-flex items-center px-2 py-0.5 rounded text-xs border ${log.error ? 'bg-red-50 text-red-700 border-red-200' : 'bg-green-50 text-green-700 border-green-200'}`}>
+                      <div className={cn('inline-flex items-center rounded border px-2 py-0.5 text-xs', log.error ? 'border-error/20 bg-error/15 text-error-fg' : 'border-success/20 bg-success/15 text-success-fg')}>
                         {log.error ? 'Invalid' : 'Success'}
                       </div>
                     </div>
                   </div>
 
                   <div className="mt-3 text-sm">
-                    <div className="text-gray-500 dark:text-text-secondary-dark">Symptoms</div>
-                    <div className="font-medium text-gray-900 dark:text-text-primary-dark line-clamp-2" title={log.input?.symptoms}>{log.input?.symptoms}</div>
+                    <div className="text-muted-foreground">Symptoms</div>
+                    <div className="line-clamp-2 font-medium text-foreground" title={log.input?.symptoms}>{log.input?.symptoms}</div>
                   </div>
 
                   <div className="mt-3 flex items-center gap-2 text-xs">
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
-                      <FiUser className="w-3.5 h-3.5" /> {log.input?.age} / {log.input?.sex}
+                    <span className="inline-flex items-center gap-1 rounded-full bg-foreground/5 px-2 py-1 text-muted-foreground">
+                      <User className="w-3.5 h-3.5" /> {log.input?.age} / {log.input?.sex}
                     </span>
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                      <FiCpu className="w-3.5 h-3.5" /> {log.resultSummary?.potentialConditionsCount ?? 0} conditions
+                    <span className="inline-flex items-center gap-1 rounded-full border border-brand-cyan/20 bg-brand-cyan/15 px-2 py-1 text-brand-cyan-fg">
+                      <Cpu className="w-3.5 h-3.5" /> {log.resultSummary?.potentialConditionsCount ?? 0} conditions
                     </span>
                   </div>
 
                   {log.error && (
-                    <div className="mt-3 text-xs text-red-700 bg-red-50 border border-red-200 rounded p-2">
-                      <FiAlertTriangle className="inline mr-1" /> {log.error}
+                    <div className="mt-3 rounded border border-error/20 bg-error/10 p-2 text-xs text-error-fg">
+                      <AlertTriangle className="mr-1 inline" /> {log.error}
                     </div>
                   )}
 
                   {log.resultSummary?.firstAidSuggestion && (
-                    <div className="mt-3 text-xs text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded p-2">
+                    <div className="mt-3 rounded border border-border bg-foreground/5 p-2 text-xs text-muted-foreground">
                       <span className="font-medium">First aid:</span> {log.resultSummary.firstAidSuggestion}
                     </div>
                   )}
 
                   <div className="mt-4 flex items-center justify-between">
                     <button
-                      className="text-sm text-blue-600 hover:underline"
+                      className="text-sm text-brand-cyan-fg hover:underline"
                       onClick={() => setExpanded((s) => ({ ...s, [log._id]: !s[log._id] }))}
                     >
                       {expanded[log._id] ? 'Hide details' : 'View JSON details'}
                     </button>
                     <button
-                      className="text-sm text-gray-600 hover:underline"
+                      className="text-sm text-muted-foreground hover:underline"
                       onClick={() => navigator.clipboard.writeText(String(typeof log.userId === 'object' ? (log.userId?._id || '') : (log.userId || '')))}
                     >
                       Copy User ID
@@ -208,7 +208,7 @@ export default function SymptomHistory() {
                   </div>
 
                   {expanded[log._id] && (
-                    <pre className="mt-3 text-xs bg-black/90 text-green-200 p-3 rounded overflow-auto max-h-64">
+                    <pre className="mt-3 max-h-64 overflow-auto rounded bg-black/90 p-3 text-xs text-green-200">
 {JSON.stringify(log.response ?? { message: 'No response captured' }, null, 2)}
                     </pre>
                   )}
@@ -219,26 +219,24 @@ export default function SymptomHistory() {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between mt-6">
+        <div className="mt-6 flex items-center justify-between">
           <button
-            className="px-3 py-2 border rounded-lg disabled:opacity-50"
+            className="rounded-lg border border-border px-3 py-2 text-foreground transition-colors hover:bg-foreground/5 disabled:opacity-50"
             onClick={() => fetchLogs(Math.max(1, page - 1), limit)}
             disabled={loading || page <= 1}
           >
             Prev
           </button>
-          <div className="text-sm">Page {page} / {totalPages}</div>
+          <div className="text-sm text-muted-foreground">Page {page} / {totalPages}</div>
           <button
-            className="px-3 py-2 border rounded-lg disabled:opacity-50"
+            className="rounded-lg border border-border px-3 py-2 text-foreground transition-colors hover:bg-foreground/5 disabled:opacity-50"
             onClick={() => fetchLogs(Math.min(totalPages, page + 1), limit)}
             disabled={loading || page >= totalPages}
           >
             Next
           </button>
         </div>
-      </div>
+      </Reveal>
     </div>
   );
 }
-
-

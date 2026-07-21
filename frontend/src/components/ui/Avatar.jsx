@@ -33,11 +33,11 @@ const Avatar = ({
 
   // Generate consistent color based on name
   const getAvatarColor = (fullName) => {
-    if (!fullName) return 'bg-gray-500';
-    
+    if (!fullName) return 'bg-muted';
+
     const colors = [
       'bg-red-500',
-      'bg-orange-500', 
+      'bg-orange-500',
       'bg-amber-500',
       'bg-yellow-500',
       'bg-lime-500',
@@ -46,7 +46,7 @@ const Avatar = ({
       'bg-teal-500',
       'bg-cyan-500',
       'bg-sky-500',
-      'bg-blue-500',
+      'bg-brand-sky',
       'bg-indigo-500',
       'bg-violet-500',
       'bg-purple-500',
@@ -64,10 +64,11 @@ const Avatar = ({
   };
 
   const baseClasses = `
-    inline-flex items-center justify-center 
-    rounded-full overflow-hidden 
-    font-semibold text-white 
-    ${sizeClasses[size]} 
+    inline-flex items-center justify-center
+    rounded-full overflow-hidden
+    font-semibold text-white
+    ring-2 ring-border
+    ${sizeClasses[size]}
     ${className}
   `;
 
@@ -105,7 +106,7 @@ const Avatar = ({
 
   // Show default avatar icon
   return (
-    <div className={`${baseClasses} bg-gray-400`} {...props}>
+    <div className={`${baseClasses} bg-muted`} {...props}>
       <svg 
         className="w-1/2 h-1/2" 
         fill="currentColor" 

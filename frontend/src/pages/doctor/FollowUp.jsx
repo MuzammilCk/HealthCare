@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
+import Reveal from '../../components/Reveal';
 
 export default function FollowUp() {
   const location = useLocation();
@@ -51,15 +52,15 @@ export default function FollowUp() {
       toast.error('Please select date and time');
       return;
     }
-    
+
     setSaving(true);
     const loadingToast = toast.loading('Scheduling follow-up...');
-    
+
     try {
-      const res = await api.post(`/doctors/appointments/${apptFromState._id}/follow-up`, { 
-        notes, 
+      const res = await api.post(`/doctors/appointments/${apptFromState._id}/follow-up`, {
+        notes,
         date, // Send as ISO date string (YYYY-MM-DD)
-        timeSlot 
+        timeSlot
       });
       toast.dismiss(loadingToast);
       toast.success('Follow-up scheduled successfully!');
@@ -74,40 +75,46 @@ export default function FollowUp() {
     }
   };
 
+  const fieldCls = 'w-full rounded-lg border border-border bg-background/60 px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-cyan/30 focus:border-brand-cyan';
+
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Schedule Follow-up</h1>
-      <div className="mb-4 p-3 rounded border bg-white">
-        <div className="text-sm text-gray-700">Patient</div>
-        <div className="font-semibold">{apptFromState?.patientId?.name}</div>
-        <div className="text-sm text-gray-500">{apptFromState?.patientId?.email}</div>
-        <div className="text-sm mt-2">Original appointment: {apptFromState?.timeSlot} on {apptFromState?.date ? new Date(apptFromState.date).toLocaleDateString() : ''}</div>
-      </div>
-      <form onSubmit={onSubmit} className="space-y-4 max-w-xl">
-        <div>
-          <label className="block text-sm mb-1">Follow-up Date</label>
-          <input type="date" className="w-full border rounded px-3 py-2" value={date} onChange={(e) => { setDate(e.target.value); setTimeSlot(''); }} min={todayIso} />
-        </div>
-        <div>
-          <label className="block text-sm mb-1">Available Time Slots</label>
-          <select className="w-full border rounded px-3 py-2" value={timeSlot} onChange={(e) => setTimeSlot(e.target.value)} disabled={!date}>
-            <option value="">Select time</option>
-            {availableSlotsForDate.map((s, i) => (
-              <option key={i} value={s}>{s}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm mb-1">Notes for follow-up</label>
-          <textarea className="w-full border rounded px-3 py-2" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Add follow-up notes (optional)" />
-        </div>
-        <div className="space-x-2">
-          <button className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50" disabled={saving}>{saving ? 'Saving…' : 'Confirm and Create Prescription'}</button>
-          <button type="button" className="border px-4 py-2 rounded" onClick={() => navigate('/doctor/appointments')}>Cancel</button>
-        </div>
-      </form>
+    <div className="mx-auto max-w-xl space-y-6 bg-background text-foreground">
+      <Reveal>
+        <h1 className="font-head text-2xl font-bold tracking-tight text-foreground">Schedule Follow-up</h1>
+      </Reveal>
+
+      <Reveal className="glass rounded-xl border border-border p-4 shadow-card">
+        <div className="text-sm text-muted-foreground">Patient</div>
+        <div className="font-semibold text-foreground">{apptFromState?.patientId?.name}</div>
+        <div className="text-sm text-muted-foreground">{apptFromState?.patientId?.email}</div>
+        <div className="mt-2 text-sm text-muted-foreground">Original appointment: {apptFromState?.timeSlot} on {apptFromState?.date ? new Date(apptFromState.date).toLocaleDateString() : ''}</div>
+      </Reveal>
+
+      <Reveal>
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div>
+            <label className="mb-1 block text-sm text-muted-foreground">Follow-up Date</label>
+            <input type="date" className={fieldCls} value={date} onChange={(e) => { setDate(e.target.value); setTimeSlot(''); }} min={todayIso} />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm text-muted-foreground">Available Time Slots</label>
+            <select className={fieldCls} value={timeSlot} onChange={(e) => setTimeSlot(e.target.value)} disabled={!date}>
+              <option value="">Select time</option>
+              {availableSlotsForDate.map((s, i) => (
+                <option key={i} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm text-muted-foreground">Notes for follow-up</label>
+            <textarea className={`${fieldCls} resize-none`} rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Add follow-up notes (optional)" />
+          </div>
+          <div className="flex gap-3">
+            <button className="rounded-lg bg-gradient-to-br from-brand-cyan to-brand-teal px-4 py-2 font-semibold text-white shadow-glow transition-all hover:brightness-110 disabled:opacity-50" disabled={saving}>{saving ? 'Saving…' : 'Confirm and Create Prescription'}</button>
+            <button type="button" className="rounded-lg border border-border px-4 py-2 text-foreground transition-colors hover:bg-foreground/5" onClick={() => navigate('/doctor/appointments')}>Cancel</button>
+          </div>
+        </form>
+      </Reveal>
     </div>
   );
 }
-
-
